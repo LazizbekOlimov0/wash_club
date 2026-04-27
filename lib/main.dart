@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
+
 import 'app.dart';
 
-void main() => run();
+void main() => runApp(MyApp());
 
 
 /// ------------------------------------------ Flutter Commands -------------------------------------------
