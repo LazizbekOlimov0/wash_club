@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'booking_screen.dart';
-import 'orders_screen.dart';
+import '../../../booking/booking_screen.dart';
+import '../../../orders/orders_screen.dart';
+import 'add_car/add_car_screen.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -13,6 +14,29 @@ class UserHomeScreen extends StatefulWidget {
 class _UserHomeScreenState extends State<UserHomeScreen> {
   int _selectedIndex = 0;
   final List<bool> _expanded = [false, false, false];
+
+  // Foydalanuvchining mashinasi bor yoki yo'qligini simulatsiya qiladi
+  // Haqiqiy loyihada bu backenddan keladi
+  bool _hasCar = false;
+
+  void _onBookOrAdd(BuildContext context) {
+    if (_hasCar) {
+      // Mashinasi bor → Bron qilish tabiga o'tish
+      setState(() => _selectedIndex = 1);
+    } else {
+      // Mashinasi yo'q → Mashina qo'shish ekraniga yo'naltirish
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AddCarScreen(
+            onCarAdded: () {
+              setState(() => _hasCar = true);
+            },
+          ),
+        ),
+      );
+    }
+  }
 
   final List<Map<String, String>> _branches = [
     {'name': 'Underground Car Wash - Oybek', 'address': 'Shakhrisabz street', 'bays': '10'},
@@ -173,7 +197,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () => _onBookOrAdd(context),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF2B5FAD),
             foregroundColor: Colors.white,

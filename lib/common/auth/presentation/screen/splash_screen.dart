@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:wash_club/common/auth/presentation/screen/auth_screen.dart';
+
+import 'login.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -47,7 +48,10 @@ class _SplashScreenState extends State<SplashScreen>
     // Navigate after 2.8 seconds
     Future.delayed(const Duration(milliseconds: 2800), () {
       if (mounted) {
-         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => AuthScreen()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
       }
     });
   }
@@ -167,6 +171,29 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     ),
                     const SizedBox(height: 8),
+
+                    // Tagline
+                    Text(
+                      'mini app',
+                      style: TextStyle(
+                        color: Color(0x99FFFFFF),
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                        letterSpacing: 2.0,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Divider line
+                    Container(
+                      width: 40,
+                      height: 2,
+                      decoration: BoxDecoration(
+                        color: Color(0x4DFFFFFF),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
                     // Subtitle
                     Text(
