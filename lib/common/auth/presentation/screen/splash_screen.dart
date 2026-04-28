@@ -73,7 +73,7 @@ class _SplashScreenState extends State<SplashScreen>
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFF1A3A7A), // dark blue (rasmdan)
+              Color(0xFF1A3A7A), // dark blue
               Color(0xFF2B5FAD), // main blue
               Color(0xFF1E2D5A), // deeper shade
             ],
@@ -170,29 +170,7 @@ class _SplashScreenState extends State<SplashScreen>
                         letterSpacing: 0.5,
                       ),
                     ),
-                    const SizedBox(height: 8),
 
-                    // Tagline
-                    Text(
-                      'mini app',
-                      style: TextStyle(
-                        color: Color(0x99FFFFFF),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w400,
-                        letterSpacing: 2.0,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Divider line
-                    Container(
-                      width: 40,
-                      height: 2,
-                      decoration: BoxDecoration(
-                        color: Color(0x4DFFFFFF),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
                     const SizedBox(height: 16),
 
                     // Subtitle

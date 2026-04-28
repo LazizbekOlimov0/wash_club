@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:wash_club/core/widgets/app_text_field.dart';
 
 import '../../../../features/user/home/presentation/screen/user_home_screen.dart';
 
@@ -90,26 +91,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Name
                   _label('Ismingiz'),
                   const SizedBox(height: 8),
-                  _textField(
+                  AppTextField(
                     controller: _nameController,
-                    hint: 'Lazizbek Olimov',
-                    icon: Icons.person_outline,
-                    inputType: TextInputType.name,
+                    hintText: "Name",
                   ),
                   const SizedBox(height: 20),
 
                   // Phone
                   _label('Telefon raqam'),
                   const SizedBox(height: 8),
-                  _textField(
+                  AppTextField.phone(
                     controller: _phoneController,
-                    hint: '+998 90 123 45 67',
-                    icon: Icons.phone_outlined,
-                    inputType: TextInputType.phone,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.allow(
-                          RegExp(r'[0-9+\s]')),
-                    ],
+                    hintText: "(99) 999 99 99",
                   ),
                   const SizedBox(height: 32),
 

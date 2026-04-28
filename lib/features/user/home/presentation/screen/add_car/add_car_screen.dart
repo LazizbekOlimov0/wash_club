@@ -22,6 +22,10 @@ class _AddCarScreenState extends State<AddCarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF2F4F7),
+        leading: IconButton(onPressed: () => Navigator.pop(context), icon: Icon(Icons.arrow_back_ios_new)),
+      ),
       backgroundColor: const Color(0xFFF2F4F7),
       body: Column(
         children: [
@@ -40,27 +44,6 @@ class _AddCarScreenState extends State<AddCarScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top bar: X  Wash Club  ▼  ⋮
-                Row(
-                  children: [
-                    const Icon(Icons.close, color: Colors.white, size: 22),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Wash Club',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    const Icon(Icons.keyboard_arrow_down,
-                        color: Colors.white, size: 22),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.more_vert, color: Colors.white, size: 22),
-                  ],
-                ),
-                const SizedBox(height: 20),
                 SizedBox(
                   height: 80,
                   width: 80,

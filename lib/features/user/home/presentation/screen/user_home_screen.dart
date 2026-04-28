@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wash_club/features/user/profile/user_profile_screen.dart';
 
 import '../../../booking/booking_screen.dart';
 import '../../../orders/orders_screen.dart';
@@ -85,7 +86,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           // 2 - Заказы
           const OrdersScreen(),
           // 3 - Профиль (placeholder)
-          const Center(child: Text('Профиль')),
+          const ProfileScreen(),
         ],
       ),
     );
