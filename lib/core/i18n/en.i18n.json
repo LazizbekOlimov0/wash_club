@@ -1,0 +1,46 @@
+{
+  "splash": {
+    "loading": "Loading...",
+    "subtitle": "Washing your car has never been this easy"
+  },
+  "login": {
+    "title": "Wash Club",
+    "subtitle": "Enter your details to sign in",
+    "name": "Your name",
+    "phone": "Phone number",
+    "button": "Sign in"
+  },
+  "nav": {
+    "home": "Home",
+    "booking": "Booking",
+    "orders": "Orders",
+    "profile": "Profile"
+  },
+  "home": {
+    "welcome": "Welcome",
+    "book_button": "Book now",
+    "subscription_status": "Subscription status",
+    "no_subscription": "No subscription",
+    "subscription_hint": "Get a subscription — save more!"
+  },
+  "booking": {
+    "disabled_title": "Booking is temporarily unavailable",
+    "disabled_subtitle": "Booking is not available at the moment. It will be back soon!"
+  },
+  "orders": {
+    "title": "My orders",
+    "empty": "No orders",
+    "empty_subtitle": "You have no booked orders"
+  },
+  "add_car": {
+    "title": "Add your car",
+    "subtitle": "At least one car is required to make a booking",
+    "plate": "License plate",
+    "plate_hint": "01A123BC",
+    "plate_example": "Example: 01A123BC, 01502GDA, T025004",
+    "brand": "Brand",
+    "model": "Model",
+    "body_type": "Body type",
+    "continue_button": "Continue"
+  }
+}

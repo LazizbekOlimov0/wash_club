@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:wash_club/core/i18n/translations.g.dart';
 import 'package:wash_club/features/user/home/presentation/screen/user_home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -15,7 +16,7 @@ class _AuthScreenState extends State<AuthScreen> {
     {'label': 'Sedan', 'emoji': '🚗'},
     {'label': 'SUV', 'emoji': '🚙'},
     {'label': 'Minivan', 'emoji': '🚐'},
-    {'label': 'Boshqa', 'emoji': '🚗'},
+    {'label': 'Others', 'emoji': '🚗'},
   ];
 
   @override
@@ -53,8 +54,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          "Mashinangizni qo'shing",
+                        Text(
+                          t.addCar.title,
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -62,8 +63,8 @@ class _AuthScreenState extends State<AuthScreen> {
                           ),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Bron qilish uchun kamida bitta mashina kerak',
+                        Text(
+                          t.addCar.subtitle,
                           style: TextStyle(
                             color: Colors.white70,
                             fontSize: 14,
@@ -88,13 +89,13 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Davlat raqami
-                    _label('Davlat raqami', required: true),
+                    // Country number
+                    _label(t.addCar.plate, required: true),
                     const SizedBox(height: 8),
                     _textField(hint: '01A123BC'),
                     const SizedBox(height: 6),
                     const Text(
-                      'Misol: 01A123BC, 01502GDA, T025004',
+                      'Example: 01A123BC, 01502GDA, T025004',
                       style: TextStyle(
                         color: Color(0xFF9EA3AE),
                         fontSize: 12,
@@ -130,8 +131,8 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Kuzov turi
-                    _label('Kuzov turi'),
+                    // Body type
+                    _label(t.addCar.bodyType),
                     GridView.count(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
@@ -208,11 +209,11 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Davom etish',
+                      t.addCar.continueButton,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,

@@ -1,0 +1,46 @@
+{
+  "splash": {
+    "loading": "Yuklanmoqda...",
+    "subtitle": "Avtomobilingizni yuvish hech qachon bu qadar oson bo'lmagan"
+  },
+  "login": {
+    "title": "Wash Club",
+    "subtitle": "Kirish uchun ma'lumotlaringizni kiriting",
+    "name": "Ismingiz",
+    "phone": "Telefon raqam",
+    "button": "Kirish"
+  },
+  "nav": {
+    "home": "Bosh sahifa",
+    "booking": "Bron",
+    "orders": "Buyurtmalar",
+    "profile": "Profil"
+  },
+  "home": {
+    "welcome": "Xush kelibsiz",
+    "book_button": "Zabronировать",
+    "subscription_status": "Obuna holati",
+    "no_subscription": "Obuna yo'q",
+    "subscription_hint": "Obuna rasmiylashtiring — tejang!"
+  },
+  "booking": {
+    "disabled_title": "Bron qilish vaqtincha to'xtatilgan",
+    "disabled_subtitle": "Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!"
+  },
+  "orders": {
+    "title": "Mening buyurtmalarim",
+    "empty": "Buyurtmalar yo'q",
+    "empty_subtitle": "Zabronированных buyurtmalar yo'q"
+  },
+  "add_car": {
+    "title": "Mashinangizni qo'shing",
+    "subtitle": "Bron qilish uchun kamida bitta mashina kerak",
+    "plate": "Davlat raqami",
+    "plate_hint": "01A123BC",
+    "plate_example": "Misol: 01A123BC, 01502GDA, T025004",
+    "brand": "Marka",
+    "model": "Model",
+    "body_type": "Kuzov turi",
+    "continue_button": "Davom etish"
+  }
+}
