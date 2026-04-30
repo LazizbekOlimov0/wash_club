@@ -92,6 +92,18 @@ class TranslationsHomeEn extends TranslationsHomeUz {
 	@override String get subscriptionStatus => 'Subscription status';
 	@override String get noSubscription => 'No subscription';
 	@override String get subscriptionHint => 'Get a subscription — save more!';
+	@override String get plans => '⚡ тарифные планы';
+	@override String get subtitle => 'Save every month!';
+	@override String get period3Months => '3 months';
+	@override String get priceMonthly => '933,000 UZS';
+	@override String get total => 'Total: 2,800,000 UZS';
+	@override String get bestPrice => 'Best price';
+	@override String get unlimited => '∞ Unlimited washes';
+	@override String get perMonth => ' / month';
+	@override String get branches => 'Branches';
+	@override String branchesCount({required Object count}) => '${count} pcs';
+	@override String get map => 'On map';
+	@override String get howItWorks => 'How does it work?';
 }
 
 // Path: booking

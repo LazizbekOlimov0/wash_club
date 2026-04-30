@@ -21,7 +21,19 @@
     "book_button": "Забронировать",
     "subscription_status": "Статус подписки",
     "no_subscription": "Нет подписки",
-    "subscription_hint": "Оформите подписку — экономьте!"
+    "subscription_hint": "Оформите подписку — экономьте!",
+    "plans": "⚡ Тарифные планы",
+    "subtitle": "Экономьте каждый месяц!",
+    "period_3_months": "3 месяца",
+    "price_monthly": "933 000 UZS",
+    "total": "Итого: 2 800 000 UZS",
+    "best_price": "Лучшая цена",
+    "unlimited": "∞ Безлимитные мойки",
+    "per_month": " / мес",
+    "branches": "Филиалы",
+    "branches_count": "${count} шт",
+    "map": "На карте",
+    "how_it_works": "Как это работает?"
   },
   "booking": {
     "disabled_title": "Бронирование временно остановлено",

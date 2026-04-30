@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/i18n/translations.g.dart';
+
 class BookingScreen extends StatelessWidget {
   const BookingScreen({super.key});
 
@@ -7,7 +9,7 @@ class BookingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF2F4F7),
-      body: const Center(
+      body: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 32),
           child: Column(
@@ -16,7 +18,7 @@ class BookingScreen extends StatelessWidget {
               Text('🚧', style: TextStyle(fontSize: 72)),
               SizedBox(height: 24),
               Text(
-                "Bron qilish vaqtincha to'xtatilgan",
+                t.booking.disabledTitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 20,
@@ -26,7 +28,7 @@ class BookingScreen extends StatelessWidget {
               ),
               SizedBox(height: 12),
               Text(
-                'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!',
+                t.booking.disabledSubtitle,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,

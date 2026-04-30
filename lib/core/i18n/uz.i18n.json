@@ -21,7 +21,19 @@
     "book_button": "Zabronировать",
     "subscription_status": "Obuna holati",
     "no_subscription": "Obuna yo'q",
-    "subscription_hint": "Obuna rasmiylashtiring — tejang!"
+    "subscription_hint": "Obuna rasmiylashtiring — tejang!",
+    "plans": "⚡ Tarif rejalar",
+    "subtitle": "Har oy tejang!",
+    "period_3_months": "3 oy",
+    "price_monthly": "933 000 UZS",
+    "total": "Jami: 2 800 000 UZS",
+    "best_price": "Eng yaxshi narx",
+    "unlimited": "∞ Cheksiz yuvishlar",
+    "per_month": " / oy",
+    "branches": "Filiallar",
+    "branches_count": "${count} ta",
+    "map": "Xaritada",
+    "how_it_works": "Bu qanday ishlaydi?"
   },
   "booking": {
     "disabled_title": "Bron qilish vaqtincha to'xtatilgan",

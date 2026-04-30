@@ -21,7 +21,19 @@
     "book_button": "Book now",
     "subscription_status": "Subscription status",
     "no_subscription": "No subscription",
-    "subscription_hint": "Get a subscription — save more!"
+    "subscription_hint": "Get a subscription — save more!",
+    "plans": "⚡ тарифные планы",
+    "subtitle": "Save every month!",
+    "period_3_months": "3 months",
+    "price_monthly": "933,000 UZS",
+    "total": "Total: 2,800,000 UZS",
+    "best_price": "Best price",
+    "unlimited": "∞ Unlimited washes",
+    "per_month": " / month",
+    "branches": "Branches",
+    "branches_count": "${count} pcs",
+    "map": "On map",
+    "how_it_works": "How does it work?"
   },
   "booking": {
     "disabled_title": "Booking is temporarily unavailable",

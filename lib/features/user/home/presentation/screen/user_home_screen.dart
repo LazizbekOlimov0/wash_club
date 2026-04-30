@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 
+import '../../../../../core/i18n/translations.g.dart';
+
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
 
@@ -25,16 +27,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   final List<Map<String, String>> _branches = [
-    {'name': 'Underground Car Wash - Oybek', 'address': 'Shakhrisabz street', 'bays': '10'},
-    {'name': 'Mega Planet', 'address': 'Yakkasaray', 'bays': '6'},
-    {'name': 'HT mall', 'address': 'yangi shahar', 'bays': ''},
-    {'name': 'Drive CarWash Mega Planet', 'address': 'Ahmad Donish 2B', 'bays': ''},
-    {'name': 'Yupiter', 'address': '', 'bays': ''},
-    {'name': 'Yevro Car Wash - Tashkent city', 'address': 'Amir Temur', 'bays': ''},
+    {'name': 'Underground Car Wash - Aybek', 'address': 'Radhakrishna street', 'bays': '10'},
+    {'name': 'Mega Planet', 'address': 'Kumarasamy', 'bays': '6'},
+    {'name': 'HT mall', 'address': 'yang shahar', 'bays': ''},
+    {'name': 'Drive CarWash Mega Planet', 'address': 'Ahmad Danish 2B', 'bays': ''},
+    {'name': 'Jupiter', 'address': '', 'bays': ''},
+    {'name': 'enrol Car Wash - Tashkent city', 'address': 'Amir Temur', 'bays': ''},
   ];
 
   final List<String> _faqTitles = [
-    '1. Добавить машину',
+    '1. ${t.addCar.title}',
     '2. Бронь или подписка',
     '3. Приезжайте и мойте',
   ];
@@ -78,7 +80,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Добро пожаловать',
+          Text(t.home.welcome,
               style: TextStyle(color: Color(0xCCFFFFFF), fontSize: 13)),
           const SizedBox(height: 4),
           Row(
@@ -88,7 +90,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Lazizbek Olimov',
+                    Text('Jon Doe',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -120,23 +122,23 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: const Color(0x22FFFFFF)),
             ),
-            child: const Row(
+            child: Row(
               children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Статус подписки',
+                      Text(t.home.subscriptionStatus,
                           style: TextStyle(
                               color: Color(0xAAFFFFFF), fontSize: 13)),
                       SizedBox(height: 6),
-                      Text('Нет подписки',
+                      Text(t.home.noSubscription,
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.bold)),
                       SizedBox(height: 4),
-                      Text('Оформите подписку — экономьте!',
+                      Text(t.home.subscriptionHint,
                           style: TextStyle(
                               color: Color(0x88FFFFFF), fontSize: 12)),
                     ],
@@ -166,12 +168,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16)),
           ),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('✨', style: TextStyle(fontSize: 18)),
               SizedBox(width: 8),
-              Text('Забронировать',
+              Text(t.home.bookButton,
                   style: TextStyle(
                       fontSize: 17, fontWeight: FontWeight.w600)),
               SizedBox(width: 6),
@@ -195,13 +197,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('⚡ Тарифные планы',
+            Text(t.home.plans,
                 style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 4),
-            const Text('Экономьте каждый месяц!',
+          Text(t.home.subtitle,
                 style:
                 TextStyle(color: Color(0xFFFFD166), fontSize: 13)),
             const SizedBox(height: 16),
@@ -213,9 +215,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               ),
               child: _tariffContent(
                 icon: '🪃',
-                title: '3 месяца',
-                price: '933 000 UZS',
-                total: 'Итого: 2 800 000 UZS',
+                title: t.home.period3Months,
+                price: t.home.priceMonthly,
+                total: t.home.total,
               ),
             ),
             const SizedBox(height: 16),
@@ -232,9 +234,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ),
                   child: _tariffContent(
                     icon: '👑',
-                    title: '6 месяцев',
-                    price: '799 000 UZS',
-                    total: 'Итого: 4 794 000 UZS',
+                    title: t.home.period3Months,
+                    price: t.home.priceMonthly,
+                    total: t.home.total,
                   ),
                 ),
                 Positioned(
@@ -247,7 +249,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       color: const Color(0xFFFFB800),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text('Лучшая цена',
+                    child: Text(t.home.bestPrice,
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 11,
@@ -277,7 +279,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 fontSize: 16,
                 fontWeight: FontWeight.w600)),
         const SizedBox(height: 4),
-        const Text('∞ Безлимитные мойки',
+        Text(t.home.unlimited,
             style: TextStyle(color: Color(0x99FFFFFF), fontSize: 13)),
         const SizedBox(height: 8),
         RichText(
@@ -288,8 +290,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     color: Colors.white,
                     fontSize: 22,
                     fontWeight: FontWeight.bold)),
-            const TextSpan(
-                text: ' / мес',
+            TextSpan(
+                text: t.home.perMonth,
                 style: TextStyle(
                     color: Color(0x99FFFFFF), fontSize: 13)),
           ]),
@@ -311,12 +313,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Филиалы',
+              Text(t.home.branches,
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1A1A2E))),
-              Text('${_branches.length} шт',
+              Text(t.home.branchesCount(count: _branches.length),
                   style: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF2B5FAD),
@@ -386,12 +388,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        const Padding(
+        Padding(
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: Row(children: [
             Text('🗺', style: TextStyle(fontSize: 20)),
             SizedBox(width: 8),
-            Text('На карте',
+            Text(t.home.map,
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -460,7 +462,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Как это работает?',
+          Text(t.home.howItWorks,
               style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,

@@ -126,6 +126,42 @@ class TranslationsHomeUz {
 
 	/// uz: 'Obuna rasmiylashtiring — tejang!'
 	String get subscriptionHint => 'Obuna rasmiylashtiring — tejang!';
+
+	/// uz: '⚡ Tarif rejalar'
+	String get plans => '⚡ Tarif rejalar';
+
+	/// uz: 'Har oy tejang!'
+	String get subtitle => 'Har oy tejang!';
+
+	/// uz: '3 oy'
+	String get period3Months => '3 oy';
+
+	/// uz: '933 000 UZS'
+	String get priceMonthly => '933 000 UZS';
+
+	/// uz: 'Jami: 2 800 000 UZS'
+	String get total => 'Jami: 2 800 000 UZS';
+
+	/// uz: 'Eng yaxshi narx'
+	String get bestPrice => 'Eng yaxshi narx';
+
+	/// uz: '∞ Cheksiz yuvishlar'
+	String get unlimited => '∞ Cheksiz yuvishlar';
+
+	/// uz: ' / oy'
+	String get perMonth => ' / oy';
+
+	/// uz: 'Filiallar'
+	String get branches => 'Filiallar';
+
+	/// uz: '${count} ta'
+	String branchesCount({required Object count}) => '${count} ta';
+
+	/// uz: 'Xaritada'
+	String get map => 'Xaritada';
+
+	/// uz: 'Bu qanday ishlaydi?'
+	String get howItWorks => 'Bu qanday ishlaydi?';
 }
 
 // Path: booking

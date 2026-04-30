@@ -17,7 +17,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 8),
             const Center(
               child: Text(
-                'Оплата Click/Payme — скоро!',
+                'Оплата Click/Payment — скоро!',
                 style: TextStyle(fontSize: 13, color: Color(0xFF9EA3AE)),
               ),
             ),
@@ -68,7 +68,7 @@ class ProfileScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Lazizbek Olimov',
+                'Jon Doe',
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,

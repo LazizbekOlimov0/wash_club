@@ -20,7 +20,7 @@ final GoRouter generateRouter = GoRouter(
   debugLogDiagnostics: true,
 
   errorBuilder: (context, state) => const Scaffold(
-    body: Center(child: Text('Sahifa topilmadi')),
+    body: Center(child: Text('Page Not Found')),
   ),
 
   routes: [
