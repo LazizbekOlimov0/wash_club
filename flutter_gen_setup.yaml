@@ -1,0 +1,47 @@
+# ── pubspec.yaml ga qo'shish kerak ────────────────────────────────
+
+flutter:
+  assets:
+    - assets/icons/nav_bar/   # ← SVG ikonkalar shu papkada bo'lishi kerak
+
+flutter_gen:
+  output: lib/core/assets/
+  line_length: 100
+  assets:
+    enabled: true
+    outputs:
+      class_name: WashClubAssets   # UiKitAssets o'rniga WashClubAssets
+  integrations:
+    flutter_svg: true
+
+
+# ── Kerakli SVG fayl nomlari (assets/icons/nav_bar/) ─────────────
+#
+#   home_outlined.svg
+#   home_filled.svg
+#   booking_outlined.svg
+#   booking_filled.svg
+#   orders_outlined.svg
+#   orders_filled.svg
+#   profile_outlined.svg
+#   profile_filled.svg
+#
+# SVG fayllarni qo'shgandan keyin:
+#   dart run build_runner build --delete-conflicting-outputs
+
+
+# ── assets.gen.dart avtomatik generate bo'ladi, taxminan bunday: ──
+#
+# class WashClubAssets {
+#   static const $IconsGen icons = $IconsGen();
+# }
+# class $IconsGen {
+#   const $IconsGen();
+#   $IconsNavBarGen get navBar => const $IconsNavBarGen();
+# }
+# class $IconsNavBarGen {
+#   const $IconsNavBarGen();
+#   SvgGenImage get homeOutlined => const SvgGenImage('assets/icons/nav_bar/home_outlined.svg');
+#   SvgGenImage get homeFilled   => const SvgGenImage('assets/icons/nav_bar/home_filled.svg');
+#   // ...
+# }

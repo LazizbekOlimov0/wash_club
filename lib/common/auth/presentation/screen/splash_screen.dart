@@ -42,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _controller.forward();
     Future.delayed(const Duration(milliseconds: 2800), () {
-      if (mounted) context.go(UserRoutePath.login);
+      if (mounted) context.go(UserRoutePath.language);
     });
   }
 

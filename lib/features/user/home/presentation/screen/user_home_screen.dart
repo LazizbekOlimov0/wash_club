@@ -45,24 +45,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 16),
-            _buildBookButton(),
-            const SizedBox(height: 16),
-            _buildTariffPlans(),
-            const SizedBox(height: 16),
-            _buildBranchesSection(),
-            const SizedBox(height: 16),
-            _buildHowItWorks(),
-            const SizedBox(height: 32),
-          ],
-        ),
-      ),
+        backgroundColor: const Color(0xFF1A1A2E),
+      body: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 16),
+          _buildBookButton(),
+          const SizedBox(height: 16),
+          _buildTariffPlans(),
+          const SizedBox(height: 16),
+          _buildBranchesSection(),
+          const SizedBox(height: 16),
+          _buildHowItWorks(),
+          const SizedBox(height: 32),
+        ],
+      )
     );
   }
 
