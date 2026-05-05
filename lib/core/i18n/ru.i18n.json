@@ -1,7 +1,7 @@
 {
   "splash": {
     "loading": "Загрузка...",
-    "subtitle": "Мытьё вашего автомобиля ещё никогда не было таким простым"
+    "subtitle": "Мойка вашего автомобиля\nникогда не была такой простой"
   },
   "login": {
     "title": "Wash Club",
@@ -18,41 +18,88 @@
   },
   "home": {
     "welcome": "Добро пожаловать",
-    "book_button": "Забронировать",
-    "subscription_status": "Статус подписки",
-    "no_subscription": "Нет подписки",
-    "subscription_hint": "Оформите подписку — экономьте!",
+    "goodMorning": "Доброе утро",
+    "goodAfternoon": "Добрый день",
+    "goodEvening": "Добрый вечер",
+    "bookButton": "Забронировать",
+    "subscriptionStatus": "Статус подписки",
+    "noSubscription": "Нет подписки",
+    "subscriptionHint": "Оформите подписку — экономьте!",
     "plans": "⚡ Тарифные планы",
     "subtitle": "Экономьте каждый месяц!",
-    "period_3_months": "3 месяца",
-    "price_monthly": "933 000 UZS",
+    "period3Months": "3 месяца",
+    "period6Months": "6 месяцев",
+    "priceMonthly": "933 000 UZS",
     "total": "Итого: 2 800 000 UZS",
-    "best_price": "Лучшая цена",
     "unlimited": "∞ Безлимитные мойки",
-    "per_month": " / мес",
+    "perMonth": " / мес",
+    "bestPrice": "Лучшая цена",
     "branches": "Филиалы",
-    "branches_count": "${count} шт",
+    "nearestBranches": "Ближайшие филиалы",
+    "branchesCount": "${count} шт",
     "map": "На карте",
-    "how_it_works": "Как это работает?"
+    "howItWorks": "Как это работает?",
+    "promotions": "Акции",
+    "seeAll": "Все",
+    "myCars": "Мои машины",
+    "addCar": "Добавить",
+    "manage": "Управление",
+    "nearestBooking": "БЛИЖАЙШАЯ БРОНЬ",
+    "now": "сейчас",
+    "paymentMethod": "Способ оплаты",
+    "card": "Карта",
+    "change": "Изменить",
+    "cancel": "Отменить",
+    "open": "Открыто",
+    "closed": "Закрыто",
+    "quickActions": "Быстрые действия",
+    "book": "Записаться",
+    "history": "История",
+    "help": "Помощь",
+    "noBookings": "Нет броней",
+    "standard": "Стандарт"
   },
   "booking": {
-    "disabled_title": "Бронирование временно остановлено",
-    "disabled_subtitle": "Сейчас бронирование недоступно. Скоро снова заработает!"
+    "disabledTitle": "Бронирование временно остановлено",
+    "disabledSubtitle": "Сейчас бронирование недоступно. Скоро снова заработает!"
   },
   "orders": {
     "title": "Мои заказы",
     "empty": "Заказов нет",
-    "empty_subtitle": "Нет забронированных заказов"
+    "emptySubtitle": "Нет забронированных заказов"
   },
-  "add_car": {
+  "addCar": {
     "title": "Добавьте машину",
     "subtitle": "Для брони нужна минимум одна машина",
     "plate": "Государственный номер",
-    "plate_hint": "01A123BC",
-    "plate_example": "Пример: 01A123BC, 01502GDA, T025004",
+    "plateHint": "01A123BC",
+    "plateExample": "Пример: 01A123BC, 01502GDA, T025004",
     "brand": "Марка",
     "model": "Модель",
-    "body_type": "Тип кузова",
-    "continue_button": "Продолжить"
+    "bodyType": "Тип кузова",
+    "continueButton": "Продолжить"
+  },
+  "notification": {
+    "title": "Уведомления",
+    "empty": "Нет уведомлений",
+    "emptySubtitle": "Новые уведомления появятся здесь",
+    "markAllRead": "Отметить все как прочитанные",
+    "booking": "Бронь",
+    "promo": "Акция",
+    "system": "Система"
+  },
+  "profile": {
+    "title": "Профиль",
+    "tariffPlans": "Тарифные планы",
+    "saveMonthly": "Экономьте каждый месяц!",
+    "myCars": "Мои машины",
+    "addCar": "Добавить",
+    "logout": "Выйти",
+    "paymentSoon": "Оплата Click/Payme — скоро!",
+    "buy": "Купить",
+    "unlimited": "∞ Безлимитные мойки",
+    "bestPrice": "Лучшая цена",
+    "months3": "3 месяца",
+    "months6": "6 месяцев"
   }
 }

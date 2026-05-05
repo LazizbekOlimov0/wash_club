@@ -40,6 +40,8 @@ class TranslationsRu extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsBookingRu booking = TranslationsBookingRu._(_root);
 	@override late final TranslationsOrdersRu orders = TranslationsOrdersRu._(_root);
 	@override late final TranslationsAddCarRu addCar = TranslationsAddCarRu._(_root);
+	@override late final TranslationsNotificationRu notification = TranslationsNotificationRu._(_root);
+	@override late final TranslationsProfileRu profile = TranslationsProfileRu._(_root);
 }
 
 // Path: splash
@@ -50,7 +52,7 @@ class TranslationsSplashRu extends TranslationsSplashUz {
 
 	// Translations
 	@override String get loading => 'Загрузка...';
-	@override String get subtitle => 'Мытьё вашего автомобиля ещё никогда не было таким простым';
+	@override String get subtitle => 'Мойка вашего автомобиля\nникогда не была такой простой';
 }
 
 // Path: login
@@ -88,6 +90,9 @@ class TranslationsHomeRu extends TranslationsHomeUz {
 
 	// Translations
 	@override String get welcome => 'Добро пожаловать';
+	@override String get goodMorning => 'Доброе утро';
+	@override String get goodAfternoon => 'Добрый день';
+	@override String get goodEvening => 'Добрый вечер';
 	@override String get bookButton => 'Забронировать';
 	@override String get subscriptionStatus => 'Статус подписки';
 	@override String get noSubscription => 'Нет подписки';
@@ -95,15 +100,36 @@ class TranslationsHomeRu extends TranslationsHomeUz {
 	@override String get plans => '⚡ Тарифные планы';
 	@override String get subtitle => 'Экономьте каждый месяц!';
 	@override String get period3Months => '3 месяца';
+	@override String get period6Months => '6 месяцев';
 	@override String get priceMonthly => '933 000 UZS';
 	@override String get total => 'Итого: 2 800 000 UZS';
-	@override String get bestPrice => 'Лучшая цена';
 	@override String get unlimited => '∞ Безлимитные мойки';
 	@override String get perMonth => ' / мес';
+	@override String get bestPrice => 'Лучшая цена';
 	@override String get branches => 'Филиалы';
+	@override String get nearestBranches => 'Ближайшие филиалы';
 	@override String branchesCount({required Object count}) => '${count} шт';
 	@override String get map => 'На карте';
 	@override String get howItWorks => 'Как это работает?';
+	@override String get promotions => 'Акции';
+	@override String get seeAll => 'Все';
+	@override String get myCars => 'Мои машины';
+	@override String get addCar => 'Добавить';
+	@override String get manage => 'Управление';
+	@override String get nearestBooking => 'БЛИЖАЙШАЯ БРОНЬ';
+	@override String get now => 'сейчас';
+	@override String get paymentMethod => 'Способ оплаты';
+	@override String get card => 'Карта';
+	@override String get change => 'Изменить';
+	@override String get cancel => 'Отменить';
+	@override String get open => 'Открыто';
+	@override String get closed => 'Закрыто';
+	@override String get quickActions => 'Быстрые действия';
+	@override String get book => 'Записаться';
+	@override String get history => 'История';
+	@override String get help => 'Помощь';
+	@override String get noBookings => 'Нет броней';
+	@override String get standard => 'Стандарт';
 }
 
 // Path: booking
@@ -145,4 +171,41 @@ class TranslationsAddCarRu extends TranslationsAddCarUz {
 	@override String get model => 'Модель';
 	@override String get bodyType => 'Тип кузова';
 	@override String get continueButton => 'Продолжить';
+}
+
+// Path: notification
+class TranslationsNotificationRu extends TranslationsNotificationUz {
+	TranslationsNotificationRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Уведомления';
+	@override String get empty => 'Нет уведомлений';
+	@override String get emptySubtitle => 'Новые уведомления появятся здесь';
+	@override String get markAllRead => 'Отметить все как прочитанные';
+	@override String get booking => 'Бронь';
+	@override String get promo => 'Акция';
+	@override String get system => 'Система';
+}
+
+// Path: profile
+class TranslationsProfileRu extends TranslationsProfileUz {
+	TranslationsProfileRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Профиль';
+	@override String get tariffPlans => 'Тарифные планы';
+	@override String get saveMonthly => 'Экономьте каждый месяц!';
+	@override String get myCars => 'Мои машины';
+	@override String get addCar => 'Добавить';
+	@override String get logout => 'Выйти';
+	@override String get paymentSoon => 'Оплата Click/Payme — скоро!';
+	@override String get buy => 'Купить';
+	@override String get unlimited => '∞ Безлимитные мойки';
+	@override String get bestPrice => 'Лучшая цена';
+	@override String get months3 => '3 месяца';
+	@override String get months6 => '6 месяцев';
 }

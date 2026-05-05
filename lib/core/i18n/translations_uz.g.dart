@@ -42,6 +42,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsBookingUz booking = TranslationsBookingUz.internal(_root);
 	late final TranslationsOrdersUz orders = TranslationsOrdersUz.internal(_root);
 	late final TranslationsAddCarUz addCar = TranslationsAddCarUz.internal(_root);
+	late final TranslationsNotificationUz notification = TranslationsNotificationUz.internal(_root);
+	late final TranslationsProfileUz profile = TranslationsProfileUz.internal(_root);
 }
 
 // Path: splash
@@ -52,11 +54,11 @@ class TranslationsSplashUz {
 
 	// Translations
 
-	/// uz: 'Yuklanmoqda...'
-	String get loading => 'Yuklanmoqda...';
+	/// uz: 'Loading...'
+	String get loading => 'Loading...';
 
-	/// uz: 'Avtomobilingizni yuvish hech qachon bu qadar oson bo'lmagan'
-	String get subtitle => 'Avtomobilingizni yuvish hech qachon bu qadar oson bo\'lmagan';
+	/// uz: 'Washing your car has never been this easy'
+	String get subtitle => 'Washing your car\nhas never been this easy';
 }
 
 // Path: login
@@ -70,17 +72,17 @@ class TranslationsLoginUz {
 	/// uz: 'Wash Club'
 	String get title => 'Wash Club';
 
-	/// uz: 'Kirish uchun ma'lumotlaringizni kiriting'
-	String get subtitle => 'Kirish uchun ma\'lumotlaringizni kiriting';
+	/// uz: 'Enter your details to sign in'
+	String get subtitle => 'Enter your details to sign in';
 
-	/// uz: 'Ismingiz'
-	String get name => 'Ismingiz';
+	/// uz: 'Your name'
+	String get name => 'Your name';
 
-	/// uz: 'Telefon raqam'
-	String get phone => 'Telefon raqam';
+	/// uz: 'Phone number'
+	String get phone => 'Phone number';
 
-	/// uz: 'Kirish'
-	String get button => 'Kirish';
+	/// uz: 'Sign in'
+	String get button => 'Sign in';
 }
 
 // Path: nav
@@ -91,17 +93,17 @@ class TranslationsNavUz {
 
 	// Translations
 
-	/// uz: 'Bosh sahifa'
-	String get home => 'Bosh sahifa';
+	/// uz: 'Home'
+	String get home => 'Home';
 
-	/// uz: 'Bron'
-	String get booking => 'Bron';
+	/// uz: 'Booking'
+	String get booking => 'Booking';
 
-	/// uz: 'Buyurtmalar'
-	String get orders => 'Buyurtmalar';
+	/// uz: 'Orders'
+	String get orders => 'Orders';
 
-	/// uz: 'Profil'
-	String get profile => 'Profil';
+	/// uz: 'Profile'
+	String get profile => 'Profile';
 }
 
 // Path: home
@@ -112,56 +114,128 @@ class TranslationsHomeUz {
 
 	// Translations
 
-	/// uz: 'Xush kelibsiz'
-	String get welcome => 'Xush kelibsiz';
+	/// uz: 'Welcome'
+	String get welcome => 'Welcome';
 
-	/// uz: 'Zabronировать'
-	String get bookButton => 'Zabronировать';
+	/// uz: 'Good morning'
+	String get goodMorning => 'Good morning';
 
-	/// uz: 'Obuna holati'
-	String get subscriptionStatus => 'Obuna holati';
+	/// uz: 'Good afternoon'
+	String get goodAfternoon => 'Good afternoon';
 
-	/// uz: 'Obuna yo'q'
-	String get noSubscription => 'Obuna yo\'q';
+	/// uz: 'Good evening'
+	String get goodEvening => 'Good evening';
 
-	/// uz: 'Obuna rasmiylashtiring — tejang!'
-	String get subscriptionHint => 'Obuna rasmiylashtiring — tejang!';
+	/// uz: 'Book now'
+	String get bookButton => 'Book now';
 
-	/// uz: '⚡ Tarif rejalar'
-	String get plans => '⚡ Tarif rejalar';
+	/// uz: 'Subscription status'
+	String get subscriptionStatus => 'Subscription status';
 
-	/// uz: 'Har oy tejang!'
-	String get subtitle => 'Har oy tejang!';
+	/// uz: 'No subscription'
+	String get noSubscription => 'No subscription';
 
-	/// uz: '3 oy'
-	String get period3Months => '3 oy';
+	/// uz: 'Get a subscription — save more!'
+	String get subscriptionHint => 'Get a subscription — save more!';
 
-	/// uz: '933 000 UZS'
-	String get priceMonthly => '933 000 UZS';
+	/// uz: '⚡ Tariff plans'
+	String get plans => '⚡ Tariff plans';
 
-	/// uz: 'Jami: 2 800 000 UZS'
-	String get total => 'Jami: 2 800 000 UZS';
+	/// uz: 'Save every month!'
+	String get subtitle => 'Save every month!';
 
-	/// uz: 'Eng yaxshi narx'
-	String get bestPrice => 'Eng yaxshi narx';
+	/// uz: '3 months'
+	String get period3Months => '3 months';
 
-	/// uz: '∞ Cheksiz yuvishlar'
-	String get unlimited => '∞ Cheksiz yuvishlar';
+	/// uz: '6 months'
+	String get period6Months => '6 months';
 
-	/// uz: ' / oy'
-	String get perMonth => ' / oy';
+	/// uz: '933,000 UZS'
+	String get priceMonthly => '933,000 UZS';
 
-	/// uz: 'Filiallar'
-	String get branches => 'Filiallar';
+	/// uz: 'Total: 2,800,000 UZS'
+	String get total => 'Total: 2,800,000 UZS';
 
-	/// uz: '${count} ta'
-	String branchesCount({required Object count}) => '${count} ta';
+	/// uz: '∞ Unlimited washes'
+	String get unlimited => '∞ Unlimited washes';
 
-	/// uz: 'Xaritada'
-	String get map => 'Xaritada';
+	/// uz: ' / month'
+	String get perMonth => ' / month';
 
-	/// uz: 'Bu qanday ishlaydi?'
-	String get howItWorks => 'Bu qanday ishlaydi?';
+	/// uz: 'Best price'
+	String get bestPrice => 'Best price';
+
+	/// uz: 'Branches'
+	String get branches => 'Branches';
+
+	/// uz: 'Nearest branches'
+	String get nearestBranches => 'Nearest branches';
+
+	/// uz: '${count} pcs'
+	String branchesCount({required Object count}) => '${count} pcs';
+
+	/// uz: 'On the map'
+	String get map => 'On the map';
+
+	/// uz: 'How it works?'
+	String get howItWorks => 'How it works?';
+
+	/// uz: 'Promotions'
+	String get promotions => 'Promotions';
+
+	/// uz: 'See all'
+	String get seeAll => 'See all';
+
+	/// uz: 'My cars'
+	String get myCars => 'My cars';
+
+	/// uz: 'Add'
+	String get addCar => 'Add';
+
+	/// uz: 'Manage'
+	String get manage => 'Manage';
+
+	/// uz: 'UPCOMING BOOKING'
+	String get nearestBooking => 'UPCOMING BOOKING';
+
+	/// uz: 'now'
+	String get now => 'now';
+
+	/// uz: 'Payment method'
+	String get paymentMethod => 'Payment method';
+
+	/// uz: 'Card'
+	String get card => 'Card';
+
+	/// uz: 'Change'
+	String get change => 'Change';
+
+	/// uz: 'Cancel'
+	String get cancel => 'Cancel';
+
+	/// uz: 'Open'
+	String get open => 'Open';
+
+	/// uz: 'Closed'
+	String get closed => 'Closed';
+
+	/// uz: 'Quick actions'
+	String get quickActions => 'Quick actions';
+
+	/// uz: 'Book'
+	String get book => 'Book';
+
+	/// uz: 'History'
+	String get history => 'History';
+
+	/// uz: 'Help'
+	String get help => 'Help';
+
+	/// uz: 'No bookings'
+	String get noBookings => 'No bookings';
+
+	/// uz: 'Standard'
+	String get standard => 'Standard';
 }
 
 // Path: booking
@@ -172,11 +246,11 @@ class TranslationsBookingUz {
 
 	// Translations
 
-	/// uz: 'Bron qilish vaqtincha to'xtatilgan'
-	String get disabledTitle => 'Bron qilish vaqtincha to\'xtatilgan';
+	/// uz: 'Booking temporarily unavailable'
+	String get disabledTitle => 'Booking temporarily unavailable';
 
-	/// uz: 'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!'
-	String get disabledSubtitle => 'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!';
+	/// uz: 'Booking is not available at the moment. It will be back soon!'
+	String get disabledSubtitle => 'Booking is not available at the moment. It will be back soon!';
 }
 
 // Path: orders
@@ -187,14 +261,14 @@ class TranslationsOrdersUz {
 
 	// Translations
 
-	/// uz: 'Mening buyurtmalarim'
-	String get title => 'Mening buyurtmalarim';
+	/// uz: 'My orders'
+	String get title => 'My orders';
 
-	/// uz: 'Buyurtmalar yo'q'
-	String get empty => 'Buyurtmalar yo\'q';
+	/// uz: 'No orders'
+	String get empty => 'No orders';
 
-	/// uz: 'Zabronированных buyurtmalar yo'q'
-	String get emptySubtitle => 'Zabronированных buyurtmalar yo\'q';
+	/// uz: 'You have no booked orders'
+	String get emptySubtitle => 'You have no booked orders';
 }
 
 // Path: addCar
@@ -205,30 +279,105 @@ class TranslationsAddCarUz {
 
 	// Translations
 
-	/// uz: 'Mashinangizni qo'shing'
-	String get title => 'Mashinangizni qo\'shing';
+	/// uz: 'Add your car'
+	String get title => 'Add your car';
 
-	/// uz: 'Bron qilish uchun kamida bitta mashina kerak'
-	String get subtitle => 'Bron qilish uchun kamida bitta mashina kerak';
+	/// uz: 'At least one car is required to make a booking'
+	String get subtitle => 'At least one car is required to make a booking';
 
-	/// uz: 'Davlat raqami'
-	String get plate => 'Davlat raqami';
+	/// uz: 'License plate'
+	String get plate => 'License plate';
 
 	/// uz: '01A123BC'
 	String get plateHint => '01A123BC';
 
-	/// uz: 'Misol: 01A123BC, 01502GDA, T025004'
-	String get plateExample => 'Misol: 01A123BC, 01502GDA, T025004';
+	/// uz: 'Example: 01A123BC, 01502GDA, T025004'
+	String get plateExample => 'Example: 01A123BC, 01502GDA, T025004';
 
-	/// uz: 'Marka'
-	String get brand => 'Marka';
+	/// uz: 'Brand'
+	String get brand => 'Brand';
 
 	/// uz: 'Model'
 	String get model => 'Model';
 
-	/// uz: 'Kuzov turi'
-	String get bodyType => 'Kuzov turi';
+	/// uz: 'Body type'
+	String get bodyType => 'Body type';
 
-	/// uz: 'Davom etish'
-	String get continueButton => 'Davom etish';
+	/// uz: 'Continue'
+	String get continueButton => 'Continue';
+}
+
+// Path: notification
+class TranslationsNotificationUz {
+	TranslationsNotificationUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Notifications'
+	String get title => 'Notifications';
+
+	/// uz: 'No notifications'
+	String get empty => 'No notifications';
+
+	/// uz: 'New notifications will appear here'
+	String get emptySubtitle => 'New notifications will appear here';
+
+	/// uz: 'Mark all as read'
+	String get markAllRead => 'Mark all as read';
+
+	/// uz: 'Booking'
+	String get booking => 'Booking';
+
+	/// uz: 'Promo'
+	String get promo => 'Promo';
+
+	/// uz: 'System'
+	String get system => 'System';
+}
+
+// Path: profile
+class TranslationsProfileUz {
+	TranslationsProfileUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Profile'
+	String get title => 'Profile';
+
+	/// uz: 'Tariff plans'
+	String get tariffPlans => 'Tariff plans';
+
+	/// uz: 'Save every month!'
+	String get saveMonthly => 'Save every month!';
+
+	/// uz: 'My cars'
+	String get myCars => 'My cars';
+
+	/// uz: 'Add'
+	String get addCar => 'Add';
+
+	/// uz: 'Log out'
+	String get logout => 'Log out';
+
+	/// uz: 'Click/Payme payment — coming soon!'
+	String get paymentSoon => 'Click/Payme payment — coming soon!';
+
+	/// uz: 'Buy'
+	String get buy => 'Buy';
+
+	/// uz: '∞ Unlimited washes'
+	String get unlimited => '∞ Unlimited washes';
+
+	/// uz: 'Best price'
+	String get bestPrice => 'Best price';
+
+	/// uz: '3 months'
+	String get months3 => '3 months';
+
+	/// uz: '6 months'
+	String get months6 => '6 months';
 }

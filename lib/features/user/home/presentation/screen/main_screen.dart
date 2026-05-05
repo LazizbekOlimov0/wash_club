@@ -1,5 +1,5 @@
-import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 
@@ -12,44 +12,32 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = context.t;
 
-    return Scaffold(
-      // ── Body with FadeThroughTransition ───────────────────────
-      body: Stack(
-        children: [
-          PageTransitionSwitcher(
-            transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
-              return FadeThroughTransition(
-                animation: primaryAnimation,
-                secondaryAnimation: secondaryAnimation,
-                fillColor: Colors.transparent,
-                child: child,
-              );
-            },
-            child: Container(
-              key: ValueKey(navigationShell.currentIndex),
-              child: navigationShell,
-            ),
-          ),
-        ],
-      ),
+    // Status bar dark icons → light (dark background uchun)
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.light);
 
-      // ── Bottom Navigation Bar ─────────────────────────────────
+    final items = [
+      {'label': t.nav.home,    'icon': Icons.home_outlined,            'activeIcon': Icons.home},
+      {'label': t.nav.booking, 'icon': Icons.calendar_today_outlined,   'activeIcon': Icons.calendar_today},
+      {'label': t.nav.orders,  'icon': Icons.receipt_long_outlined,     'activeIcon': Icons.receipt_long},
+      {'label': t.nav.profile, 'icon': Icons.person_outline,            'activeIcon': Icons.person},
+    ];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0D0D0D),
+      body: navigationShell,
       bottomNavigationBar: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: const Color(0xFF1A1A2E),
           borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(14),
-            topRight: Radius.circular(14),
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          border: Border.all(
-            color: const Color(0xFFE5E7EB),
-            width: 1,
-          ),
+          border: Border.all(color: const Color(0xFF2A3560), width: 1),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 16,
+              color: Colors.black.withValues(alpha: 0.4),
+              blurRadius: 20,
               offset: const Offset(0, -4),
             ),
           ],
@@ -66,11 +54,14 @@ class MainScreen extends StatelessWidget {
               ),
               child: BottomNavigationBar(
                 currentIndex: navigationShell.currentIndex,
-                onTap: (index) => navigationShell.goBranch(index),
+                onTap: (index) => navigationShell.goBranch(
+                  index,
+                  initialLocation: index == navigationShell.currentIndex,
+                ),
                 backgroundColor: Colors.transparent,
                 elevation: 0,
-                selectedItemColor: const Color(0xFF2B5FAD),
-                unselectedItemColor: const Color(0xFF9EA3AE),
+                selectedItemColor: const Color(0xFF4D9EFF),
+                unselectedItemColor: const Color(0xFF6B7280),
                 selectedLabelStyle: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
@@ -82,35 +73,13 @@ class MainScreen extends StatelessWidget {
                   fontFamily: 'SF Pro Rounded',
                 ),
                 type: BottomNavigationBarType.fixed,
-                items: [
-                  // 0 — Home
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.home, color: Colors.grey),
-                    activeIcon: Icon(Icons.home, color: Colors.blueAccent),
-                    label: t.nav.home,
-                  ),
-
-                  // 1 — Booking
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.calendar_today_outlined, color: Colors.grey),
-                    activeIcon: Icon(Icons.calendar_today_outlined, color: Colors.blueAccent),
-                    label: t.nav.booking,
-                  ),
-
-                  // 2 — Orders
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.receipt_long_outlined, color: Colors.grey),
-                    activeIcon: Icon(Icons.receipt_long_outlined, color: Colors.blueAccent),
-                    label: t.nav.orders,
-                  ),
-
-                  // 3 — Profile
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.person, color: Colors.grey),
-                    activeIcon: Icon(Icons.person, color: Colors.blueAccent),
-                    label: t.nav.profile,
-                  ),
-                ],
+                items: List.generate(items.length, (i) {
+                  return BottomNavigationBarItem(
+                    icon: Icon(items[i]['icon'] as IconData),
+                    activeIcon: Icon(items[i]['activeIcon'] as IconData),
+                    label: items[i]['label'] as String,
+                  );
+                }),
               ),
             ),
             const SizedBox(height: 4),

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wash_club/common/auth/presentation/screen/splash_screen.dart';
+import 'package:wash_club/common/auth/presentation/screen/language_screen.dart';
 import 'package:wash_club/features/user/home/presentation/screen/user_home_screen.dart';
 import 'package:wash_club/features/user/home/presentation/screen/add_car/add_car_screen.dart';
 
-import '../../common/auth/presentation/screen/language_screen.dart';
 import '../../common/auth/presentation/screen/login.dart';
 import '../../features/user/booking/booking_screen.dart';
 import '../../features/user/home/presentation/screen/main_screen.dart';
+import '../../features/user/home/presentation/screen/notification/notification_screen.dart';
 import '../../features/user/orders/orders_screen.dart';
 import '../../features/user/profile/user_profile_screen.dart';
 
@@ -41,6 +42,10 @@ final GoRouter generateRouter = GoRouter(
         final onCarAdded = state.extra as VoidCallback?;
         return AddCarScreen(onCarAdded: onCarAdded);
       },
+    ),
+    GoRoute(
+      path: UserRoutePath.notifications,
+      builder: (context, state) => const NotificationScreen(),
     ),
     StatefulShellRoute.indexedStack(
       parentNavigatorKey: navigatorKey,
@@ -78,12 +83,13 @@ final GoRouter generateRouter = GoRouter(
 );
 
 class UserRoutePath {
-  static const splash   = '/splash';
-  static const language = '/language';
-  static const login    = '/login';
-  static const home     = '/home';
-  static const booking  = '/booking';
-  static const orders   = '/orders';
-  static const profile  = '/profile';
-  static const addCar   = '/add-car';
+  static const splash         = '/splash';
+  static const language       = '/language';
+  static const login          = '/login';
+  static const home           = '/home';
+  static const booking        = '/booking';
+  static const orders         = '/orders';
+  static const profile        = '/profile';
+  static const addCar         = '/add-car';
+  static const notifications  = '/notifications';
 }

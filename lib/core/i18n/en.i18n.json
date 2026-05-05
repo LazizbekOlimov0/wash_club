@@ -1,58 +1,105 @@
 {
   "splash": {
-    "loading": "Loading...",
-    "subtitle": "Washing your car has never been this easy"
+    "loading": "Yuklanmoqda...",
+    "subtitle": "Avtomobilingizni yuvish\nhech qachon bu qadar oson bo'lmagan"
   },
   "login": {
     "title": "Wash Club",
-    "subtitle": "Enter your details to sign in",
-    "name": "Your name",
-    "phone": "Phone number",
-    "button": "Sign in"
+    "subtitle": "Kirish uchun ma'lumotlaringizni kiriting",
+    "name": "Ismingiz",
+    "phone": "Telefon raqam",
+    "button": "Kirish"
   },
   "nav": {
-    "home": "Home",
-    "booking": "Booking",
-    "orders": "Orders",
-    "profile": "Profile"
+    "home": "Bosh sahifa",
+    "booking": "Bron",
+    "orders": "Buyurtmalar",
+    "profile": "Profil"
   },
   "home": {
-    "welcome": "Welcome",
-    "book_button": "Book now",
-    "subscription_status": "Subscription status",
-    "no_subscription": "No subscription",
-    "subscription_hint": "Get a subscription — save more!",
-    "plans": "⚡ тарифные планы",
-    "subtitle": "Save every month!",
-    "period_3_months": "3 months",
-    "price_monthly": "933,000 UZS",
-    "total": "Total: 2,800,000 UZS",
-    "best_price": "Best price",
-    "unlimited": "∞ Unlimited washes",
-    "per_month": " / month",
-    "branches": "Branches",
-    "branches_count": "${count} pcs",
-    "map": "On map",
-    "how_it_works": "How does it work?"
+    "welcome": "Xush kelibsiz",
+    "goodMorning": "Xayrli tong",
+    "goodAfternoon": "Xayrli kun",
+    "goodEvening": "Xayrli kech",
+    "bookButton": "Zabronировать",
+    "subscriptionStatus": "Obuna holati",
+    "noSubscription": "Obuna yo'q",
+    "subscriptionHint": "Obuna rasmiylashtiring — tejang!",
+    "plans": "⚡ Tarif rejalari",
+    "subtitle": "Har oyda tejang!",
+    "period3Months": "3 oy",
+    "period6Months": "6 oy",
+    "priceMonthly": "933 000 UZS",
+    "total": "Jami: 2 800 000 UZS",
+    "unlimited": "∞ Cheksiz yuvishlar",
+    "perMonth": " / oy",
+    "bestPrice": "Eng yaxshi narx",
+    "branches": "Filiallar",
+    "nearestBranches": "Eng yaqin filiallar",
+    "branchesCount": "${count} ta",
+    "map": "Xaritada",
+    "howItWorks": "Qanday ishlaydi?",
+    "promotions": "Aksiyalar",
+    "seeAll": "Hammasi",
+    "myCars": "Mening mashinalarim",
+    "addCar": "Qo'shish",
+    "manage": "Boshqarish",
+    "nearestBooking": "YAQINLASHAYOTGAN BRON",
+    "now": "hozir",
+    "paymentMethod": "To'lov usuli",
+    "card": "Karta",
+    "change": "O'zgartirish",
+    "cancel": "Bekor qilish",
+    "open": "Ochiq",
+    "closed": "Yopiq",
+    "quickActions": "Tezkor amallar",
+    "book": "Yozilish",
+    "history": "Tarix",
+    "help": "Yordam",
+    "noBookings": "Bronlar yo'q",
+    "standard": "Standart"
   },
   "booking": {
-    "disabled_title": "Booking is temporarily unavailable",
-    "disabled_subtitle": "Booking is not available at the moment. It will be back soon!"
+    "disabledTitle": "Bron qilish vaqtincha to'xtatilgan",
+    "disabledSubtitle": "Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!"
   },
   "orders": {
-    "title": "My orders",
-    "empty": "No orders",
-    "empty_subtitle": "You have no booked orders"
+    "title": "Mening buyurtmalarim",
+    "empty": "Buyurtmalar yo'q",
+    "emptySubtitle": "Zabronированных buyurtmalar yo'q"
   },
-  "add_car": {
-    "title": "Add your car",
-    "subtitle": "At least one car is required to make a booking",
-    "plate": "License plate",
-    "plate_hint": "01A123BC",
-    "plate_example": "Example: 01A123BC, 01502GDA, T025004",
-    "brand": "Brand",
+  "addCar": {
+    "title": "Mashinangizni qo'shing",
+    "subtitle": "Bron qilish uchun kamida bitta mashina kerak",
+    "plate": "Davlat raqami",
+    "plateHint": "01A123BC",
+    "plateExample": "Misol: 01A123BC, 01502GDA, T025004",
+    "brand": "Marka",
     "model": "Model",
-    "body_type": "Body type",
-    "continue_button": "Continue"
+    "bodyType": "Kuzov turi",
+    "continueButton": "Davom etish"
+  },
+  "notification": {
+    "title": "Bildirishnomalar",
+    "empty": "Bildirishnomalar yo'q",
+    "emptySubtitle": "Yangi bildirishnomalar bu yerda ko'rsatiladi",
+    "markAllRead": "Hammasini o'qildi deb belgilash",
+    "booking": "Bron",
+    "promo": "Aksiya",
+    "system": "Tizim"
+  },
+  "profile": {
+    "title": "Profil",
+    "tariffPlans": "Tarif rejalari",
+    "saveMonthly": "Har oyda tejang!",
+    "myCars": "Mening mashinalarim",
+    "addCar": "Qo'shish",
+    "logout": "Chiqish",
+    "paymentSoon": "Click/Payme orqali to'lov — tez orada!",
+    "buy": "Sotib olish",
+    "unlimited": "∞ Cheksiz yuvishlar",
+    "bestPrice": "Eng yaxshi narx",
+    "months3": "3 oy",
+    "months6": "6 oy"
   }
 }
