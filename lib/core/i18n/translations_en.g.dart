@@ -51,8 +51,8 @@ class TranslationsSplashEn extends TranslationsSplashUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get loading => 'Yuklanmoqda...';
-	@override String get subtitle => 'Avtomobilingizni yuvish\nhech qachon bu qadar oson bo\'lmagan';
+	@override String get loading => 'Loading...';
+	@override String get subtitle => 'Washing your car\nhas never been this easy';
 }
 
 // Path: login
@@ -63,10 +63,10 @@ class TranslationsLoginEn extends TranslationsLoginUz {
 
 	// Translations
 	@override String get title => 'Wash Club';
-	@override String get subtitle => 'Kirish uchun ma\'lumotlaringizni kiriting';
-	@override String get name => 'Ismingiz';
-	@override String get phone => 'Telefon raqam';
-	@override String get button => 'Kirish';
+	@override String get subtitle => 'Enter your details to sign in';
+	@override String get name => 'Your name';
+	@override String get phone => 'Phone number';
+	@override String get button => 'Sign in';
 }
 
 // Path: nav
@@ -76,10 +76,10 @@ class TranslationsNavEn extends TranslationsNavUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get home => 'Bosh sahifa';
-	@override String get booking => 'Bron';
-	@override String get orders => 'Buyurtmalar';
-	@override String get profile => 'Profil';
+	@override String get home => 'Home';
+	@override String get booking => 'Booking';
+	@override String get orders => 'Orders';
+	@override String get profile => 'Profile';
 }
 
 // Path: home
@@ -89,47 +89,47 @@ class TranslationsHomeEn extends TranslationsHomeUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get welcome => 'Xush kelibsiz';
-	@override String get goodMorning => 'Xayrli tong';
-	@override String get goodAfternoon => 'Xayrli kun';
-	@override String get goodEvening => 'Xayrli kech';
-	@override String get bookButton => 'Zabronировать';
-	@override String get subscriptionStatus => 'Obuna holati';
-	@override String get noSubscription => 'Obuna yo\'q';
-	@override String get subscriptionHint => 'Obuna rasmiylashtiring — tejang!';
-	@override String get plans => '⚡ Tarif rejalari';
-	@override String get subtitle => 'Har oyda tejang!';
-	@override String get period3Months => '3 oy';
-	@override String get period6Months => '6 oy';
-	@override String get priceMonthly => '933 000 UZS';
-	@override String get total => 'Jami: 2 800 000 UZS';
-	@override String get unlimited => '∞ Cheksiz yuvishlar';
-	@override String get perMonth => ' / oy';
-	@override String get bestPrice => 'Eng yaxshi narx';
-	@override String get branches => 'Filiallar';
-	@override String get nearestBranches => 'Eng yaqin filiallar';
-	@override String branchesCount({required Object count}) => '${count} ta';
-	@override String get map => 'Xaritada';
-	@override String get howItWorks => 'Qanday ishlaydi?';
-	@override String get promotions => 'Aksiyalar';
-	@override String get seeAll => 'Hammasi';
-	@override String get myCars => 'Mening mashinalarim';
-	@override String get addCar => 'Qo\'shish';
-	@override String get manage => 'Boshqarish';
-	@override String get nearestBooking => 'YAQINLASHAYOTGAN BRON';
-	@override String get now => 'hozir';
-	@override String get paymentMethod => 'To\'lov usuli';
-	@override String get card => 'Karta';
-	@override String get change => 'O\'zgartirish';
-	@override String get cancel => 'Bekor qilish';
-	@override String get open => 'Ochiq';
-	@override String get closed => 'Yopiq';
-	@override String get quickActions => 'Tezkor amallar';
-	@override String get book => 'Yozilish';
-	@override String get history => 'Tarix';
-	@override String get help => 'Yordam';
-	@override String get noBookings => 'Bronlar yo\'q';
-	@override String get standard => 'Standart';
+	@override String get welcome => 'Welcome';
+	@override String get goodMorning => 'Good morning';
+	@override String get goodAfternoon => 'Good afternoon';
+	@override String get goodEvening => 'Good evening';
+	@override String get bookButton => 'Book now';
+	@override String get subscriptionStatus => 'Subscription status';
+	@override String get noSubscription => 'No subscription';
+	@override String get subscriptionHint => 'Get a subscription — save more!';
+	@override String get plans => '⚡ Tariff plans';
+	@override String get subtitle => 'Save every month!';
+	@override String get period3Months => '3 months';
+	@override String get period6Months => '6 months';
+	@override String get priceMonthly => '933,000 UZS';
+	@override String get total => 'Total: 2,800,000 UZS';
+	@override String get unlimited => '∞ Unlimited washes';
+	@override String get perMonth => ' / month';
+	@override String get bestPrice => 'Best price';
+	@override String get branches => 'Branches';
+	@override String get nearestBranches => 'Nearest branches';
+	@override String branchesCount({required Object count}) => '${count} pcs';
+	@override String get map => 'On the map';
+	@override String get howItWorks => 'How it works?';
+	@override String get promotions => 'Promotions';
+	@override String get seeAll => 'See all';
+	@override String get myCars => 'My cars';
+	@override String get addCar => 'Add';
+	@override String get manage => 'Manage';
+	@override String get nearestBooking => 'UPCOMING BOOKING';
+	@override String get now => 'now';
+	@override String get paymentMethod => 'Payment method';
+	@override String get card => 'Card';
+	@override String get change => 'Change';
+	@override String get cancel => 'Cancel';
+	@override String get open => 'Open';
+	@override String get closed => 'Closed';
+	@override String get quickActions => 'Quick actions';
+	@override String get book => 'Book';
+	@override String get history => 'History';
+	@override String get help => 'Help';
+	@override String get noBookings => 'No bookings';
+	@override String get standard => 'Standard';
 }
 
 // Path: booking
@@ -139,8 +139,8 @@ class TranslationsBookingEn extends TranslationsBookingUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get disabledTitle => 'Bron qilish vaqtincha to\'xtatilgan';
-	@override String get disabledSubtitle => 'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!';
+	@override String get disabledTitle => 'Booking temporarily unavailable';
+	@override String get disabledSubtitle => 'Booking is not available at the moment. It will be back soon!';
 }
 
 // Path: orders
@@ -150,9 +150,9 @@ class TranslationsOrdersEn extends TranslationsOrdersUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Mening buyurtmalarim';
-	@override String get empty => 'Buyurtmalar yo\'q';
-	@override String get emptySubtitle => 'Zabronированных buyurtmalar yo\'q';
+	@override String get title => 'My orders';
+	@override String get empty => 'No orders';
+	@override String get emptySubtitle => 'You have no booked orders';
 }
 
 // Path: addCar
@@ -162,15 +162,15 @@ class TranslationsAddCarEn extends TranslationsAddCarUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Mashinangizni qo\'shing';
-	@override String get subtitle => 'Bron qilish uchun kamida bitta mashina kerak';
-	@override String get plate => 'Davlat raqami';
+	@override String get title => 'Add your car';
+	@override String get subtitle => 'At least one car is required to make a booking';
+	@override String get plate => 'License plate';
 	@override String get plateHint => '01A123BC';
-	@override String get plateExample => 'Misol: 01A123BC, 01502GDA, T025004';
-	@override String get brand => 'Marka';
+	@override String get plateExample => 'Example: 01A123BC, 01502GDA, T025004';
+	@override String get brand => 'Brand';
 	@override String get model => 'Model';
-	@override String get bodyType => 'Kuzov turi';
-	@override String get continueButton => 'Davom etish';
+	@override String get bodyType => 'Body type';
+	@override String get continueButton => 'Continue';
 }
 
 // Path: notification
@@ -180,13 +180,13 @@ class TranslationsNotificationEn extends TranslationsNotificationUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Bildirishnomalar';
-	@override String get empty => 'Bildirishnomalar yo\'q';
-	@override String get emptySubtitle => 'Yangi bildirishnomalar bu yerda ko\'rsatiladi';
-	@override String get markAllRead => 'Hammasini o\'qildi deb belgilash';
-	@override String get booking => 'Bron';
-	@override String get promo => 'Aksiya';
-	@override String get system => 'Tizim';
+	@override String get title => 'Notifications';
+	@override String get empty => 'No notifications';
+	@override String get emptySubtitle => 'New notifications will appear here';
+	@override String get markAllRead => 'Mark all as read';
+	@override String get booking => 'Booking';
+	@override String get promo => 'Promo';
+	@override String get system => 'System';
 }
 
 // Path: profile
@@ -196,16 +196,16 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
-	@override String get title => 'Profil';
-	@override String get tariffPlans => 'Tarif rejalari';
-	@override String get saveMonthly => 'Har oyda tejang!';
-	@override String get myCars => 'Mening mashinalarim';
-	@override String get addCar => 'Qo\'shish';
-	@override String get logout => 'Chiqish';
-	@override String get paymentSoon => 'Click/Payme orqali to\'lov — tez orada!';
-	@override String get buy => 'Sotib olish';
-	@override String get unlimited => '∞ Cheksiz yuvishlar';
-	@override String get bestPrice => 'Eng yaxshi narx';
-	@override String get months3 => '3 oy';
-	@override String get months6 => '6 oy';
+	@override String get title => 'Profile';
+	@override String get tariffPlans => 'Tariff plans';
+	@override String get saveMonthly => 'Save every month!';
+	@override String get myCars => 'My cars';
+	@override String get addCar => 'Add';
+	@override String get logout => 'Log out';
+	@override String get paymentSoon => 'Click/Payme payment — coming soon!';
+	@override String get buy => 'Buy';
+	@override String get unlimited => '∞ Unlimited washes';
+	@override String get bestPrice => 'Best price';
+	@override String get months3 => '3 months';
+	@override String get months6 => '6 months';
 }

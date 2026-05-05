@@ -54,11 +54,11 @@ class TranslationsSplashUz {
 
 	// Translations
 
-	/// uz: 'Loading...'
-	String get loading => 'Loading...';
+	/// uz: 'Yuklanmoqda...'
+	String get loading => 'Yuklanmoqda...';
 
-	/// uz: 'Washing your car has never been this easy'
-	String get subtitle => 'Washing your car\nhas never been this easy';
+	/// uz: 'Avtomobilingizni yuvish hech qachon bu qadar oson bo'lmagan'
+	String get subtitle => 'Avtomobilingizni yuvish\nhech qachon bu qadar oson bo\'lmagan';
 }
 
 // Path: login
@@ -72,17 +72,17 @@ class TranslationsLoginUz {
 	/// uz: 'Wash Club'
 	String get title => 'Wash Club';
 
-	/// uz: 'Enter your details to sign in'
-	String get subtitle => 'Enter your details to sign in';
+	/// uz: 'Kirish uchun ma'lumotlaringizni kiriting'
+	String get subtitle => 'Kirish uchun ma\'lumotlaringizni kiriting';
 
-	/// uz: 'Your name'
-	String get name => 'Your name';
+	/// uz: 'Ismingiz'
+	String get name => 'Ismingiz';
 
-	/// uz: 'Phone number'
-	String get phone => 'Phone number';
+	/// uz: 'Telefon raqam'
+	String get phone => 'Telefon raqam';
 
-	/// uz: 'Sign in'
-	String get button => 'Sign in';
+	/// uz: 'Kirish'
+	String get button => 'Kirish';
 }
 
 // Path: nav
@@ -93,17 +93,17 @@ class TranslationsNavUz {
 
 	// Translations
 
-	/// uz: 'Home'
-	String get home => 'Home';
+	/// uz: 'Bosh sahifa'
+	String get home => 'Bosh sahifa';
 
-	/// uz: 'Booking'
-	String get booking => 'Booking';
+	/// uz: 'Bron'
+	String get booking => 'Bron';
 
-	/// uz: 'Orders'
-	String get orders => 'Orders';
+	/// uz: 'Buyurtmalar'
+	String get orders => 'Buyurtmalar';
 
-	/// uz: 'Profile'
-	String get profile => 'Profile';
+	/// uz: 'Profil'
+	String get profile => 'Profil';
 }
 
 // Path: home
@@ -114,128 +114,128 @@ class TranslationsHomeUz {
 
 	// Translations
 
-	/// uz: 'Welcome'
-	String get welcome => 'Welcome';
+	/// uz: 'Xush kelibsiz'
+	String get welcome => 'Xush kelibsiz';
 
-	/// uz: 'Good morning'
-	String get goodMorning => 'Good morning';
+	/// uz: 'Xayrli tong'
+	String get goodMorning => 'Xayrli tong';
 
-	/// uz: 'Good afternoon'
-	String get goodAfternoon => 'Good afternoon';
+	/// uz: 'Xayrli kun'
+	String get goodAfternoon => 'Xayrli kun';
 
-	/// uz: 'Good evening'
-	String get goodEvening => 'Good evening';
+	/// uz: 'Xayrli kech'
+	String get goodEvening => 'Xayrli kech';
 
-	/// uz: 'Book now'
-	String get bookButton => 'Book now';
+	/// uz: 'Zabronировать'
+	String get bookButton => 'Zabronировать';
 
-	/// uz: 'Subscription status'
-	String get subscriptionStatus => 'Subscription status';
+	/// uz: 'Obuna holati'
+	String get subscriptionStatus => 'Obuna holati';
 
-	/// uz: 'No subscription'
-	String get noSubscription => 'No subscription';
+	/// uz: 'Obuna yo'q'
+	String get noSubscription => 'Obuna yo\'q';
 
-	/// uz: 'Get a subscription — save more!'
-	String get subscriptionHint => 'Get a subscription — save more!';
+	/// uz: 'Obuna rasmiylashtiring — tejang!'
+	String get subscriptionHint => 'Obuna rasmiylashtiring — tejang!';
 
-	/// uz: '⚡ Tariff plans'
-	String get plans => '⚡ Tariff plans';
+	/// uz: '⚡ Tarif rejalari'
+	String get plans => '⚡ Tarif rejalari';
 
-	/// uz: 'Save every month!'
-	String get subtitle => 'Save every month!';
+	/// uz: 'Har oyda tejang!'
+	String get subtitle => 'Har oyda tejang!';
 
-	/// uz: '3 months'
-	String get period3Months => '3 months';
+	/// uz: '3 oy'
+	String get period3Months => '3 oy';
 
-	/// uz: '6 months'
-	String get period6Months => '6 months';
+	/// uz: '6 oy'
+	String get period6Months => '6 oy';
 
-	/// uz: '933,000 UZS'
-	String get priceMonthly => '933,000 UZS';
+	/// uz: '933 000 UZS'
+	String get priceMonthly => '933 000 UZS';
 
-	/// uz: 'Total: 2,800,000 UZS'
-	String get total => 'Total: 2,800,000 UZS';
+	/// uz: 'Jami: 2 800 000 UZS'
+	String get total => 'Jami: 2 800 000 UZS';
 
-	/// uz: '∞ Unlimited washes'
-	String get unlimited => '∞ Unlimited washes';
+	/// uz: '∞ Cheksiz yuvishlar'
+	String get unlimited => '∞ Cheksiz yuvishlar';
 
-	/// uz: ' / month'
-	String get perMonth => ' / month';
+	/// uz: ' / oy'
+	String get perMonth => ' / oy';
 
-	/// uz: 'Best price'
-	String get bestPrice => 'Best price';
+	/// uz: 'Eng yaxshi narx'
+	String get bestPrice => 'Eng yaxshi narx';
 
-	/// uz: 'Branches'
-	String get branches => 'Branches';
+	/// uz: 'Filiallar'
+	String get branches => 'Filiallar';
 
-	/// uz: 'Nearest branches'
-	String get nearestBranches => 'Nearest branches';
+	/// uz: 'Eng yaqin filiallar'
+	String get nearestBranches => 'Eng yaqin filiallar';
 
-	/// uz: '${count} pcs'
-	String branchesCount({required Object count}) => '${count} pcs';
+	/// uz: '${count} ta'
+	String branchesCount({required Object count}) => '${count} ta';
 
-	/// uz: 'On the map'
-	String get map => 'On the map';
+	/// uz: 'Xaritada'
+	String get map => 'Xaritada';
 
-	/// uz: 'How it works?'
-	String get howItWorks => 'How it works?';
+	/// uz: 'Qanday ishlaydi?'
+	String get howItWorks => 'Qanday ishlaydi?';
 
-	/// uz: 'Promotions'
-	String get promotions => 'Promotions';
+	/// uz: 'Aksiyalar'
+	String get promotions => 'Aksiyalar';
 
-	/// uz: 'See all'
-	String get seeAll => 'See all';
+	/// uz: 'Hammasi'
+	String get seeAll => 'Hammasi';
 
-	/// uz: 'My cars'
-	String get myCars => 'My cars';
+	/// uz: 'Mening mashinalarim'
+	String get myCars => 'Mening mashinalarim';
 
-	/// uz: 'Add'
-	String get addCar => 'Add';
+	/// uz: 'Qo'shish'
+	String get addCar => 'Qo\'shish';
 
-	/// uz: 'Manage'
-	String get manage => 'Manage';
+	/// uz: 'Boshqarish'
+	String get manage => 'Boshqarish';
 
-	/// uz: 'UPCOMING BOOKING'
-	String get nearestBooking => 'UPCOMING BOOKING';
+	/// uz: 'YAQINLASHAYOTGAN BRON'
+	String get nearestBooking => 'YAQINLASHAYOTGAN BRON';
 
-	/// uz: 'now'
-	String get now => 'now';
+	/// uz: 'hozir'
+	String get now => 'hozir';
 
-	/// uz: 'Payment method'
-	String get paymentMethod => 'Payment method';
+	/// uz: 'To'lov usuli'
+	String get paymentMethod => 'To\'lov usuli';
 
-	/// uz: 'Card'
-	String get card => 'Card';
+	/// uz: 'Karta'
+	String get card => 'Karta';
 
-	/// uz: 'Change'
-	String get change => 'Change';
+	/// uz: 'O'zgartirish'
+	String get change => 'O\'zgartirish';
 
-	/// uz: 'Cancel'
-	String get cancel => 'Cancel';
+	/// uz: 'Bekor qilish'
+	String get cancel => 'Bekor qilish';
 
-	/// uz: 'Open'
-	String get open => 'Open';
+	/// uz: 'Ochiq'
+	String get open => 'Ochiq';
 
-	/// uz: 'Closed'
-	String get closed => 'Closed';
+	/// uz: 'Yopiq'
+	String get closed => 'Yopiq';
 
-	/// uz: 'Quick actions'
-	String get quickActions => 'Quick actions';
+	/// uz: 'Tezkor amallar'
+	String get quickActions => 'Tezkor amallar';
 
-	/// uz: 'Book'
-	String get book => 'Book';
+	/// uz: 'Yozilish'
+	String get book => 'Yozilish';
 
-	/// uz: 'History'
-	String get history => 'History';
+	/// uz: 'Tarix'
+	String get history => 'Tarix';
 
-	/// uz: 'Help'
-	String get help => 'Help';
+	/// uz: 'Yordam'
+	String get help => 'Yordam';
 
-	/// uz: 'No bookings'
-	String get noBookings => 'No bookings';
+	/// uz: 'Bronlar yo'q'
+	String get noBookings => 'Bronlar yo\'q';
 
-	/// uz: 'Standard'
-	String get standard => 'Standard';
+	/// uz: 'Standart'
+	String get standard => 'Standart';
 }
 
 // Path: booking
@@ -246,11 +246,11 @@ class TranslationsBookingUz {
 
 	// Translations
 
-	/// uz: 'Booking temporarily unavailable'
-	String get disabledTitle => 'Booking temporarily unavailable';
+	/// uz: 'Bron qilish vaqtincha to'xtatilgan'
+	String get disabledTitle => 'Bron qilish vaqtincha to\'xtatilgan';
 
-	/// uz: 'Booking is not available at the moment. It will be back soon!'
-	String get disabledSubtitle => 'Booking is not available at the moment. It will be back soon!';
+	/// uz: 'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!'
+	String get disabledSubtitle => 'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!';
 }
 
 // Path: orders
@@ -261,14 +261,14 @@ class TranslationsOrdersUz {
 
 	// Translations
 
-	/// uz: 'My orders'
-	String get title => 'My orders';
+	/// uz: 'Mening buyurtmalarim'
+	String get title => 'Mening buyurtmalarim';
 
-	/// uz: 'No orders'
-	String get empty => 'No orders';
+	/// uz: 'Buyurtmalar yo'q'
+	String get empty => 'Buyurtmalar yo\'q';
 
-	/// uz: 'You have no booked orders'
-	String get emptySubtitle => 'You have no booked orders';
+	/// uz: 'Zabronированных buyurtmalar yo'q'
+	String get emptySubtitle => 'Zabronированных buyurtmalar yo\'q';
 }
 
 // Path: addCar
@@ -279,32 +279,32 @@ class TranslationsAddCarUz {
 
 	// Translations
 
-	/// uz: 'Add your car'
-	String get title => 'Add your car';
+	/// uz: 'Mashinangizni qo'shing'
+	String get title => 'Mashinangizni qo\'shing';
 
-	/// uz: 'At least one car is required to make a booking'
-	String get subtitle => 'At least one car is required to make a booking';
+	/// uz: 'Bron qilish uchun kamida bitta mashina kerak'
+	String get subtitle => 'Bron qilish uchun kamida bitta mashina kerak';
 
-	/// uz: 'License plate'
-	String get plate => 'License plate';
+	/// uz: 'Davlat raqami'
+	String get plate => 'Davlat raqami';
 
 	/// uz: '01A123BC'
 	String get plateHint => '01A123BC';
 
-	/// uz: 'Example: 01A123BC, 01502GDA, T025004'
-	String get plateExample => 'Example: 01A123BC, 01502GDA, T025004';
+	/// uz: 'Misol: 01A123BC, 01502GDA, T025004'
+	String get plateExample => 'Misol: 01A123BC, 01502GDA, T025004';
 
-	/// uz: 'Brand'
-	String get brand => 'Brand';
+	/// uz: 'Marka'
+	String get brand => 'Marka';
 
 	/// uz: 'Model'
 	String get model => 'Model';
 
-	/// uz: 'Body type'
-	String get bodyType => 'Body type';
+	/// uz: 'Kuzov turi'
+	String get bodyType => 'Kuzov turi';
 
-	/// uz: 'Continue'
-	String get continueButton => 'Continue';
+	/// uz: 'Davom etish'
+	String get continueButton => 'Davom etish';
 }
 
 // Path: notification
@@ -315,26 +315,26 @@ class TranslationsNotificationUz {
 
 	// Translations
 
-	/// uz: 'Notifications'
-	String get title => 'Notifications';
+	/// uz: 'Bildirishnomalar'
+	String get title => 'Bildirishnomalar';
 
-	/// uz: 'No notifications'
-	String get empty => 'No notifications';
+	/// uz: 'Bildirishnomalar yo'q'
+	String get empty => 'Bildirishnomalar yo\'q';
 
-	/// uz: 'New notifications will appear here'
-	String get emptySubtitle => 'New notifications will appear here';
+	/// uz: 'Yangi bildirishnomalar bu yerda ko'rsatiladi'
+	String get emptySubtitle => 'Yangi bildirishnomalar bu yerda ko\'rsatiladi';
 
-	/// uz: 'Mark all as read'
-	String get markAllRead => 'Mark all as read';
+	/// uz: 'Hammasini o'qildi deb belgilash'
+	String get markAllRead => 'Hammasini o\'qildi deb belgilash';
 
-	/// uz: 'Booking'
-	String get booking => 'Booking';
+	/// uz: 'Bron'
+	String get booking => 'Bron';
 
-	/// uz: 'Promo'
-	String get promo => 'Promo';
+	/// uz: 'Aksiya'
+	String get promo => 'Aksiya';
 
-	/// uz: 'System'
-	String get system => 'System';
+	/// uz: 'Tizim'
+	String get system => 'Tizim';
 }
 
 // Path: profile
@@ -345,39 +345,39 @@ class TranslationsProfileUz {
 
 	// Translations
 
-	/// uz: 'Profile'
-	String get title => 'Profile';
+	/// uz: 'Profil'
+	String get title => 'Profil';
 
-	/// uz: 'Tariff plans'
-	String get tariffPlans => 'Tariff plans';
+	/// uz: 'Tarif rejalari'
+	String get tariffPlans => 'Tarif rejalari';
 
-	/// uz: 'Save every month!'
-	String get saveMonthly => 'Save every month!';
+	/// uz: 'Har oyda tejang!'
+	String get saveMonthly => 'Har oyda tejang!';
 
-	/// uz: 'My cars'
-	String get myCars => 'My cars';
+	/// uz: 'Mening mashinalarim'
+	String get myCars => 'Mening mashinalarim';
 
-	/// uz: 'Add'
-	String get addCar => 'Add';
+	/// uz: 'Qo'shish'
+	String get addCar => 'Qo\'shish';
 
-	/// uz: 'Log out'
-	String get logout => 'Log out';
+	/// uz: 'Chiqish'
+	String get logout => 'Chiqish';
 
-	/// uz: 'Click/Payme payment — coming soon!'
-	String get paymentSoon => 'Click/Payme payment — coming soon!';
+	/// uz: 'Click/Payme orqali to'lov — tez orada!'
+	String get paymentSoon => 'Click/Payme orqali to\'lov — tez orada!';
 
-	/// uz: 'Buy'
-	String get buy => 'Buy';
+	/// uz: 'Sotib olish'
+	String get buy => 'Sotib olish';
 
-	/// uz: '∞ Unlimited washes'
-	String get unlimited => '∞ Unlimited washes';
+	/// uz: '∞ Cheksiz yuvishlar'
+	String get unlimited => '∞ Cheksiz yuvishlar';
 
-	/// uz: 'Best price'
-	String get bestPrice => 'Best price';
+	/// uz: 'Eng yaxshi narx'
+	String get bestPrice => 'Eng yaxshi narx';
 
-	/// uz: '3 months'
-	String get months3 => '3 months';
+	/// uz: '3 oy'
+	String get months3 => '3 oy';
 
-	/// uz: '6 months'
-	String get months6 => '6 months';
+	/// uz: '6 oy'
+	String get months6 => '6 oy';
 }
