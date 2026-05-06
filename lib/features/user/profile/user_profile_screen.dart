@@ -1,61 +1,128 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:wash_club/config/router/router.dart';
+import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
+  // Mock data
+  static const String _userName = 'Bobur';
+  static const String _userPhone = '+998 97 520 40 60';
+  static const int _washCount = 2;
+  static const int _savedAmount = 18000;
+  static const String _level = 'Bronze';
+
   @override
   Widget build(BuildContext context) {
+    final t = context.t;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 20),
-            _buildTariffSection(),
-            const SizedBox(height: 8),
-            const Center(
-              child: Text(
-                'Оплата Click/Payment — скоро!',
-                style: TextStyle(fontSize: 13, color: Color(0xFF9EA3AE)),
+      backgroundColor: const Color(0xFF0D0D0D),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0D0D0D),
+        elevation: 0,
+        title: Text(
+          t.profile.title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () => context.push(UserRoutePath.settings),
+            icon: const Icon(Icons.more_horiz, color: Colors.white, size: 24),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: EdgeInsets.zero,
+        physics: const ClampingScrollPhysics(),
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 16),
+          _buildStatsRow(),
+          const SizedBox(height: 12),
+          _buildSubscriptionBanner(),
+          const SizedBox(height: 24),
+          _buildSectionLabel('МОИ МАШИНЫ'),
+          _buildMyCars(context),
+          const SizedBox(height: 24),
+          // Go to settings hint
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: GestureDetector(
+              onTap: () => context.push(UserRoutePath.settings),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C2340),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF2A3560), width: 1),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.settings_outlined,
+                      color: Color(0xFF9CA3AF),
+                      size: 20,
+                    ),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Настройки',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Color(0xFF4B5563),
+                      size: 18,
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 20),
-            _buildMyCars(),
-            const SizedBox(height: 20),
-            _buildLogoutButton(),
-            const SizedBox(height: 32),
-          ],
-        ),
+          ),
+          const SizedBox(height: 32),
+          Center(
+            child: Text(
+              'Wash Club · v1.0.0',
+              style: const TextStyle(color: Color(0xFF4B5563), fontSize: 12),
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 56, 20, 28),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1A1A2E), Color(0xFF2B3A6B), Color(0xFF3B2D6B)],
-        ),
-      ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       child: Row(
         children: [
           Container(
             width: 64,
             height: 64,
             decoration: const BoxDecoration(
-              color: Color(0xFF4A5280),
+              color: Color(0xFF2B5FAD),
               shape: BoxShape.circle,
             ),
-            child: const Center(
+            child: Center(
               child: Text(
-                'L',
-                style: TextStyle(
+                _userName[0].toUpperCase(),
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
@@ -64,226 +131,173 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Jon Doe',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                '+998991048024',
-                style: TextStyle(color: Color(0xAAFFFFFF), fontSize: 14),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTariffSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Text('💳', style: TextStyle(fontSize: 20)),
-              SizedBox(width: 8),
-              Text(
-                'Тарифные планы',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A2E),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _tariffCard(
-            icon: '🪃',
-            title: '3 месяца',
-            price: '933 000 UZS',
-            total: 'Итого: 2 800 000 UZS',
-            bgColor: const Color(0xFF2B5FAD),
-            textColor: Colors.white,
-            subTextColor: const Color(0xCCFFFFFF),
-            isBest: false,
-          ),
-          const SizedBox(height: 14),
-          _tariffCard(
-            icon: '🎉',
-            title: '6 месяцев',
-            price: '799 000 UZS',
-            total: 'Итого: 4 794 000 UZS',
-            bgColor: const Color(0xFFFFB800),
-            textColor: const Color(0xFF1A1A2E),
-            subTextColor: const Color(0xFF7A5C00),
-            isBest: true,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _tariffCard({
-    required String icon,
-    required String title,
-    required String price,
-    required String total,
-    required Color bgColor,
-    required Color textColor,
-    required Color subTextColor,
-    required bool isBest,
-  }) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '$icon  $title',
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '∞ Безлимитные мойки',
-                      style: TextStyle(color: subTextColor, fontSize: 13),
-                    ),
-                    const SizedBox(height: 8),
-                    RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: price,
-                            style: TextStyle(
-                              color: textColor,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          TextSpan(
-                            text: ' / мес',
-                            style: TextStyle(
-                                color: subTextColor, fontSize: 13),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      total,
-                      style: TextStyle(color: subTextColor, fontSize: 13),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF1A1A2E),
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 18, vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _userName,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                child: const Text(
-                  'Купить',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 14),
+                SizedBox(height: 4),
+                Text(
+                  _userPhone,
+                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
                 ),
-              ),
-            ],
-          ),
-        ),
-        if (isBest)
-          Positioned(
-            top: -12,
-            right: 12,
-            child: Container(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFB800),
-                border: Border.all(color: Colors.white, width: 1.5),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Text(
-                'Лучшая цена',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+              ],
             ),
           ),
-      ],
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C2340),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF2A3560), width: 1),
+            ),
+            child: const Icon(
+              Icons.edit_outlined,
+              color: Color(0xFF9CA3AF),
+              size: 18,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildMyCars() {
+  Widget _buildStatsRow() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C2340),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF2A3560), width: 1),
+        ),
+        child: Row(
+          children: [
+            _statItem('$_washCount', 'МОЕК'),
+            _statDivider(),
+            _statItem('$_savedAmount', 'СЭКОНОМЛЕНО'),
+            _statDivider(),
+            _statItem(_level, 'УРОВЕНЬ', valueColor: const Color(0xFF4D9EFF)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _statItem(String value, String label, {Color? valueColor}) {
+    return Expanded(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Row(
+          Text(
+            value,
+            style: TextStyle(
+              color: valueColor ?? Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(color: Color(0xFF6B7280), fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statDivider() {
+    return Container(width: 1, height: 32, color: const Color(0xFF2A3560));
+  }
+
+  Widget _buildSubscriptionBanner() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C2340),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF2A3560), width: 1),
+        ),
+        child: const Row(
+          children: [
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: Center(child: Text('👑', style: TextStyle(fontSize: 22))),
+            ),
+            SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('🚗', style: TextStyle(fontSize: 20)),
-                  SizedBox(width: 8),
                   Text(
-                    'Мои машины',
+                    'Подписка не активна',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A2E),
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
                     ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'Экономьте до 70% с Wash Club',
+                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
                   ),
                 ],
               ),
+            ),
+            Icon(Icons.chevron_right, color: Color(0xFF6B7280), size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionLabel(String label) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: Color(0xFF6B7280),
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.8,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMyCars(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
               GestureDetector(
-                onTap: () {},
+                onTap: () => context.push(UserRoutePath.addCar),
                 child: const Row(
                   children: [
-                    Icon(Icons.add, color: Color(0xFF2B5FAD), size: 18),
-                    SizedBox(width: 2),
+                    Icon(Icons.add, color: Color(0xFF4D9EFF), size: 16),
+                    SizedBox(width: 4),
                     Text(
                       'Добавить',
                       style: TextStyle(
-                        color: Color(0xFF2B5FAD),
-                        fontSize: 14,
+                        color: Color(0xFF4D9EFF),
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -292,13 +306,13 @@ class ProfileScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Container(
-            padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF1C2340),
               borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFF2A3560), width: 1),
             ),
             child: Row(
               children: [
@@ -306,13 +320,13 @@ class ProfileScreen extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF0F0F0),
+                    color: const Color(0xFF2A3560),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
                     Icons.directions_car_outlined,
-                    color: Color(0xFF9EA3AE),
-                    size: 24,
+                    color: Color(0xFF4D9EFF),
+                    size: 22,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -321,18 +335,20 @@ class ProfileScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'BNW 2008',
+                        'Chevrolet Malibu',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                          color: Color(0xFF1A1A2E),
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       SizedBox(height: 2),
                       Text(
-                        '01A001AA',
+                        '01 U 571 QA · Qora',
                         style: TextStyle(
-                            fontSize: 13, color: Color(0xFF9EA3AE)),
+                          color: Color(0xFF9CA3AF),
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -341,49 +357,14 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () {},
                   icon: const Icon(
                     Icons.delete_outline,
-                    color: Color(0xFF9EA3AE),
-                    size: 22,
+                    color: Color(0xFF6B7280),
+                    size: 20,
                   ),
                 ),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildLogoutButton() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: SizedBox(
-        width: double.infinity,
-        height: 54,
-        child: OutlinedButton(
-          onPressed: () {},
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFFE53935),
-            side: const BorderSide(color: Color(0xFFFFCDD2), width: 1.5),
-            backgroundColor: const Color(0xFFFFF5F5),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.logout, size: 20),
-              SizedBox(width: 8),
-              Text(
-                'Выйти',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

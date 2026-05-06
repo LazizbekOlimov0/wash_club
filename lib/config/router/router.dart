@@ -10,6 +10,7 @@ import '../../features/user/booking/booking_screen.dart';
 import '../../features/user/home/presentation/screen/main_screen.dart';
 import '../../features/user/home/presentation/screen/notification/notification_screen.dart';
 import '../../features/user/orders/orders_screen.dart';
+import '../../features/user/profile/settings_screen.dart';
 import '../../features/user/profile/user_profile_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -19,9 +20,8 @@ final GoRouter generateRouter = GoRouter(
   navigatorKey: navigatorKey,
   debugLogDiagnostics: true,
 
-  errorBuilder: (context, state) => const Scaffold(
-    body: Center(child: Text('Sahifa topilmadi')),
-  ),
+  errorBuilder: (context, state) =>
+      const Scaffold(body: Center(child: Text('Page not found'))),
 
   routes: [
     GoRoute(
@@ -47,49 +47,62 @@ final GoRouter generateRouter = GoRouter(
       path: UserRoutePath.notifications,
       builder: (context, state) => const NotificationScreen(),
     ),
+    GoRoute(
+      path: UserRoutePath.settings,
+      builder: (context, state) => const SettingsScreen(),
+    ),
     StatefulShellRoute.indexedStack(
       parentNavigatorKey: navigatorKey,
       restorationScopeId: 'main-shell',
       builder: (context, state, navigationShell) =>
           MainScreen(navigationShell: navigationShell),
       branches: [
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: UserRoutePath.home,
-            builder: (context, state) => const UserHomeScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: UserRoutePath.booking,
-            builder: (context, state) => const BookingScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: UserRoutePath.orders,
-            builder: (context, state) => const OrdersScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: UserRoutePath.profile,
-            builder: (context, state) => const ProfileScreen(),
-          ),
-        ]),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: UserRoutePath.home,
+              builder: (context, state) => const UserHomeScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: UserRoutePath.booking,
+              builder: (context, state) => const BookingScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: UserRoutePath.orders,
+              builder: (context, state) => const OrdersScreen(),
+            ),
+          ],
+        ),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(
+              path: UserRoutePath.profile,
+              builder: (context, state) => const ProfileScreen(),
+            ),
+          ],
+        ),
       ],
     ),
   ],
 );
 
 class UserRoutePath {
-  static const splash         = '/splash';
-  static const language       = '/language';
-  static const login          = '/login';
-  static const home           = '/home';
-  static const booking        = '/booking';
-  static const orders         = '/orders';
-  static const profile        = '/profile';
-  static const addCar         = '/add-car';
-  static const notifications  = '/notifications';
+  static const splash = '/splash';
+  static const language = '/language';
+  static const login = '/login';
+  static const home = '/home';
+  static const booking = '/booking';
+  static const orders = '/orders';
+  static const profile = '/profile';
+  static const addCar = '/add-car';
+  static const notifications = '/notifications';
+  static const settings = '/settings';
 }
