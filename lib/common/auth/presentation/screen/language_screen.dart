@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slang_flutter/slang_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
-import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
-
-import '../../../../core/i18n/translations.g.dart';
 
 class LanguageScreen extends StatefulWidget {
   const LanguageScreen({super.key});
@@ -57,246 +54,319 @@ class _LanguageScreenState extends State<LanguageScreen>
     context.go(UserRoutePath.login);
   }
 
+  String get _continueLabel {
+    if (_selectedLang == 'uz') return 'Davom etish';
+    if (_selectedLang == 'ru') return 'Продолжить';
+    return 'Continue';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
-      body: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) => Opacity(
-          opacity: _fadeAnim.value,
-          child: Transform.translate(
-            offset: Offset(0, _slideAnim.value),
-            child: child,
+      backgroundColor: const Color(0xFF0D0D0D),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF0D0D0D),
+              Color(0xFF1A1A2E),
+              Color(0xFF0D1525),
+            ],
+            stops: [0.0, 0.5, 1.0],
           ),
         ),
-        child: Column(
+        child: Stack(
           children: [
-            // ── Header ──────────────────────────────────────────────
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 64, 24, 36),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Color(0xFF1A1A2E),
-                    Color(0xFF2B3A6B),
-                    Color(0xFF3B2D6B),
-                  ],
+            // ── Decorative circles ──────────────────────────────
+            Positioned(
+              top: -80,
+              right: -80,
+              child: Container(
+                width: 260,
+                height: 260,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x0D4D9EFF),
                 ),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo box
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: const Color(0x22FFFFFF),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                          color: const Color(0x33FFFFFF), width: 1.5),
-                    ),
-                    child: const Center(
-                      child: Text('🚿', style: TextStyle(fontSize: 28)),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Wash Club',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Tilni tanlang / Выберите язык / Choose language',
-                    style: TextStyle(
-                      color: Color(0xB4FFFFFF),
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+            ),
+            Positioned(
+              bottom: 120,
+              left: -100,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x082B5FAD),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: -60,
+              right: 60,
+              child: Container(
+                width: 180,
+                height: 180,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0x0D4D9EFF),
+                ),
               ),
             ),
 
-            // ── Language list ────────────────────────────────────────
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 32, 20, 0),
+            // ── Main content ────────────────────────────────────
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) => Opacity(
+                opacity: _fadeAnim.value,
+                child: Transform.translate(
+                  offset: Offset(0, _slideAnim.value),
+                  child: child,
+                ),
+              ),
+              child: SafeArea(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Tilni tanlang',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF9EA3AE),
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    ...List.generate(_languages.length, (i) {
-                      final lang = _languages[i];
-                      final isSelected = _selectedLang == lang.code;
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: GestureDetector(
-                          onTap: () =>
-                              setState(() => _selectedLang = lang.code),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            curve: Curves.easeOut,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 18),
+                    // ── Header ─────────────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Logo box — SplashScreen dek
+                          Container(
+                            width: 72,
+                            height: 72,
                             decoration: BoxDecoration(
-                              color: isSelected
-                                  ? const Color(0xFFDEE8F8)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(16),
+                              color: const Color(0xFF1C2340),
+                              borderRadius: BorderRadius.circular(22),
                               border: Border.all(
-                                color: isSelected
-                                    ? const Color(0xFF2B5FAD)
-                                    : Colors.transparent,
-                                width: 1.8,
+                                color: const Color(0xFF2A3560),
+                                width: 1.5,
                               ),
-                              boxShadow: isSelected
-                                  ? [
+                              boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF2B5FAD)
-                                      .withValues(alpha: 0.12),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                )
-                              ]
-                                  : [
-                                BoxShadow(
-                                  color: Colors.black
-                                      .withValues(alpha: 0.04),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                )
+                                  color: const Color(0xFF4D9EFF)
+                                      .withValues(alpha: 0.15),
+                                  blurRadius: 20,
+                                  spreadRadius: 1,
+                                ),
                               ],
                             ),
-                            child: Row(
-                              children: [
-                                // Flag
-                                Text(lang.flag,
-                                    style: const TextStyle(fontSize: 32)),
-                                const SizedBox(width: 16),
-                                // Names
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                            child: const Center(
+                              child: Text('🚿',
+                                  style: TextStyle(fontSize: 32)),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'Wash Club',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          const Text(
+                            'Tilni tanlang / Выберите язык / Choose language',
+                            style: TextStyle(
+                              color: Color(0xFF6B7280),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 36),
+
+                    // ── Section label ───────────────────────────
+                    const Padding(
+                      padding: EdgeInsets.only(left: 24, bottom: 12),
+                      child: Text(
+                        'Tilni tanlang',
+                        style: TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+
+                    // ── Language list ───────────────────────────
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: List.generate(_languages.length, (i) {
+                            final lang = _languages[i];
+                            final isSelected = _selectedLang == lang.code;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: GestureDetector(
+                                onTap: () => setState(
+                                        () => _selectedLang = lang.code),
+                                child: AnimatedContainer(
+                                  duration:
+                                  const Duration(milliseconds: 200),
+                                  curve: Curves.easeOut,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? const Color(0xFF1E2E55)
+                                        : const Color(0xFF1C2340),
+                                    borderRadius:
+                                    BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? const Color(0xFF4D9EFF)
+                                          : const Color(0xFF2A3560),
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                    boxShadow: isSelected
+                                        ? [
+                                      BoxShadow(
+                                        color: const Color(0xFF4D9EFF)
+                                            .withValues(alpha: 0.15),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ]
+                                        : [],
+                                  ),
+                                  child: Row(
                                     children: [
-                                      Text(
-                                        lang.name,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: isSelected
-                                              ? FontWeight.w700
-                                              : FontWeight.w500,
-                                          color: isSelected
-                                              ? const Color(0xFF2B5FAD)
-                                              : const Color(0xFF1A1A2E),
+                                      // Flag
+                                      Text(lang.flag,
+                                          style: const TextStyle(
+                                              fontSize: 30)),
+                                      const SizedBox(width: 14),
+                                      // Names
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              lang.name,
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? const Color(0xFF4D9EFF)
+                                                    : Colors.white,
+                                                fontSize: 16,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w700
+                                                    : FontWeight.w500,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              lang.native,
+                                              style: TextStyle(
+                                                color: isSelected
+                                                    ? const Color(0xFF4D9EFF)
+                                                    .withValues(
+                                                    alpha: 0.7)
+                                                    : const Color(0xFF6B7280),
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        lang.native,
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: isSelected
-                                              ? const Color(0xFF5A80C8)
-                                              : const Color(0xFF9EA3AE),
+                                      // Radio circle
+                                      AnimatedSwitcher(
+                                        duration: const Duration(
+                                            milliseconds: 200),
+                                        child: isSelected
+                                            ? Container(
+                                          key: ValueKey(lang.code),
+                                          width: 24,
+                                          height: 24,
+                                          decoration:
+                                          const BoxDecoration(
+                                            color: Color(0xFF4D9EFF),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                        )
+                                            : Container(
+                                          key: ValueKey(
+                                              'empty_${lang.code}'),
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: const Color(
+                                                  0xFF2A3560),
+                                              width: 1.5,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                                // Check
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  child: isSelected
-                                      ? Container(
-                                    key: ValueKey(lang.code),
-                                    width: 24,
-                                    height: 24,
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFF2B5FAD),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.check,
-                                      color: Colors.white,
-                                      size: 14,
-                                    ),
-                                  )
-                                      : Container(
-                                    key: ValueKey('empty_${lang.code}'),
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: const Color(0xFFDDE1EA),
-                                        width: 1.5,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ],
-                ),
-              ),
-            ),
-
-            // ── Continue button ──────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 36),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _onContinue,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2B5FAD),
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _selectedLang == 'uz'
-                            ? 'Davom etish'
-                            : _selectedLang == 'ru'
-                            ? 'Продолжить'
-                            : 'Continue',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                              ),
+                            );
+                          }),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      const Icon(Icons.chevron_right, size: 20),
-                    ],
-                  ),
+                    ),
+
+                    // ── Continue button ─────────────────────────
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: _onContinue,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4D9EFF),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shadowColor: const Color(0xFF4D9EFF)
+                                .withValues(alpha: 0.4),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _continueLabel,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              const Icon(Icons.arrow_forward_ios,
+                                  size: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
