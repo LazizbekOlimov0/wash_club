@@ -6,7 +6,7 @@
 /// Locales: 3
 /// Strings: 255 (85 per locale)
 ///
-/// Built on 2026-05-13 at 08:45 UTC
+/// Built on 2026-05-13 at 08:47 UTC
 
 // coverage:ignore-file
 // ignore_for_file: type=lint, unused_import
@@ -18,20 +18,20 @@ import 'package:slang/generated.dart';
 import 'package:slang_flutter/slang_flutter.dart';
 export 'package:slang_flutter/slang_flutter.dart';
 
-import 'translations_en.g.dart' deferred as l_en;
-import 'translations_ru.g.dart' deferred as l_ru;
-part 'translations_uz.g.dart';
+import 'strings_ru.g.dart' deferred as l_ru;
+import 'strings_uz.g.dart' deferred as l_uz;
+part 'strings_en.g.dart';
 
 /// Supported locales.
 ///
 /// Usage:
-/// - LocaleSettings.setLocale(AppLocale.uz) // set locale
-/// - Locale locale = AppLocale.uz.flutterLocale // get flutter locale from enum
-/// - if (LocaleSettings.currentLocale == AppLocale.uz) // locale check
+/// - LocaleSettings.setLocale(AppLocale.en) // set locale
+/// - Locale locale = AppLocale.en.flutterLocale // get flutter locale from enum
+/// - if (LocaleSettings.currentLocale == AppLocale.en) // locale check
 enum AppLocale with BaseAppLocale<AppLocale, Translations> {
-	uz(languageCode: 'uz'),
 	en(languageCode: 'en'),
-	ru(languageCode: 'ru');
+	ru(languageCode: 'ru'),
+	uz(languageCode: 'uz');
 
 	const AppLocale({
 		required this.languageCode,
@@ -50,15 +50,8 @@ enum AppLocale with BaseAppLocale<AppLocale, Translations> {
 		PluralResolver? ordinalResolver,
 	}) async {
 		switch (this) {
-			case AppLocale.uz:
-				return TranslationsUz(
-					overrides: overrides,
-					cardinalResolver: cardinalResolver,
-					ordinalResolver: ordinalResolver,
-				);
 			case AppLocale.en:
-				await l_en.loadLibrary();
-				return l_en.TranslationsEn(
+				return TranslationsEn(
 					overrides: overrides,
 					cardinalResolver: cardinalResolver,
 					ordinalResolver: ordinalResolver,
@@ -66,6 +59,13 @@ enum AppLocale with BaseAppLocale<AppLocale, Translations> {
 			case AppLocale.ru:
 				await l_ru.loadLibrary();
 				return l_ru.TranslationsRu(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
+			case AppLocale.uz:
+				await l_uz.loadLibrary();
+				return l_uz.TranslationsUz(
 					overrides: overrides,
 					cardinalResolver: cardinalResolver,
 					ordinalResolver: ordinalResolver,
@@ -80,20 +80,20 @@ enum AppLocale with BaseAppLocale<AppLocale, Translations> {
 		PluralResolver? ordinalResolver,
 	}) {
 		switch (this) {
-			case AppLocale.uz:
-				return TranslationsUz(
-					overrides: overrides,
-					cardinalResolver: cardinalResolver,
-					ordinalResolver: ordinalResolver,
-				);
 			case AppLocale.en:
-				return l_en.TranslationsEn(
+				return TranslationsEn(
 					overrides: overrides,
 					cardinalResolver: cardinalResolver,
 					ordinalResolver: ordinalResolver,
 				);
 			case AppLocale.ru:
 				return l_ru.TranslationsRu(
+					overrides: overrides,
+					cardinalResolver: cardinalResolver,
+					ordinalResolver: ordinalResolver,
+				);
+			case AppLocale.uz:
+				return l_uz.TranslationsUz(
 					overrides: overrides,
 					cardinalResolver: cardinalResolver,
 					ordinalResolver: ordinalResolver,
@@ -113,6 +113,7 @@ enum AppLocale with BaseAppLocale<AppLocale, Translations> {
 ///
 /// Usage:
 /// String a = t.someKey.anotherKey;
+/// String b = t['someKey.anotherKey']; // Only for edge cases!
 Translations get t => LocaleSettings.instance.currentTranslations;
 
 /// Method B: Advanced
@@ -129,6 +130,7 @@ Translations get t => LocaleSettings.instance.currentTranslations;
 /// Step 2:
 /// final t = Translations.of(context); // Get t variable.
 /// String a = t.someKey.anotherKey; // Use t variable.
+/// String b = t['someKey.anotherKey']; // Only for edge cases!
 class TranslationProvider extends BaseTranslationProvider<AppLocale, Translations> {
 	TranslationProvider({required super.child}) : super(settings: LocaleSettings.instance);
 
@@ -181,7 +183,7 @@ class LocaleSettings extends BaseFlutterLocaleSettings<AppLocale, Translations> 
 /// Provides utility functions without any side effects.
 class AppLocaleUtils extends BaseAppLocaleUtils<AppLocale, Translations> {
 	AppLocaleUtils._() : super(
-		baseLocale: AppLocale.uz,
+		baseLocale: AppLocale.en,
 		locales: AppLocale.values,
 	);
 

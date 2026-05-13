@@ -1,8 +1,12 @@
-import 'package:flutter/cupertino.dart';
-
+import 'package:flutter/material.dart';
+import 'package:wash_club/core/i18n/translations.g.dart';
 import 'app.dart';
 
-void main() => runApp(MyApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  LocaleSettings.setLocaleRaw('uz');
+  runApp(const MyApp());
+}
 
 
 /// ------------------------------------------ Flutter Commands -------------------------------------------

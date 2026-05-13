@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slang_flutter/slang_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
-import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
