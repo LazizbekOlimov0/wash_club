@@ -1,19 +1,18 @@
 import 'dart:io' show Platform;
-import 'package:flutter/material.dart';
 import 'package:wash_club/core/theme/colors.dart';
 import 'package:wash_club/core/theme/texts.dart';
 import 'package:wash_club/core/theme/theme_data/theme_data.dart';
 
-sealed class ApparenceKitTheme {
-  const ApparenceKitTheme();
+sealed class AppearanceKitTheme {
+  const AppearanceKitTheme();
 
   ApparenceKitColors get colors;
   ApparenceKitTextTheme get textTheme;
   ApparenceKitThemeData get data;
 }
 
-class ApparenceKitThemeUniform extends ApparenceKitTheme {
-  const ApparenceKitThemeUniform(this.data);
+class AppearanceKitThemeUniform extends AppearanceKitTheme {
+  const AppearanceKitThemeUniform(this.data);
 
   @override
   final ApparenceKitThemeData data;
@@ -25,12 +24,12 @@ class ApparenceKitThemeUniform extends ApparenceKitTheme {
   ApparenceKitTextTheme get textTheme => data.defaultTextTheme;
 }
 
-class ApparenceKitThemeAdaptive extends ApparenceKitTheme {
+class AppearanceKitThemeAdaptive extends AppearanceKitTheme {
   final ApparenceKitThemeData? ios;
   final ApparenceKitThemeData? android;
   final ApparenceKitThemeData? web;
 
-  const ApparenceKitThemeAdaptive({this.ios, this.android, this.web});
+  const AppearanceKitThemeAdaptive({this.ios, this.android, this.web});
 
   @override
   ApparenceKitColors get colors {

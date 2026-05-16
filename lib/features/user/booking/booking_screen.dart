@@ -164,13 +164,9 @@ final _timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00
 // COLORS & THEME
 // ─────────────────────────────────────────────
 
-const _bg = Color(0xFF0A0A0A);
-const _surface = Color(0xFF141414);
 const _surfaceElevated = Color(0xFF1C1C1E);
 const _blue = Color(0xFF2D6BFF);
 const _blueLight = Color(0xFF4D8BFF);
-const _green = Color(0xFF34C759);
-const _red = Color(0xFFFF3B30);
 const _textPrimary = Color(0xFFFFFFFF);
 const _textSecondary = Color(0xFF8E8E93);
 const _border = Color(0xFF2C2C2E);
@@ -1190,7 +1186,7 @@ class _CarStep extends StatelessWidget {
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: _blue.withOpacity(0.15),
+                        color: _blue.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(Icons.directions_car_outlined, color: _blue, size: 22),

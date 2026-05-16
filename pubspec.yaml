@@ -1,7 +1,7 @@
 name: wash_club
 description: "A new Flutter project."
 
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -40,7 +40,6 @@ flutter:
 
   assets:
     - assets/image/
-    - assets/icons/nav_bar/
 
 flutter_gen:
   output: lib/core/assets/

@@ -14,7 +14,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   // Mock data — backenddan keladi
   final bool _hasBooking = true;
   final String _userName = 'Bobur';
-  final String _userPhone = '+998 91 048 02 44';
   final String _weather = '+18°';
 
   final List<Map<String, dynamic>> _promotions = [
@@ -79,7 +78,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t;
     return Scaffold(
       backgroundColor: const Color(0xFF0D0D0D),
       body: ListView(
@@ -107,7 +105,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   // ── Header ────────────────────────────────────────────────────────
   Widget _buildHeader(BuildContext context) {
-    final t = context.t;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),

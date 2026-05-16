@@ -23,8 +23,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 18),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 18,
+          ),
         ),
         title: const Text(
           'Настройки',
@@ -58,9 +61,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
           // ── Внешний вид ───────────────────────────────────────
           _sectionLabel('ВНЕШНИЙ ВИД'),
-          _settingsGroup([
-            _themeItem(),
-          ]),
+          _settingsGroup([_themeItem()]),
           const SizedBox(height: 24),
 
           // ── Уведомления ───────────────────────────────────────
@@ -71,16 +72,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               label: 'Push-уведомления',
               subtitle: 'Бронь, статус и напоминания',
               value: _notificationsEnabled,
-              onChanged: (v) =>
-                  setState(() => _notificationsEnabled = v),
+              onChanged: (v) => setState(() => _notificationsEnabled = v),
             ),
             _toggleItem(
               icon: Icons.auto_awesome_outlined,
               label: 'Промо-уведомления',
               subtitle: 'Акции и специальные предложения',
               value: _promoNotifications,
-              onChanged: (v) =>
-                  setState(() => _promoNotifications = v),
+              onChanged: (v) => setState(() => _promoNotifications = v),
             ),
           ]),
           const SizedBox(height: 24),
@@ -203,18 +202,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         decoration: BoxDecoration(
           color: const Color(0xFF1C2340),
           borderRadius: BorderRadius.circular(14),
-          border:
-          Border.all(color: const Color(0xFF2A3560), width: 1),
+          border: Border.all(color: const Color(0xFF2A3560), width: 1),
         ),
         child: Column(
           children: [
             for (int i = 0; i < children.length; i++) ...[
               children[i],
               if (i < children.length - 1)
-                const Divider(
-                    height: 1,
-                    color: Color(0xFF2A3560),
-                    indent: 48),
+                const Divider(height: 1, color: Color(0xFF2A3560), indent: 48),
             ],
           ],
         ),
@@ -236,13 +231,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Icon(icon,
-                color: iconColor ?? const Color(0xFF9CA3AF),
-                size: 20),
+            Icon(icon, color: iconColor ?? const Color(0xFF9CA3AF), size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -257,14 +249,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             if (trailing != null) ...[
               Text(
                 trailing,
-                style: const TextStyle(
-                    color: Color(0xFF6B7280), fontSize: 13),
+                style: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
               ),
               const SizedBox(width: 4),
             ],
             if (showArrow)
-              const Icon(Icons.chevron_right,
-                  color: Color(0xFF4B5563), size: 18),
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF4B5563),
+                size: 18,
+              ),
           ],
         ),
       ),
@@ -280,8 +274,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
           Icon(icon, color: const Color(0xFF9CA3AF), size: 20),
@@ -293,16 +286,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   label,
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500),
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
                     style: const TextStyle(
-                        color: Color(0xFF6B7280), fontSize: 12),
+                      color: Color(0xFF6B7280),
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ],
@@ -311,9 +307,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF4D9EFF),
-            activeTrackColor:
-            const Color(0xFF4D9EFF).withValues(alpha: 0.3),
+            activeThumbColor: const Color(0xFF4D9EFF),
+            activeTrackColor: const Color(0xFF4D9EFF).withValues(alpha: 0.3),
             inactiveThumbColor: const Color(0xFF6B7280),
             inactiveTrackColor: const Color(0xFF2A3560),
           ),
@@ -325,21 +320,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ── Theme item ─────────────────────────────────────────────────
   Widget _themeItem() {
     final themes = [
-      {
-        'key': 'light',
-        'icon': Icons.wb_sunny_outlined,
-        'label': 'Светлая'
-      },
-      {
-        'key': 'dark',
-        'icon': Icons.dark_mode_outlined,
-        'label': 'Тёмная'
-      },
-      {
-        'key': 'auto',
-        'icon': Icons.computer_outlined,
-        'label': 'Авто'
-      },
+      {'key': 'light', 'icon': Icons.wb_sunny_outlined, 'label': 'Светлая'},
+      {'key': 'dark', 'icon': Icons.dark_mode_outlined, 'label': 'Тёмная'},
+      {'key': 'auto', 'icon': Icons.computer_outlined, 'label': 'Авто'},
     ];
 
     return Padding(
@@ -351,15 +334,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: EdgeInsets.only(left: 4, bottom: 10),
             child: Row(
               children: [
-                Icon(Icons.palette_outlined,
-                    color: Color(0xFF9CA3AF), size: 20),
+                Icon(
+                  Icons.palette_outlined,
+                  color: Color(0xFF9CA3AF),
+                  size: 20,
+                ),
                 SizedBox(width: 12),
                 Text(
                   'Тема оформления',
                   style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500),
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),
@@ -375,8 +362,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 final isSelected = _themeMode == theme['key'];
                 return Expanded(
                   child: GestureDetector(
-                    onTap: () => setState(
-                            () => _themeMode = theme['key'] as String),
+                    onTap: () =>
+                        setState(() => _themeMode = theme['key'] as String),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -427,30 +414,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1C2340),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Выйти из аккаунта?',
           style: TextStyle(color: Colors.white, fontSize: 17),
         ),
         content: const Text(
           'Вы уверены, что хотите выйти?',
-          style:
-          TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена',
-                style: TextStyle(color: Color(0xFF4D9EFF))),
+            child: const Text(
+              'Отмена',
+              style: TextStyle(color: Color(0xFF4D9EFF)),
+            ),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               context.go(UserRoutePath.login);
             },
-            child: const Text('Выйти',
-                style: TextStyle(color: Color(0xFFEF4444))),
+            child: const Text(
+              'Выйти',
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
           ),
         ],
       ),
@@ -462,27 +451,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1C2340),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text(
           'Удалить аккаунт?',
           style: TextStyle(color: Colors.white, fontSize: 17),
         ),
         content: const Text(
           'Все данные будут безвозвратно удалены. Это действие нельзя отменить.',
-          style:
-          TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Отмена',
-                style: TextStyle(color: Color(0xFF4D9EFF))),
+            child: const Text(
+              'Отмена',
+              style: TextStyle(color: Color(0xFF4D9EFF)),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Удалить',
-                style: TextStyle(color: Color(0xFFEF4444))),
+            child: const Text(
+              'Удалить',
+              style: TextStyle(color: Color(0xFFEF4444)),
+            ),
           ),
         ],
       ),

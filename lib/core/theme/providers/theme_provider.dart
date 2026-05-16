@@ -24,8 +24,8 @@ class ThemeProvider extends InheritedNotifier<AppTheme> {
 }
 
 class AppTheme with ChangeNotifier {
-  final ApparenceKitTheme? lightTheme;
-  final ApparenceKitTheme? darkTheme;
+  final AppearanceKitTheme? lightTheme;
+  final AppearanceKitTheme? darkTheme;
   late SharedPreferences _prefs;
   ThemeMode mode;
 
@@ -53,7 +53,7 @@ class AppTheme with ChangeNotifier {
     return AppTheme(
       mode: defaultMode,
       lightTheme: lightColors != null
-          ? ApparenceKitThemeUniform(
+          ? AppearanceKitThemeUniform(
         themeFactory.build(
           colors: lightColors,
           defaultTextStyle: textTheme,
@@ -61,7 +61,7 @@ class AppTheme with ChangeNotifier {
       )
           : null,
       darkTheme: darkColors != null
-          ? ApparenceKitThemeUniform(
+          ? AppearanceKitThemeUniform(
         themeFactory.build(
           colors: darkColors,
           defaultTextStyle: textTheme,
@@ -83,7 +83,7 @@ class AppTheme with ChangeNotifier {
     return AppTheme(
       mode: mode,
       lightTheme: lightColors != null
-          ? ApparenceKitThemeAdaptive(
+          ? AppearanceKitThemeAdaptive(
         ios: ios?.build(
           colors: lightColors,
           defaultTextStyle: defaultTextTheme,
@@ -99,7 +99,7 @@ class AppTheme with ChangeNotifier {
       )
           : null,
       darkTheme: darkColors != null
-          ? ApparenceKitThemeAdaptive(
+          ? AppearanceKitThemeAdaptive(
         ios: ios?.build(
           colors: darkColors,
           defaultTextStyle: defaultTextTheme,
@@ -162,7 +162,7 @@ class AppTheme with ChangeNotifier {
   ThemeData get lightThemeData => lightTheme!.data.materialTheme;
   ThemeData get darkThemeData => darkTheme!.data.materialTheme;
 
-  ApparenceKitTheme get current =>
+  AppearanceKitTheme get current =>
       mode == ThemeMode.light ? lightTheme! : darkTheme!;
 
   ThemeMode _loadFromPrefs() {
