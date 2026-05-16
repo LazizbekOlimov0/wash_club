@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
 import 'package:wash_club/core/theme/colors.dart';
-import 'package:wash_club/core/theme/providers/apparencekit_theme.dart';
 import 'package:wash_club/core/theme/providers/theme_provider.dart';
 import 'package:wash_club/core/theme/texts.dart';
 import 'package:wash_club/core/theme/universal_theme.dart';
@@ -22,7 +21,7 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     const factory = UniversalThemeFactory();
-    const textTheme = ApparenceKitTextTheme.build();
+    final textTheme = ApparenceKitTextTheme.build();
 
     _appTheme = AppTheme.uniform(
       defaultMode: ThemeMode.dark,

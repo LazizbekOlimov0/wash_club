@@ -17,18 +17,19 @@ class UniversalThemeFactory extends ApparenceKitThemeDataFactory {
       defaultTextTheme: defaultTextStyle,
       materialTheme: ThemeData(
         scaffoldBackgroundColor: colors.background,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: colors.primary,
-          brightness: colors.background == const Color(0xFF0F1B35)
-              ? Brightness.dark
-              : Brightness.light,
-        ).copyWith(
-          surface: colors.surface,
-          onSurface: colors.onSurface,
-          primary: colors.primary,
-          onPrimary: colors.onPrimary,
-          error: colors.error,
-        ),
+        colorScheme:
+            ColorScheme.fromSeed(
+              seedColor: colors.primary,
+              brightness: colors.background == const Color(0xFF0F1B35)
+                  ? Brightness.dark
+                  : Brightness.light,
+            ).copyWith(
+              surface: colors.surface,
+              onSurface: colors.onSurface,
+              primary: colors.primary,
+              onPrimary: colors.onPrimary,
+              error: colors.error,
+            ),
         extensions: const [],
         appBarTheme: AppBarTheme(
           backgroundColor: colors.background,
@@ -62,77 +63,59 @@ class UniversalThemeFactory extends ApparenceKitThemeDataFactory {
           thickness: 1,
           space: 1,
         ),
-        cardTheme: CardTheme(
-          color: colors.surface,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: colors.grey1),
-          ),
-        ),
       ),
     );
   }
 
   ElevatedButtonThemeData _elevatedButtonTheme(
-      ApparenceKitColors colors,
-      ApparenceKitTextTheme textTheme,
-      ) =>
-      ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          minimumSize: const Size(double.infinity, 56),
-          foregroundColor: colors.onPrimary,
-          backgroundColor: colors.primary,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          textStyle: textTheme.primary.copyWith(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-          elevation: 0,
-        ),
-      );
+    ApparenceKitColors colors,
+    ApparenceKitTextTheme textTheme,
+  ) => ElevatedButtonThemeData(
+    style: ElevatedButton.styleFrom(
+      minimumSize: const Size(double.infinity, 56),
+      foregroundColor: colors.onPrimary,
+      backgroundColor: colors.primary,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      textStyle: textTheme.primary.copyWith(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+      ),
+      elevation: 0,
+    ),
+  );
 
   InputDecorationTheme _inputDecorationTheme(
-      ApparenceKitColors colors,
-      ApparenceKitTextTheme textTheme,
-      ) =>
-      InputDecorationTheme(
-        fillColor: colors.surface,
-        filled: true,
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colors.grey1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colors.primary, width: 1.5),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colors.error, width: 1.5),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: colors.error, width: 1.5),
-        ),
-        hintStyle: textTheme.primary.copyWith(
-          color: colors.grey2,
-          fontSize: 15,
-          fontWeight: FontWeight.w400,
-        ),
-        labelStyle: textTheme.primary.copyWith(color: colors.grey2),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
-      );
+    ApparenceKitColors colors,
+    ApparenceKitTextTheme textTheme,
+  ) => InputDecorationTheme(
+    fillColor: colors.surface,
+    filled: true,
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: colors.grey1),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: colors.primary, width: 1.5),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: colors.error, width: 1.5),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: colors.error, width: 1.5),
+    ),
+    hintStyle: textTheme.primary.copyWith(
+      color: colors.grey2,
+      fontSize: 15,
+      fontWeight: FontWeight.w400,
+    ),
+    labelStyle: textTheme.primary.copyWith(color: colors.grey2),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  );
 
-  TextTheme _textTheme(
-      ApparenceKitColors colors,
-      ApparenceKitTextTheme t,
-      ) =>
+  TextTheme _textTheme(ApparenceKitColors colors, ApparenceKitTextTheme t) =>
       TextTheme(
         displayLarge: t.displayLarge.copyWith(color: colors.onBackground),
         displayMedium: t.displayMedium.copyWith(color: colors.onBackground),
