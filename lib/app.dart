@@ -1,15 +1,54 @@
 import 'package:flutter/material.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
+import 'package:wash_club/core/theme/colors.dart';
+import 'package:wash_club/core/theme/providers/apparencekit_theme.dart';
+import 'package:wash_club/core/theme/providers/theme_provider.dart';
+import 'package:wash_club/core/theme/texts.dart';
+import 'package:wash_club/core/theme/universal_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'config/router/router.dart';
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late final AppTheme _appTheme;
+
+  @override
+  void initState() {
+    super.initState();
+    const factory = UniversalThemeFactory();
+    const textTheme = ApparenceKitTextTheme.build();
+
+    _appTheme = AppTheme.uniform(
+      defaultMode: ThemeMode.dark,
+      textTheme: textTheme,
+      themeFactory: factory,
+      lightColors: ApparenceKitColors.light(),
+      darkColors: ApparenceKitColors.dark(),
+    );
+
+    // Load saved theme preference
+    _appTheme.init();
+  }
+
+  @override
+  void dispose() {
+    _appTheme.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return TranslationProvider(
-      child: const AppView(),
+    return ThemeProvider(
+      notifier: _appTheme,
+      child: TranslationProvider(
+        child: const AppView(),
+      ),
     );
   }
 }
@@ -19,11 +58,21 @@ class AppView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      locale: TranslationProvider.of(context).flutterLocale,
-      supportedLocales: AppLocaleUtils.supportedLocales,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      routerConfig: generateRouter,
+    final appTheme = ThemeProvider.of(context);
+    return AnimatedBuilder(
+      animation: appTheme,
+      builder: (context, _) {
+        return MaterialApp.router(
+          theme: appTheme.light,
+          darkTheme: appTheme.dark,
+          themeMode: appTheme.mode,
+          locale: TranslationProvider.of(context).flutterLocale,
+          supportedLocales: AppLocaleUtils.supportedLocales,
+          localizationsDelegates: GlobalMaterialLocalizations.delegates,
+          routerConfig: generateRouter,
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

@@ -24,6 +24,8 @@ dependencies:
   slang: ^4.14.0
   slang_flutter: ^4.14.0
   animations: ^2.2.0
+  universal_io: ^2.3.1
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
