@@ -1,17 +1,41 @@
-# wash_club
+# Wash Club Mobile App
 
-A new Flutter project.
+## Flutter Commands 
+- flutter build apk --release
+- flutter build apk --split-per-abi
+- flutter build appbundle --release
+- flutter build ios --release
+- flutter pub run build_runner build --delete-conflicting-outputs
+- flutter pub ipa
+- flutter gen-l10n
+- dart run build_runner clean
+- dart run slang
 
-## Getting Started
+## Git Commands
+- git add . - Stages all changes
+- git commit -m "Your message" - Commits staged changes with a message
+- git push - Pushes commits to remote repository
+- git pull - Fetches and merges changes from remote repository
+- git status - Shows the status of working directory and staging area
+- git branch <branch-name> - Creates a new branch
+- git checkout -b <branch-name> - Creates and switches to new branch (shortcut)
+- git switch -c <branch-name> - Creates and switches to new branch (modern way)
+- git branch - Lists all local branches
+- git checkout <branch-name> - Switches to existing branch
+- git switch <branch-name> - Switches to existing branch (modern way)
+- git branch -d <branch-name> - Deletes a branch (safe)
+- git branch -D <branch-name> - Force deletes a branch
 
-This project is a starting point for a Flutter application.
+## Shorebird Configuration
+- shorebird release ios
+- shorebird release android
+- shorebird patch android
+- shorebird patch ios
+- shorebird release android --artifact=apk
+- shorebird preview
+- shorebird patch --platforms=ios --release-version=1.1.3+45
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Podfile Commands
+- rm -rf Pods Podfile.lock
+- pod deintegrate
+- pod install

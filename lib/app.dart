@@ -31,7 +31,6 @@ class _MyAppState extends State<MyApp> {
       darkColors: ApparenceKitColors.dark(),
     );
 
-    // Load saved theme preference
     _appTheme.init();
   }
 
