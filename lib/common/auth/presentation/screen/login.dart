@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import 'package:wash_club/core/widgets/app_text_field.dart';
+import '../../../../core/theme/colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -22,15 +23,8 @@ class _LoginScreenState extends State<LoginScreen>
   late Animation<Offset> _slideAnim;
   late Animation<double> _scaleAnim;
 
-  // App color palette
-  static const Color _bg = Color(0xFF0F1B35);
-  static const Color _card = Color(0xFF1A2B4A);
-  static const Color _accent = Color(0xFF3B72D9);
-  static const Color _accentLight = Color(0xFF4E85F0);
-  static const Color _textPrimary = Color(0xFFFFFFFF);
-  static const Color _textSecondary = Color(0xFF8B9FC4);
-  static const Color _border = Color(0xFF253552);
-  static const Color _inputFill = Color(0xFF162035);
+  ApparenceKitColors get _c =>
+      Theme.of(context).extension<ApparenceKitColors>()!;
 
   bool get _isValid =>
       _nameController.text.trim().isNotEmpty &&
@@ -76,18 +70,17 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final colors = _c;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: _bg,
+        backgroundColor: colors.background,
         body: FadeTransition(
           opacity: _fadeAnim,
           child: Column(
             children: [
-              // ── Hero header ──────────────────────────────────────
-              _buildHero(t),
-
-              // ── Form ─────────────────────────────────────────────
+              _buildHero(t, colors),
               Expanded(
                 child: SlideTransition(
                   position: _slideAnim,
@@ -96,9 +89,11 @@ class _LoginScreenState extends State<LoginScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _sectionLabel(t.login.name),
+                        _sectionLabel(t.login.name, colors),
                         const SizedBox(height: 10),
                         _styledField(
+                          colors: colors,
+                          icon: Icons.person_outline_rounded,
                           child: AppTextField(
                             title: '',
                             hintText: 'Jon Doe',
@@ -107,18 +102,18 @@ class _LoginScreenState extends State<LoginScreen>
                             textCapitalization: TextCapitalization.words,
                             onChanged: (_) => setState(() {}),
                           ),
-                          icon: Icons.person_outline_rounded,
                         ),
                         const SizedBox(height: 20),
-                        _sectionLabel(t.login.phone),
+                        _sectionLabel(t.login.phone, colors),
                         const SizedBox(height: 10),
                         _styledField(
+                          colors: colors,
+                          icon: Icons.phone_outlined,
                           child: AppTextField.phone(
                             title: '',
                             controller: _phoneController,
                             onChanged: (_) => setState(() {}),
                           ),
-                          icon: Icons.phone_outlined,
                         ),
                         const SizedBox(height: 10),
                         Padding(
@@ -128,13 +123,13 @@ class _LoginScreenState extends State<LoginScreen>
                               Icon(
                                 Icons.lock_outline_rounded,
                                 size: 12,
-                                color: _textSecondary.withValues(alpha: 0.6),
+                                color: colors.grey3.withValues(alpha: 0.6),
                               ),
                               const SizedBox(width: 5),
                               Text(
-                                'Ma\'lumotlaringiz xavfsiz saqlanadi',
+                                "Ma'lumotlaringiz xavfsiz saqlanadi",
                                 style: TextStyle(
-                                  color: _textSecondary.withValues(alpha: 0.6),
+                                  color: colors.grey3.withValues(alpha: 0.6),
                                   fontSize: 12,
                                   letterSpacing: 0.1,
                                 ),
@@ -143,17 +138,14 @@ class _LoginScreenState extends State<LoginScreen>
                           ),
                         ),
                         const SizedBox(height: 36),
-
-                        // Continue button
                         ScaleTransition(
                           scale: _scaleAnim,
-                          child: _buildButton(t),
+                          child: _buildButton(t, colors),
                         ),
-
                         const SizedBox(height: 24),
-                        _buildDivider(),
+                        _buildDivider(colors),
                         const SizedBox(height: 20),
-                        _buildFeatures(),
+                        _buildFeatures(colors),
                       ],
                     ),
                   ),
@@ -166,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildHero(dynamic t) {
+  Widget _buildHero(dynamic t, ApparenceKitColors colors) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -175,25 +167,18 @@ class _LoginScreenState extends State<LoginScreen>
         right: 24,
         bottom: 32,
       ),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF1A3366), Color(0xFF0F1B35)],
-        ),
-      ),
+      color: colors.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo badge
           Container(
             width: 58,
             height: 58,
             decoration: BoxDecoration(
-              color: _accent.withValues(alpha: 0.2),
+              color: colors.primary.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: _accent.withValues(alpha: 0.4),
+                color: colors.primary.withValues(alpha: 0.4),
                 width: 1.5,
               ),
             ),
@@ -202,12 +187,10 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
           const SizedBox(height: 20),
-
-          // Title
-          const Text(
+          Text(
             'Wash Club',
             style: TextStyle(
-              color: _textPrimary,
+              color: colors.onBackground,
               fontSize: 30,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.3,
@@ -218,22 +201,20 @@ class _LoginScreenState extends State<LoginScreen>
           Text(
             t.login.subtitle,
             style: TextStyle(
-              color: _textSecondary,
+              color: colors.grey3,
               fontSize: 14,
               fontWeight: FontWeight.w400,
               height: 1.4,
             ),
           ),
           const SizedBox(height: 20),
-
-          // Stats row
           Row(
             children: [
-              _statBadge('500+', 'Mijozlar'),
+              _statBadge('500+', 'Mijozlar', colors),
               const SizedBox(width: 10),
-              _statBadge('4.9 ★', 'Reyting'),
+              _statBadge('4.9 ★', 'Reyting', colors),
               const SizedBox(width: 10),
-              _statBadge('24/7', 'Xizmat'),
+              _statBadge('24/7', 'Xizmat', colors),
             ],
           ),
         ],
@@ -241,20 +222,20 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _statBadge(String value, String label) {
+  Widget _statBadge(String value, String label, ApparenceKitColors colors) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
-        color: _card.withValues(alpha: 0.8),
+        color: colors.surface.withValues(alpha: 0.8),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: _border),
+        border: Border.all(color: colors.grey1),
       ),
       child: Column(
         children: [
           Text(
             value,
-            style: const TextStyle(
-              color: _accentLight,
+            style: TextStyle(
+              color: colors.info,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -263,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen>
           Text(
             label,
             style: TextStyle(
-              color: _textSecondary,
+              color: colors.grey3,
               fontSize: 11,
             ),
           ),
@@ -272,30 +253,34 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _sectionLabel(String text) {
+  Widget _sectionLabel(String text, ApparenceKitColors colors) {
     return Text(
       text.toUpperCase(),
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w700,
-        color: _textSecondary,
+        color: colors.grey3,
         letterSpacing: 1.2,
       ),
     );
   }
 
-  Widget _styledField({required Widget child, required IconData icon}) {
+  Widget _styledField({
+    required Widget child,
+    required IconData icon,
+    required ApparenceKitColors colors,
+  }) {
     return Container(
       decoration: BoxDecoration(
-        color: _inputFill,
+        color: colors.onCenterBG,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border),
+        border: Border.all(color: colors.grey1),
       ),
       child: Row(
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 14),
-            child: Icon(icon, color: _textSecondary, size: 18),
+            child: Icon(icon, color: colors.grey3, size: 18),
           ),
           Expanded(child: child),
         ],
@@ -303,7 +288,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildButton(dynamic t) {
+  Widget _buildButton(dynamic t, ApparenceKitColors colors) {
     final isActive = _isValid;
     return SizedBox(
       width: double.infinity,
@@ -312,21 +297,14 @@ class _LoginScreenState extends State<LoginScreen>
         duration: const Duration(milliseconds: 250),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: isActive
-              ? const LinearGradient(
-            colors: [Color(0xFF3B72D9), Color(0xFF2B5FAD)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          )
-              : null,
-          color: isActive ? null : const Color(0xFF1A2B4A),
+          color: isActive ? colors.primary : colors.surface,
           boxShadow: isActive
               ? [
             BoxShadow(
-              color: _accent.withValues(alpha: 0.35),
+              color: colors.primary.withValues(alpha: 0.35),
               blurRadius: 16,
               offset: const Offset(0, 6),
-            )
+            ),
           ]
               : null,
         ),
@@ -335,9 +313,9 @@ class _LoginScreenState extends State<LoginScreen>
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
-            foregroundColor: Colors.white,
+            foregroundColor: colors.onPrimary,
             disabledBackgroundColor: Colors.transparent,
-            disabledForegroundColor: _textSecondary,
+            disabledForegroundColor: colors.grey3,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -351,7 +329,7 @@ class _LoginScreenState extends State<LoginScreen>
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: isActive ? Colors.white : _textSecondary,
+                  color: isActive ? colors.onPrimary : colors.grey3,
                   letterSpacing: 0.3,
                 ),
               ),
@@ -361,14 +339,14 @@ class _LoginScreenState extends State<LoginScreen>
                 padding: const EdgeInsets.all(5),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? Colors.white.withValues(alpha: 0.2)
-                      : _border,
+                      ? colors.onPrimary.withValues(alpha: 0.2)
+                      : colors.grey1,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
                   Icons.arrow_forward_rounded,
                   size: 16,
-                  color: isActive ? Colors.white : _textSecondary,
+                  color: isActive ? colors.onPrimary : colors.grey3,
                 ),
               ),
             ],
@@ -378,60 +356,58 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(ApparenceKitColors colors) {
     return Row(
       children: [
-        Expanded(child: Divider(color: _border, thickness: 1)),
+        Expanded(child: Divider(color: colors.grey1, thickness: 1)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 14),
           child: Text(
             'Nima uchun biz?',
             style: TextStyle(
-              color: _textSecondary.withValues(alpha: 0.6),
+              color: colors.grey3.withValues(alpha: 0.6),
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
           ),
         ),
-        Expanded(child: Divider(color: _border, thickness: 1)),
+        Expanded(child: Divider(color: colors.grey1, thickness: 1)),
       ],
     );
   }
 
-  Widget _buildFeatures() {
+  Widget _buildFeatures(ApparenceKitColors colors) {
     final features = [
       (Icons.bolt_rounded, 'Tez xizmat', 'Eng tez avtoyuv'),
       (Icons.verified_rounded, 'Sertifikatlangan', 'Ishonchli xizmat'),
-      (Icons.wallet_rounded, 'Qulay to\'lov', 'Karta va naqd'),
+      (Icons.wallet_rounded, "Qulay to'lov", 'Karta va naqd'),
     ];
     return Row(
-      children: features.map((f) {
+      children: features.mapIndexed((i, f) {
         return Expanded(
           child: Container(
-            margin: EdgeInsets.only(
-              right: f == features.last ? 0 : 10,
-            ),
+            margin: EdgeInsets.only(right: i < features.length - 1 ? 10 : 0),
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
             decoration: BoxDecoration(
-              color: _card,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: _border),
+              border: Border.all(color: colors.grey1),
             ),
             child: Column(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: _accent.withValues(alpha: 0.15),
+                    color: colors.primary.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(f.$1, color: _accentLight, size: 18),
+                  child: Icon(f.$1, color: colors.info, size: 18),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   f.$2,
-                  style: const TextStyle(
-                    color: _textPrimary,
+                  style: TextStyle(
+                    color: colors.onBackground,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -441,7 +417,7 @@ class _LoginScreenState extends State<LoginScreen>
                 Text(
                   f.$3,
                   style: TextStyle(
-                    color: _textSecondary,
+                    color: colors.grey3,
                     fontSize: 10,
                   ),
                   textAlign: TextAlign.center,
@@ -452,5 +428,15 @@ class _LoginScreenState extends State<LoginScreen>
         );
       }).toList(),
     );
+  }
+}
+
+// Extension for mapIndexed (agar loyihada yo'q bo'lsa)
+extension _IndexedIterable<T> on Iterable<T> {
+  Iterable<R> mapIndexed<R>(R Function(int index, T item) f) sync* {
+    var index = 0;
+    for (final item in this) {
+      yield f(index++, item);
+    }
   }
 }

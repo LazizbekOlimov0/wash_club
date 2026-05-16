@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../theme/colors.dart';
+
 class AppTextField extends StatefulWidget {
   const AppTextField({
     super.key,
@@ -135,6 +137,9 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final colors =
+    Theme.of(context).extension<ApparenceKitColors>()!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -145,7 +150,8 @@ class _AppTextFieldState extends State<AppTextField> {
             children: [
               Text(
                 widget.title!,
-                style: const TextStyle(
+                style: TextStyle(
+                  color: colors.onBackground,
                   fontSize: 14,
                   fontFamily: 'SF Pro Rounded',
                   fontWeight: FontWeight.w400,
@@ -154,10 +160,10 @@ class _AppTextFieldState extends State<AppTextField> {
                 ),
               ),
               if (widget.isRequired)
-                const Text(
+                Text(
                   ' *',
                   style: TextStyle(
-                    color: Colors.red,
+                    color: colors.error,
                     fontSize: 14,
                     fontFamily: 'SF Pro Rounded',
                     fontWeight: FontWeight.w600,
@@ -188,41 +194,47 @@ class _AppTextFieldState extends State<AppTextField> {
           scrollPhysics: widget.maxLines == 1
               ? const ClampingScrollPhysics()
               : null,
-          style: const TextStyle(
+          style: TextStyle(
+            color: colors.onSurface,
             fontSize: 14,
             fontFamily: 'SF Pro Rounded',
             fontWeight: FontWeight.w400,
             height: 1.25,
             letterSpacing: -0.28,
           ),
+          cursorColor: colors.primary,
           decoration: InputDecoration(
-            constraints: BoxConstraints(minHeight: widget.height ?? 50),
+            constraints: BoxConstraints(
+              minHeight: widget.height ?? 50,
+            ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: colors.surface,
             hintText: widget.hintText,
-            hintStyle: const TextStyle(
-              color: Color(0xFFBCC0CC),
+            hintStyle: TextStyle(
+              color: colors.disabledContent,
               fontSize: 15,
+              fontFamily: 'SF Pro Rounded',
             ),
             errorText: widget.errorText,
             errorMaxLines: 2,
-            errorStyle: const TextStyle(
-              color: Colors.red,
+            errorStyle: TextStyle(
+              color: colors.error,
               fontSize: 12,
               fontFamily: 'SF Pro Rounded',
               fontWeight: FontWeight.w400,
               height: 1.25,
               letterSpacing: -0.24,
             ),
-            // prefix
+
+            // PREFIX
             prefixIconConstraints:
             BoxConstraints.loose(const Size(60, 40)),
             prefixIcon: widget.prefixText != null
                 ? Center(
               child: Text(
                 widget.prefixText!,
-                style: const TextStyle(
-                  color: Color(0xFF05010F),
+                style: TextStyle(
+                  color: colors.onSurface,
                   fontSize: 14,
                   fontFamily: 'SF Pro Rounded',
                   fontWeight: FontWeight.w400,
@@ -232,51 +244,76 @@ class _AppTextFieldState extends State<AppTextField> {
               ),
             )
                 : null,
-            // suffix (password toggle)
+
+            // PASSWORD TOGGLE
             suffixIcon: widget.obscureText == true
                 ? IconButton(
               icon: Icon(
                 _isObscured
                     ? Icons.visibility_off
                     : Icons.visibility,
-                color: const Color(0xFF2B5FAD),
+                color: colors.primary,
                 size: 20,
               ),
-              onPressed: () =>
-                  setState(() => _isObscured = !_isObscured),
+              onPressed: () {
+                setState(() {
+                  _isObscured = !_isObscured;
+                });
+              },
             )
                 : null,
+
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 16,
             ),
-            // ── borders (no border by default, blue on focus) ──
+
+            // BORDERS
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
             ),
+
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: widget.errorText != null
-                  ? const BorderSide(color: Colors.red, width: 1)
-                  : BorderSide.none,
+                  ? BorderSide(
+                color: colors.error,
+                width: 1,
+              )
+                  : BorderSide(
+                color: colors.divider,
+                width: 1,
+              ),
             ),
+
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: widget.errorText != null
-                  ? const BorderSide(color: Colors.red, width: 1)
-                  : const BorderSide(
-                  color: Color(0xFF2B5FAD), width: 1.5),
+                  ? BorderSide(
+                color: colors.error,
+                width: 1.5,
+              )
+                  : BorderSide(
+                color: colors.primary,
+                width: 1.5,
+              ),
             ),
+
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              const BorderSide(color: Colors.red, width: 1),
+              borderSide: BorderSide(
+                color: colors.error,
+                width: 1,
+              ),
             ),
+
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
-              borderSide:
-              const BorderSide(color: Colors.red, width: 1),
+              borderSide: BorderSide(
+                color: colors.error,
+                width: 1.5,
+              ),
             ),
           ),
         ),
@@ -292,18 +329,26 @@ class _UzbekistanPhoneFormatter extends TextInputFormatter {
       TextEditingValue newValue,
       ) {
     final text = newValue.text;
+
     if (text.isEmpty) return newValue;
 
     final buffer = StringBuffer();
+
     for (int i = 0; i < text.length; i++) {
-      if (i == 2 || i == 5 || i == 7) buffer.write(' ');
+      if (i == 2 || i == 5 || i == 7) {
+        buffer.write(' ');
+      }
+
       buffer.write(text[i]);
     }
 
     final formatted = buffer.toString();
+
     return TextEditingValue(
       text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
+      selection: TextSelection.collapsed(
+        offset: formatted.length,
+      ),
     );
   }
 }

@@ -3,9 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 
+import '../../../../core/theme/colors.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
@@ -55,23 +56,14 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final colors = Theme.of(context).extension<ApparenceKitColors>()!;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: colors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0D0D0D),
-              Color(0xFF1A1A2E),
-              Color(0xFF0D1525),
-            ],
-            stops: [0.0, 0.5, 1.0],
-          ),
-        ),
+        color: colors.background,
         child: Stack(
           children: [
             // Decorative circles
@@ -81,9 +73,9 @@ class _SplashScreenState extends State<SplashScreen>
               child: Container(
                 width: 260,
                 height: 260,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0x0D4D9EFF),
+                  color: colors.info.withValues(alpha: 0.05),
                 ),
               ),
             ),
@@ -93,9 +85,9 @@ class _SplashScreenState extends State<SplashScreen>
               child: Container(
                 width: 300,
                 height: 300,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0x082B5FAD),
+                  color: colors.primary.withValues(alpha: 0.03),
                 ),
               ),
             ),
@@ -105,9 +97,9 @@ class _SplashScreenState extends State<SplashScreen>
               child: Container(
                 width: 180,
                 height: 180,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0x0D4D9EFF),
+                  color: colors.info.withValues(alpha: 0.05),
                 ),
               ),
             ),
@@ -120,43 +112,39 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _fadeAnim.value,
                   child: Transform.translate(
                     offset: Offset(0, _slideAnim.value),
-                    child: Transform.scale(
-                        scale: _scaleAnim.value, child: child),
+                    child: Transform.scale(scale: _scaleAnim.value, child: child),
                   ),
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Logo
                     Container(
                       width: 110,
                       height: 110,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1C2340),
+                        color: colors.onPrimaryContainer,
                         borderRadius: BorderRadius.circular(32),
                         border: Border.all(
-                          color: const Color(0xFF2A3560),
+                          color: colors.grey1,
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4D9EFF)
-                                .withValues(alpha: 0.2),
+                            color: colors.info.withValues(alpha: 0.2),
                             blurRadius: 30,
                             spreadRadius: 2,
                           ),
                         ],
                       ),
                       child: const Center(
-                        child: Text('🚿',
-                            style: TextStyle(fontSize: 52)),
+                        child: Text('🚿', style: TextStyle(fontSize: 52)),
                       ),
                     ),
                     const SizedBox(height: 28),
-                    const Text(
+                    Text(
                       'Wash Club',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: colors.onBackground,
                         fontSize: 36,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
@@ -166,8 +154,8 @@ class _SplashScreenState extends State<SplashScreen>
                     Text(
                       t.splash.subtitle,
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Color(0xFF6B7280),
+                      style: TextStyle(
+                        color: colors.grey3,
                         fontSize: 14,
                         height: 1.5,
                       ),
@@ -187,20 +175,19 @@ class _SplashScreenState extends State<SplashScreen>
                 builder: (context, _) => Opacity(
                   opacity: _fadeAnim.value,
                   child: Column(children: [
-                    const SizedBox(
+                    SizedBox(
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                            Color(0xFF4D9EFF)),
+                        valueColor: AlwaysStoppedAnimation<Color>(colors.info),
                       ),
                     ),
                     const SizedBox(height: 14),
                     Text(
                       t.splash.loading,
-                      style: const TextStyle(
-                        color: Color(0xFF6B7280),
+                      style: TextStyle(
+                        color: colors.grey3,
                         fontSize: 12,
                       ),
                     ),

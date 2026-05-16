@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
 
+import '../../../../core/theme/colors.dart';
+
 class LanguageScreen extends StatefulWidget {
   const LanguageScreen({super.key});
 
@@ -60,127 +62,79 @@ class _LanguageScreenState extends State<LanguageScreen>
     return 'Continue';
   }
 
+  // initState, dispose, _onContinue, _continueLabel — o'zgarishsiz
+
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<ApparenceKitColors>()!;
+
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: colors.background,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF0D0D0D),
-              Color(0xFF1A1A2E),
-              Color(0xFF0D1525),
-            ],
-            stops: [0.0, 0.5, 1.0],
-          ),
-        ),
+        color: colors.background,
         child: Stack(
           children: [
-            // ── Decorative circles ──────────────────────────────
-            Positioned(
-              top: -80,
-              right: -80,
-              child: Container(
-                width: 260,
-                height: 260,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0x0D4D9EFF),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 120,
-              left: -100,
-              child: Container(
-                width: 300,
-                height: 300,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0x082B5FAD),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: -60,
-              right: 60,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Color(0x0D4D9EFF),
-                ),
-              ),
-            ),
+            // Decorative circles
+            Positioned(top: -80, right: -80, child: Container(
+              width: 260, height: 260,
+              decoration: BoxDecoration(shape: BoxShape.circle,
+                  color: colors.info.withValues(alpha: 0.05)),
+            )),
+            Positioned(bottom: 120, left: -100, child: Container(
+              width: 300, height: 300,
+              decoration: BoxDecoration(shape: BoxShape.circle,
+                  color: colors.primary.withValues(alpha: 0.03)),
+            )),
+            Positioned(bottom: -60, right: 60, child: Container(
+              width: 180, height: 180,
+              decoration: BoxDecoration(shape: BoxShape.circle,
+                  color: colors.info.withValues(alpha: 0.05)),
+            )),
 
-            // ── Main content ────────────────────────────────────
+            // Main content
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) => Opacity(
                 opacity: _fadeAnim.value,
                 child: Transform.translate(
-                  offset: Offset(0, _slideAnim.value),
-                  child: child,
-                ),
+                    offset: Offset(0, _slideAnim.value), child: child),
               ),
               child: SafeArea(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Header ─────────────────────────────────
+                    // Header
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Logo box — SplashScreen dek
                           Container(
-                            width: 72,
-                            height: 72,
+                            width: 72, height: 72,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF1C2340),
+                              color: colors.onPrimaryContainer,
                               borderRadius: BorderRadius.circular(22),
-                              border: Border.all(
-                                color: const Color(0xFF2A3560),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF4D9EFF)
-                                      .withValues(alpha: 0.15),
-                                  blurRadius: 20,
-                                  spreadRadius: 1,
-                                ),
-                              ],
+                              border: Border.all(color: colors.grey1, width: 1.5),
+                              boxShadow: [BoxShadow(
+                                color: colors.info.withValues(alpha: 0.15),
+                                blurRadius: 20, spreadRadius: 1,
+                              )],
                             ),
                             child: const Center(
-                              child: Text('🚿',
-                                  style: TextStyle(fontSize: 32)),
+                              child: Text('🚿', style: TextStyle(fontSize: 32)),
                             ),
                           ),
                           const SizedBox(height: 20),
-                          const Text(
-                            'Wash Club',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 32,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
+                          Text('Wash Club', style: TextStyle(
+                            color: colors.onBackground, fontSize: 32,
+                            fontWeight: FontWeight.bold, letterSpacing: 0.3,
+                          )),
                           const SizedBox(height: 6),
-                          const Text(
+                          Text(
                             'Tilni tanlang / Выберите язык / Choose language',
-                            style: TextStyle(
-                              color: Color(0xFF6B7280),
-                              fontSize: 13,
-                            ),
+                            style: TextStyle(color: colors.grey3, fontSize: 13),
                           ),
                         ],
                       ),
@@ -188,21 +142,15 @@ class _LanguageScreenState extends State<LanguageScreen>
 
                     const SizedBox(height: 36),
 
-                    // ── Section label ───────────────────────────
-                    const Padding(
-                      padding: EdgeInsets.only(left: 24, bottom: 12),
-                      child: Text(
-                        'Tilni tanlang',
-                        style: TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 24, bottom: 12),
+                      child: Text('Tilni tanlang', style: TextStyle(
+                        color: colors.grey3, fontSize: 11,
+                        fontWeight: FontWeight.w600, letterSpacing: 0.8,
+                      )),
                     ),
 
-                    // ── Language list ───────────────────────────
+                    // Language list
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -213,109 +161,73 @@ class _LanguageScreenState extends State<LanguageScreen>
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 10),
                               child: GestureDetector(
-                                onTap: () => setState(
-                                        () => _selectedLang = lang.code),
+                                onTap: () => setState(() => _selectedLang = lang.code),
                                 child: AnimatedContainer(
-                                  duration:
-                                  const Duration(milliseconds: 200),
+                                  duration: const Duration(milliseconds: 200),
                                   curve: Curves.easeOut,
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 16, vertical: 16),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? const Color(0xFF1E2E55)
-                                        : const Color(0xFF1C2340),
-                                    borderRadius:
-                                    BorderRadius.circular(16),
+                                        ? colors.primary.withValues(alpha: 0.15)
+                                        : colors.onPrimaryContainer,
+                                    borderRadius: BorderRadius.circular(16),
                                     border: Border.all(
-                                      color: isSelected
-                                          ? const Color(0xFF4D9EFF)
-                                          : const Color(0xFF2A3560),
+                                      color: isSelected ? colors.info : colors.grey1,
                                       width: isSelected ? 1.5 : 1,
                                     ),
                                     boxShadow: isSelected
-                                        ? [
-                                      BoxShadow(
-                                        color: const Color(0xFF4D9EFF)
-                                            .withValues(alpha: 0.15),
-                                        blurRadius: 12,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ]
+                                        ? [BoxShadow(
+                                      color: colors.info.withValues(alpha: 0.15),
+                                      blurRadius: 12, offset: const Offset(0, 4),
+                                    )]
                                         : [],
                                   ),
                                   child: Row(
                                     children: [
-                                      // Flag
-                                      Text(lang.flag,
-                                          style: const TextStyle(
-                                              fontSize: 30)),
+                                      Text(lang.flag, style: const TextStyle(fontSize: 30)),
                                       const SizedBox(width: 14),
-                                      // Names
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(
-                                              lang.name,
-                                              style: TextStyle(
-                                                color: isSelected
-                                                    ? const Color(0xFF4D9EFF)
-                                                    : Colors.white,
-                                                fontSize: 16,
-                                                fontWeight: isSelected
-                                                    ? FontWeight.w700
-                                                    : FontWeight.w500,
-                                              ),
-                                            ),
+                                            Text(lang.name, style: TextStyle(
+                                              color: isSelected ? colors.info : colors.onBackground,
+                                              fontSize: 16,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w700 : FontWeight.w500,
+                                            )),
                                             const SizedBox(height: 2),
-                                            Text(
-                                              lang.native,
-                                              style: TextStyle(
-                                                color: isSelected
-                                                    ? const Color(0xFF4D9EFF)
-                                                    .withValues(
-                                                    alpha: 0.7)
-                                                    : const Color(0xFF6B7280),
-                                                fontSize: 13,
-                                              ),
-                                            ),
+                                            Text(lang.native, style: TextStyle(
+                                              color: isSelected
+                                                  ? colors.info.withValues(alpha: 0.7)
+                                                  : colors.grey3,
+                                              fontSize: 13,
+                                            )),
                                           ],
                                         ),
                                       ),
                                       // Radio circle
                                       AnimatedSwitcher(
-                                        duration: const Duration(
-                                            milliseconds: 200),
+                                        duration: const Duration(milliseconds: 200),
                                         child: isSelected
                                             ? Container(
                                           key: ValueKey(lang.code),
-                                          width: 24,
-                                          height: 24,
-                                          decoration:
-                                          const BoxDecoration(
-                                            color: Color(0xFF4D9EFF),
+                                          width: 24, height: 24,
+                                          decoration: BoxDecoration(
+                                            color: colors.info,
                                             shape: BoxShape.circle,
                                           ),
-                                          child: const Icon(
-                                            Icons.check,
-                                            color: Colors.white,
-                                            size: 14,
-                                          ),
+                                          child: const Icon(Icons.check,
+                                              color: Colors.white, size: 14),
                                         )
                                             : Container(
-                                          key: ValueKey(
-                                              'empty_${lang.code}'),
-                                          width: 24,
-                                          height: 24,
+                                          key: ValueKey('empty_${lang.code}'),
+                                          width: 24, height: 24,
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             border: Border.all(
-                                              color: const Color(
-                                                  0xFF2A3560),
-                                              width: 1.5,
-                                            ),
+                                                color: colors.grey1, width: 1.5),
                                           ),
                                         ),
                                       ),
@@ -329,38 +241,29 @@ class _LanguageScreenState extends State<LanguageScreen>
                       ),
                     ),
 
-                    // ── Continue button ─────────────────────────
+                    // Continue button
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
                       child: SizedBox(
-                        width: double.infinity,
-                        height: 56,
+                        width: double.infinity, height: 56,
                         child: ElevatedButton(
                           onPressed: _onContinue,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4D9EFF),
-                            foregroundColor: Colors.white,
+                            backgroundColor: colors.info,
+                            foregroundColor: colors.onPrimary,
                             elevation: 0,
-                            shadowColor: const Color(0xFF4D9EFF)
-                                .withValues(alpha: 0.4),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
+                                borderRadius: BorderRadius.circular(16)),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                _continueLabel,
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  letterSpacing: 0.2,
-                                ),
-                              ),
+                              Text(_continueLabel, style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600,
+                                letterSpacing: 0.2,
+                              )),
                               const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_ios,
-                                  size: 16),
+                              const Icon(Icons.arrow_forward_ios, size: 16),
                             ],
                           ),
                         ),

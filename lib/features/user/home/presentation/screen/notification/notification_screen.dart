@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 
+import '../../../../../../core/theme/colors.dart';
+
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
 
@@ -19,7 +21,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     ),
     _NotifItem(
       type: NotifType.promo,
-      title: '–15% Premиum-deteyling',
+      title: '–15% Premium-detailing',
       body: 'Butun aprel davomida aksiya. Hoziroq foydalaning!',
       time: '1 soat oldin',
       isRead: false,
@@ -34,7 +36,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _NotifItem(
       type: NotifType.system,
       title: 'Ilovaga xush kelibsiz!',
-      body: 'Wash Club ilovasini yuklab oldingiz. Birinchi broningizni qiling.',
+      body:
+      'Wash Club ilovasini yuklab oldingiz. Birinchi broningizni qiling.',
       time: 'Kecha',
       isRead: true,
     ),
@@ -58,140 +61,198 @@ class _NotificationScreenState extends State<NotificationScreen> {
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final colors = Theme.of(context).extension<ApparenceKitColors>()!;
     final hasUnread = _notifications.any((n) => !n.isRead);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1A1A2E),
+        backgroundColor: colors.surface,
         elevation: 0,
+        centerTitle: true,
+        scrolledUnderElevation: 0,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new,
-              color: Colors.white, size: 18),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: colors.onSurface,
+            size: 18,
+          ),
         ),
         title: Text(
           t.notification.title,
-          style: const TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: colors.onSurface,
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+            letterSpacing: -0.2,
+          ),
         ),
-        centerTitle: true,
         actions: [
           if (hasUnread)
             TextButton(
               onPressed: _markAllRead,
               child: Text(
                 t.notification.markAllRead,
-                style: const TextStyle(
-                    color: Color(0xFF4D9EFF), fontSize: 12),
+                style: TextStyle(
+                  color: colors.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
         ],
       ),
       body: _notifications.isEmpty
-          ? _buildEmpty(context)
+          ? _buildEmpty(context, colors)
           : ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 12),
         itemCount: _notifications.length,
         itemBuilder: (context, i) {
           final n = _notifications[i];
-          return _buildNotifTile(context, n, i);
+          return _buildNotifTile(context, n, i, colors);
         },
       ),
     );
   }
 
-  Widget _buildEmpty(BuildContext context) {
+  Widget _buildEmpty(
+      BuildContext context,
+      ApparenceKitColors colors,
+      ) {
     final t = context.t;
+
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C2340),
-              borderRadius: BorderRadius.circular(24),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: colors.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: colors.divider,
+                ),
+              ),
+              child: Icon(
+                Icons.notifications_none_rounded,
+                color: colors.primary,
+                size: 38,
+              ),
             ),
-            child: const Icon(Icons.notifications_none_outlined,
-                color: Color(0xFF4D9EFF), size: 36),
-          ),
-          const SizedBox(height: 20),
-          Text(t.notification.empty,
-              style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold)),
-          const SizedBox(height: 8),
-          Text(t.notification.emptySubtitle,
-              style: const TextStyle(
-                  color: Color(0xFF9EA3AE), fontSize: 14)),
-        ],
+            const SizedBox(height: 22),
+            Text(
+              t.notification.empty,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.onBackground,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              t.notification.emptySubtitle,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.grey3,
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                height: 1.4,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildNotifTile(
-      BuildContext context, _NotifItem n, int index) {
-    final t = context.t;
-
+      BuildContext context,
+      _NotifItem n,
+      int index,
+      ApparenceKitColors colors,
+      ) {
     Color iconColor;
     IconData iconData;
     String typeLabel;
 
     switch (n.type) {
       case NotifType.booking:
-        iconColor = const Color(0xFF4D9EFF);
+        iconColor = colors.primary;
         iconData = Icons.calendar_today_outlined;
-        typeLabel = t.notification.booking;
+        typeLabel = context.t.notification.booking;
         break;
+
       case NotifType.promo:
-        iconColor = const Color(0xFFFFB800);
+        iconColor = colors.warning;
         iconData = Icons.local_offer_outlined;
-        typeLabel = t.notification.promo;
+        typeLabel = context.t.notification.promo;
         break;
+
       case NotifType.system:
-        iconColor = const Color(0xFF34C759);
-        iconData = Icons.info_outline;
-        typeLabel = t.notification.system;
+        iconColor = colors.success;
+        iconData = Icons.info_outline_rounded;
+        typeLabel = context.t.notification.system;
         break;
     }
+
+    final cardColor = n.isRead
+        ? colors.surface
+        : colors.primary.withValues(alpha: 0.08);
+
+    final borderColor = n.isRead
+        ? colors.divider
+        : colors.primary.withValues(alpha: 0.25);
 
     return GestureDetector(
       onTap: () {
         setState(() => n.isRead = true);
       },
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: n.isRead
-              ? const Color(0xFF1C2340)
-              : const Color(0xFF1E2E55),
-          borderRadius: BorderRadius.circular(14),
-          border: n.isRead
-              ? null
-              : Border.all(
-              color: const Color(0xFF2A4A8A), width: 1),
+          color: cardColor,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: borderColor,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: colors.shadow.withValues(alpha: 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Icon
+            // icon
             Container(
-              width: 44,
-              height: 44,
+              width: 46,
+              height: 46,
               decoration: BoxDecoration(
-                color: iconColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                color: iconColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(iconData, color: iconColor, size: 22),
+              child: Icon(
+                iconData,
+                color: iconColor,
+                size: 22,
+              ),
             ),
-            const SizedBox(width: 12),
-            // Content
+
+            const SizedBox(width: 14),
+
+            // content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,50 +261,80 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: iconColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
+                          horizontal: 8,
+                          vertical: 4,
                         ),
-                        child: Text(typeLabel,
-                            style: TextStyle(
-                                color: iconColor,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700)),
+                        decoration: BoxDecoration(
+                          color: iconColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          typeLabel,
+                          style: TextStyle(
+                            color: iconColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
                       ),
                       const Spacer(),
-                      Text(n.time,
-                          style: const TextStyle(
-                              color: Color(0xFF9EA3AE), fontSize: 11)),
+                      Text(
+                        n.time,
+                        style: TextStyle(
+                          color: colors.grey3,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(n.title,
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: n.isRead
-                              ? FontWeight.w500
-                              : FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  Text(n.body,
-                      style: const TextStyle(
-                          color: Color(0xFF9EA3AE), fontSize: 13),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    n.title,
+                    style: TextStyle(
+                      color: colors.onSurface,
+                      fontSize: 14,
+                      height: 1.25,
+                      fontWeight:
+                      n.isRead ? FontWeight.w500 : FontWeight.w700,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    n.body,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: colors.grey3,
+                      fontSize: 13,
+                      height: 1.45,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
                 ],
               ),
             ),
-            // Unread dot
+
             if (!n.isRead) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.only(top: 4),
-                decoration: const BoxDecoration(
-                  color: Color(0xFF4D9EFF),
+                width: 10,
+                height: 10,
+                margin: const EdgeInsets.only(top: 6),
+                decoration: BoxDecoration(
+                  color: colors.primary,
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: colors.primary.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -254,7 +345,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 }
 
-enum NotifType { booking, promo, system }
+enum NotifType {
+  booking,
+  promo,
+  system,
+}
 
 class _NotifItem {
   final NotifType type;

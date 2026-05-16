@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
 import 'package:wash_club/features/user/home/presentation/screen/user_home_screen.dart';
 
+import '../../../../core/theme/colors.dart';
+
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -21,11 +23,13 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).extension<ApparenceKitColors>()!;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F7),
+      backgroundColor: colors.background,
       body: Column(
         children: [
-          // ── Header (blue section) ──────────────────────────────────
+          // Header
           Container(
             width: double.infinity,
             padding: const EdgeInsets.only(
@@ -34,9 +38,7 @@ class _AuthScreenState extends State<AuthScreen> {
               right: 24,
               bottom: 32,
             ),
-            decoration: const BoxDecoration(
-              color: Color(0xFF2B5FAD),
-            ),
+            color: colors.primary,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -45,9 +47,8 @@ class _AuthScreenState extends State<AuthScreen> {
                   children: [
                     SizedBox(
                       height: 200,
-                      //width: 80,
-                      child: Image(
-                        image: AssetImage('assets/image/car_img.png'),
+                      child: Image.asset(
+                        'assets/image/car_img.png',
                         fit: BoxFit.contain,
                       ),
                     ),
@@ -57,7 +58,7 @@ class _AuthScreenState extends State<AuthScreen> {
                         Text(
                           t.addCar.title,
                           style: TextStyle(
-                            color: Colors.white,
+                            color: colors.onPrimary,
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
@@ -66,53 +67,50 @@ class _AuthScreenState extends State<AuthScreen> {
                         Text(
                           t.addCar.subtitle,
                           style: TextStyle(
-                            color: Colors.white70,
+                            color: colors.onPrimary.withValues(alpha: 0.7),
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
               ],
             ),
           ),
 
-          // ── Form section ───────────────────────────────────────────
+          // Form
           Expanded(
             child: Container(
-              color: const Color(0xFFF2F4F7),
+              color: colors.background,
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 28),
+                  horizontal: 20,
+                  vertical: 28,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Country number
-                    _label(t.addCar.plate, required: true),
+                    _label(t.addCar.plate, required: true, colors: colors),
                     const SizedBox(height: 8),
-                    _textField(hint: '01A123BC'),
+                    _textField(hint: '01A123BC', colors: colors),
                     const SizedBox(height: 6),
-                    const Text(
+                    Text(
                       'Example: 01A123BC, 01502GDA, T025004',
-                      style: TextStyle(
-                        color: Color(0xFF9EA3AE),
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: colors.grey2, fontSize: 12),
                     ),
                     const SizedBox(height: 20),
 
-                    // Marka + Model
                     Row(
                       children: [
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _label('Marka'),
+                              _label('Marka', colors: colors),
                               const SizedBox(height: 8),
-                              _textField(hint: 'Cobalt'),
+                              _textField(hint: 'Cobalt', colors: colors),
                             ],
                           ),
                         ),
@@ -121,9 +119,9 @@ class _AuthScreenState extends State<AuthScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _label('Model'),
+                              _label('Model', colors: colors),
                               const SizedBox(height: 8),
-                              _textField(hint: '2024'),
+                              _textField(hint: '2024', colors: colors),
                             ],
                           ),
                         ),
@@ -131,8 +129,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Body type
-                    _label(t.addCar.bodyType),
+                    _label(t.addCar.bodyType, colors: colors),
                     GridView.count(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
@@ -141,8 +138,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       physics: const NeverScrollableScrollPhysics(),
                       childAspectRatio: 2.6,
                       children: bodyTypes.map((type) {
-                        final isSelected =
-                            selectedBodyType == type['label'];
+                        final isSelected = selectedBodyType == type['label'];
                         return GestureDetector(
                           onTap: () =>
                               setState(() => selectedBodyType = type['label']!),
@@ -150,12 +146,12 @@ class _AuthScreenState extends State<AuthScreen> {
                             duration: const Duration(milliseconds: 180),
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFFDEE8F8)
-                                  : Colors.white,
+                                  ? colors.onPrimaryContainer
+                                  : colors.surface,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF2B5FAD)
+                                    ? colors.primary
                                     : Colors.transparent,
                                 width: 1.8,
                               ),
@@ -163,8 +159,10 @@ class _AuthScreenState extends State<AuthScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(type['emoji']!,
-                                    style: const TextStyle(fontSize: 20)),
+                                Text(
+                                  type['emoji']!,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
                                 const SizedBox(width: 8),
                                 Text(
                                   type['label']!,
@@ -174,8 +172,8 @@ class _AuthScreenState extends State<AuthScreen> {
                                         ? FontWeight.w600
                                         : FontWeight.w400,
                                     color: isSelected
-                                        ? const Color(0xFF2B5FAD)
-                                        : const Color(0xFF333333),
+                                        ? colors.primary
+                                        : colors.onSurface,
                                   ),
                                 ),
                               ],
@@ -190,20 +188,23 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
           ),
 
-          // ── Bottom button ──────────────────────────────────────────
+          // Bottom button
           Container(
-            color: const Color(0xFFF2F4F7),
+            color: colors.background,
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
             child: SizedBox(
               width: double.infinity,
               height: 54,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context)=> UserHomeScreen()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const UserHomeScreen()),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF2B5FAD),
-                  foregroundColor: Colors.white,
+                  backgroundColor: colors.primary,
+                  foregroundColor: colors.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -214,13 +215,13 @@ class _AuthScreenState extends State<AuthScreen> {
                   children: [
                     Text(
                       t.addCar.continueButton,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(width: 6),
-                    Icon(Icons.chevron_right, size: 20),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.chevron_right, size: 20),
                   ],
                 ),
               ),
@@ -231,36 +232,42 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _label(String text, {bool required = false}) {
+  Widget _label(
+    String text, {
+    bool required = false,
+    required ApparenceKitColors colors,
+  }) {
     return Row(
       children: [
         Text(
           text,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A2E),
+            color: colors.onBackground,
           ),
         ),
         if (required)
-          const Text(' *',
-              style: TextStyle(color: Colors.red, fontSize: 14)),
+          Text(' *', style: TextStyle(color: colors.error, fontSize: 14)),
       ],
     );
   }
 
-  Widget _textField({required String hint}) {
+  Widget _textField({
+    required String hint,
+    required ApparenceKitColors colors,
+  }) {
     return TextField(
+      style: TextStyle(color: colors.onSurface),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(
-          color: Color(0xFFBCC0CC),
-          fontSize: 15,
-        ),
+        hintStyle: TextStyle(color: colors.disabledContent, fontSize: 15),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: colors.surface,
         contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 14),
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
@@ -271,8 +278,7 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-              color: Color(0xFF2B5FAD), width: 1.5),
+          borderSide: BorderSide(color: colors.primary, width: 1.5),
         ),
       ),
     );

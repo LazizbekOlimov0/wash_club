@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/extensions/theme_extension.dart';
+
 // ─────────────────────────────────────────────
 // MODELS
 // ─────────────────────────────────────────────
@@ -196,17 +198,24 @@ class BookingScreen extends StatefulWidget {
 }
 
 class _BookingScreenState extends State<BookingScreen> {
-  int _step = 0; // 0-4
+  int _step = 0;
 
-  // Selections
   Branch? _selectedBranch;
   WashService? _selectedService;
+
   final Set<String> _selectedAddons = {};
+
   DateTime _selectedDate = DateTime.now();
   String? _selectedTime;
+
   CarItem? _selectedCar;
+
   String _paymentMethod = 'card';
-  final TextEditingController _promoController = TextEditingController(text: 'WASH20');
+
+  final TextEditingController _promoController =
+  TextEditingController(
+    text: 'WASH20',
+  );
 
   @override
   void dispose() {
@@ -215,25 +224,34 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void _nextStep() {
-    if (_step < 4) setState(() => _step++);
+    if (_step < 4) {
+      setState(() => _step++);
+    }
   }
 
   void _prevStep() {
-    if (_step > 0) setState(() => _step--);
+    if (_step > 0) {
+      setState(() => _step--);
+    }
   }
 
   bool get _canProceed {
     switch (_step) {
       case 0:
         return _selectedBranch != null;
+
       case 1:
         return _selectedService != null;
+
       case 2:
         return _selectedTime != null;
+
       case 3:
         return _selectedCar != null;
+
       case 4:
         return true;
+
       default:
         return false;
     }
@@ -241,72 +259,134 @@ class _BookingScreenState extends State<BookingScreen> {
 
   int get _totalPrice {
     int total = _selectedService?.priceSum ?? 0;
+
     for (final id in _selectedAddons) {
-      final addon = _addons.firstWhere((a) => a.id == id, orElse: () => const AddonService(id: '', name: '', priceSum: 0, durationMin: 0));
+      final addon = _addons.firstWhere(
+            (a) => a.id == id,
+        orElse: () => const AddonService(
+          id: '',
+          name: '',
+          priceSum: 0,
+          durationMin: 0,
+        ),
+      );
+
       total += addon.priceSum;
     }
+
     return total;
   }
 
   @override
   Widget build(BuildContext context) {
-    final titles = ['Филиал', 'Услуга', 'Время', 'Машина', 'Оплата'];
+    final colors = context.colors;
+
+    final titles = [
+      'Филиал',
+      'Услуга',
+      'Время',
+      'Машина',
+      'Оплата',
+    ];
 
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(titles[_step]),
-            _buildStepIndicator(),
+            _buildHeader(
+              context,
+              titles[_step],
+            ),
+
+            _buildStepIndicator(context),
+
             Expanded(
               child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                transitionBuilder: (child, anim) => FadeTransition(opacity: anim, child: child),
+                duration: const Duration(
+                  milliseconds: 250,
+                ),
+                transitionBuilder: (
+                    child,
+                    anim,
+                    ) {
+                  return FadeTransition(
+                    opacity: anim,
+                    child: child,
+                  );
+                },
                 child: KeyedSubtree(
                   key: ValueKey(_step),
                   child: _buildStepContent(),
                 ),
               ),
             ),
-            _buildBottomBar(),
+
+            _buildBottomBar(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildHeader(String title) {
+  Widget _buildHeader(
+      BuildContext context,
+      String title,
+      ) {
+    final colors = context.colors;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        0,
+      ),
       child: Row(
         children: [
           GestureDetector(
-            onTap: _step > 0 ? _prevStep : null,
+            onTap: _step > 0
+                ? _prevStep
+                : null,
             child: Container(
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: _surfaceElevated,
+                color: colors.surface,
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: colors.divider,
+                ),
               ),
-              child: const Icon(Icons.arrow_back, color: _textPrimary, size: 18),
+              child: Icon(
+                Icons.arrow_back,
+                color: colors.onSurface,
+                size: 18,
+              ),
             ),
           ),
+
           const SizedBox(width: 12),
+
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+            CrossAxisAlignment.start,
             children: [
               Text(
                 'Шаг ${_step + 1} из 5',
-                style: const TextStyle(color: _textSecondary, fontSize: 12),
+                style: TextStyle(
+                  color: colors.grey2,
+                  fontSize: 12,
+                ),
               ),
+
               Text(
                 title,
-                style: const TextStyle(
-                  color: _textPrimary,
+                style: TextStyle(
+                  color: colors.onBackground,
                   fontSize: 22,
-                  fontWeight: FontWeight.w700,
+                  fontWeight:
+                  FontWeight.w700,
                 ),
               ),
             ],
@@ -316,19 +396,34 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
-  Widget _buildStepIndicator() {
+  Widget _buildStepIndicator(
+      BuildContext context,
+      ) {
+    final colors = context.colors;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        8,
+      ),
       child: Row(
         children: List.generate(5, (i) {
           final isActive = i <= _step;
+
           return Expanded(
             child: Container(
               height: 3,
-              margin: EdgeInsets.only(right: i < 4 ? 4 : 0),
+              margin: EdgeInsets.only(
+                right: i < 4 ? 4 : 0,
+              ),
               decoration: BoxDecoration(
-                color: isActive ? _blue : _border,
-                borderRadius: BorderRadius.circular(2),
+                color: isActive
+                    ? colors.primary
+                    : colors.divider,
+                borderRadius:
+                BorderRadius.circular(2),
               ),
             ),
           );
@@ -343,37 +438,67 @@ class _BookingScreenState extends State<BookingScreen> {
         return _BranchStep(
           branches: _branches,
           selected: _selectedBranch,
-          onSelect: (b) => setState(() => _selectedBranch = b),
+          onSelect: (b) {
+            setState(() {
+              _selectedBranch = b;
+            });
+          },
         );
+
       case 1:
         return _ServiceStep(
           mainServices: _mainServices,
           addons: _addons,
-          selectedService: _selectedService,
-          selectedAddons: _selectedAddons,
-          onSelectService: (s) => setState(() => _selectedService = s),
-          onToggleAddon: (id) => setState(() {
-            if (_selectedAddons.contains(id)) {
-              _selectedAddons.remove(id);
-            } else {
-              _selectedAddons.add(id);
-            }
-          }),
+          selectedService:
+          _selectedService,
+          selectedAddons:
+          _selectedAddons,
+          onSelectService: (s) {
+            setState(() {
+              _selectedService = s;
+            });
+          },
+          onToggleAddon: (id) {
+            setState(() {
+              if (_selectedAddons
+                  .contains(id)) {
+                _selectedAddons
+                    .remove(id);
+              } else {
+                _selectedAddons.add(id);
+              }
+            });
+          },
         );
+
       case 2:
         return _TimeStep(
           selectedDate: _selectedDate,
           selectedTime: _selectedTime,
           timeSlots: _timeSlots,
-          onDateSelect: (d) => setState(() => _selectedDate = d),
-          onTimeSelect: (t) => setState(() => _selectedTime = t),
+          onDateSelect: (d) {
+            setState(() {
+              _selectedDate = d;
+            });
+          },
+          onTimeSelect: (t) {
+            setState(() {
+              _selectedTime = t;
+            });
+          },
         );
+
       case 3:
         return _CarStep(
           cars: _userCars,
           selected: _selectedCar,
-          onSelect: (c) => setState(() => _selectedCar = c),
+          onSelect: (c) {
+            setState(() {
+              _selectedCar = c;
+            });
+          },
         );
+
       case 4:
         return _PaymentStep(
           branch: _selectedBranch,
@@ -381,50 +506,93 @@ class _BookingScreenState extends State<BookingScreen> {
           car: _selectedCar,
           selectedDate: _selectedDate,
           selectedTime: _selectedTime,
-          paymentMethod: _paymentMethod,
+          paymentMethod:
+          _paymentMethod,
           totalPrice: _totalPrice,
-          promoController: _promoController,
-          onPaymentMethodChange: (m) => setState(() => _paymentMethod = m),
+          promoController:
+          _promoController,
+          onPaymentMethodChange:
+              (m) {
+            setState(() {
+              _paymentMethod = m;
+            });
+          },
         );
+
       default:
         return const SizedBox();
     }
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(
+      BuildContext context,
+      ) {
+    final colors = context.colors;
+
     final label = _step == 4
         ? 'Оплатить ${_formatPrice(_totalPrice)}'
         : 'Далее';
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: _border, width: 0.5)),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        16,
+      ),
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: colors.divider,
+            width: 0.5,
+          ),
+        ),
       ),
       child: SizedBox(
         width: double.infinity,
         height: 52,
         child: ElevatedButton(
-          onPressed: _canProceed ? _nextStep : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: _blue,
-            disabledBackgroundColor: _blue.withOpacity(0.4),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          onPressed:
+          _canProceed ? _nextStep : null,
+          style:
+          ElevatedButton.styleFrom(
+            backgroundColor:
+            colors.primary,
+            disabledBackgroundColor:
+            colors.disabled,
+            foregroundColor:
+            colors.onPrimary,
             elevation: 0,
+            shape:
+            RoundedRectangleBorder(
+              borderRadius:
+              BorderRadius.circular(
+                14,
+              ),
+            ),
           ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment:
+            MainAxisAlignment.center,
             children: [
               Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color:
+                  colors.onPrimary,
                   fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  fontWeight:
+                  FontWeight.w600,
                 ),
               ),
+
               const SizedBox(width: 6),
-              const Icon(Icons.arrow_forward, color: Colors.white, size: 18),
+
+              Icon(
+                Icons.arrow_forward,
+                color: colors.onPrimary,
+                size: 18,
+              ),
             ],
           ),
         ),
@@ -442,116 +610,261 @@ class _BranchStep extends StatelessWidget {
   final Branch? selected;
   final ValueChanged<Branch> onSelect;
 
-  const _BranchStep({required this.branches, required this.selected, required this.onSelect});
+  const _BranchStep({
+    required this.branches,
+    required this.selected,
+    required this.onSelect,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
+
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        8,
+      ),
       itemCount: branches.length,
       itemBuilder: (context, i) {
         final b = branches[i];
-        final isSelected = selected?.id == b.id;
+
+        final isSelected =
+            selected?.id == b.id;
+
         return GestureDetector(
           onTap: () => onSelect(b),
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            margin: const EdgeInsets.only(bottom: 12),
+            duration: const Duration(
+              milliseconds: 150,
+            ),
+            margin: const EdgeInsets.only(
+              bottom: 12,
+            ),
             decoration: BoxDecoration(
-              color: _cardBg,
-              borderRadius: BorderRadius.circular(16),
+              color: colors.surface,
+              borderRadius:
+              BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? _blue : Colors.transparent,
-                width: 2,
+                color: isSelected
+                    ? colors.primary
+                    : colors.divider,
+                width: isSelected ? 2 : 1,
               ),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment:
+              CrossAxisAlignment.start,
               children: [
                 Stack(
                   children: [
                     Container(
                       height: 160,
                       decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                        borderRadius:
+                        const BorderRadius.vertical(
+                          top:
+                          Radius.circular(
+                            14,
+                          ),
+                        ),
+                        gradient:
+                        LinearGradient(
+                          begin:
+                          Alignment.topLeft,
+                          end: Alignment
+                              .bottomRight,
                           colors: [
-                            const Color(0xFF1A2A4A),
-                            const Color(0xFF0D1B2A),
+                            colors.primary
+                                .withValues(
+                              alpha: 0.25,
+                            ),
+                            colors
+                                .background,
                           ],
                         ),
                       ),
-                      child: const Center(
-                        child: Icon(Icons.local_car_wash, color: Color(0xFF2D4A7A), size: 64),
+                      child: Center(
+                        child: Icon(
+                          Icons
+                              .local_car_wash,
+                          color:
+                          colors.primary,
+                          size: 64,
+                        ),
                       ),
                     ),
+
                     Positioned(
                       top: 10,
                       right: 10,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: b.isOpen ? _green : _red,
-                          borderRadius: BorderRadius.circular(20),
+                        padding:
+                        const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration:
+                        BoxDecoration(
+                          color: b.isOpen
+                              ? colors
+                              .success
+                              : colors
+                              .error,
+                          borderRadius:
+                          BorderRadius.circular(
+                            20,
+                          ),
                         ),
                         child: Text(
-                          b.isOpen ? 'Открыто' : 'Закрыто',
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                          b.isOpen
+                              ? 'Открыто'
+                              : 'Закрыто',
+                          style:
+                          TextStyle(
+                            color: colors
+                                .onPrimary,
+                            fontSize: 12,
+                            fontWeight:
+                            FontWeight
+                                .w600,
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
+
                 Padding(
-                  padding: const EdgeInsets.all(14),
+                  padding:
+                  const EdgeInsets.all(
+                    14,
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                    CrossAxisAlignment
+                        .start,
                     children: [
                       Row(
                         children: [
                           Expanded(
                             child: Text(
                               b.name,
-                              style: const TextStyle(
-                                color: _textPrimary,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                              style:
+                              TextStyle(
+                                color: colors
+                                    .onSurface,
+                                fontSize:
+                                16,
+                                fontWeight:
+                                FontWeight
+                                    .w600,
                               ),
                             ),
                           ),
-                          const Icon(Icons.star, color: Color(0xFFFFCC00), size: 14),
-                          const SizedBox(width: 3),
-                          Text(
-                            b.rating.toString(),
-                            style: const TextStyle(color: _textPrimary, fontSize: 13, fontWeight: FontWeight.w600),
+
+                          const Icon(
+                            Icons.star,
+                            color: Colors
+                                .amber,
+                            size: 14,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined, color: _textSecondary, size: 14),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(
-                              b.address,
-                              style: const TextStyle(color: _textSecondary, fontSize: 12),
+
+                          const SizedBox(
+                            width: 3,
+                          ),
+
+                          Text(
+                            b.rating
+                                .toString(),
+                            style:
+                            TextStyle(
+                              color: colors
+                                  .onSurface,
+                              fontSize:
+                              13,
+                              fontWeight:
+                              FontWeight
+                                  .w600,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
+
+                      const SizedBox(
+                          height: 6),
+
                       Row(
                         children: [
-                          const Icon(Icons.access_time, color: _textSecondary, size: 14),
-                          const SizedBox(width: 4),
-                          Text(b.hours, style: const TextStyle(color: _textSecondary, fontSize: 12)),
+                          Icon(
+                            Icons
+                                .location_on_outlined,
+                            color: colors
+                                .grey2,
+                            size: 14,
+                          ),
+
+                          const SizedBox(
+                              width: 4),
+
+                          Expanded(
+                            child: Text(
+                              b.address,
+                              style:
+                              TextStyle(
+                                color: colors
+                                    .grey2,
+                                fontSize:
+                                12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(
+                          height: 4),
+
+                      Row(
+                        children: [
+                          Icon(
+                            Icons
+                                .access_time,
+                            color: colors
+                                .grey2,
+                            size: 14,
+                          ),
+
+                          const SizedBox(
+                              width: 4),
+
+                          Text(
+                            b.hours,
+                            style:
+                            TextStyle(
+                              color: colors
+                                  .grey2,
+                              fontSize:
+                              12,
+                            ),
+                          ),
+
                           const Spacer(),
+
                           Text(
                             '${b.distanceKm} km',
-                            style: const TextStyle(color: _textSecondary, fontSize: 12, fontWeight: FontWeight.w500),
+                            style:
+                            TextStyle(
+                              color: colors
+                                  .grey2,
+                              fontSize:
+                              12,
+                              fontWeight:
+                              FontWeight
+                                  .w500,
+                            ),
                           ),
                         ],
                       ),
