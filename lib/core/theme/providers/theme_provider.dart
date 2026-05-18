@@ -10,13 +10,8 @@ class ThemeProvider extends InheritedNotifier<AppTheme> {
   const ThemeProvider({super.key, super.notifier, required super.child});
 
   @override
-  bool updateShouldNotify(covariant InheritedNotifier<AppTheme> oldWidget) {
-    final isModeChanged = oldWidget.notifier!.mode != notifier!.mode;
-    if (isModeChanged) {
-      notifier!.mode = oldWidget.notifier!.mode;
-      notifier!.setSystemBarColor();
-    }
-    return false;
+  bool updateShouldNotify(covariant ThemeProvider oldWidget) {
+    return oldWidget.notifier != notifier;
   }
 
   static AppTheme of(BuildContext context) =>
@@ -132,13 +127,20 @@ class AppTheme with ChangeNotifier {
   }
 
   void setSystemBarColor() {
+    final brightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
+    final isDark = mode == ThemeMode.system
+        ? brightness == Brightness.dark
+        : mode == ThemeMode.dark;
+
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarBrightness:
-        mode == ThemeMode.light ? Brightness.light : Brightness.dark,
+        isDark ? Brightness.dark : Brightness.light,
         statusBarIconBrightness:
-        mode == ThemeMode.light ? Brightness.dark : Brightness.light,
+        isDark ? Brightness.light : Brightness.dark,
       ),
     );
   }
@@ -162,14 +164,37 @@ class AppTheme with ChangeNotifier {
   ThemeData get lightThemeData => lightTheme!.data.materialTheme;
   ThemeData get darkThemeData => darkTheme!.data.materialTheme;
 
-  AppearanceKitTheme get current =>
-      mode == ThemeMode.light ? lightTheme! : darkTheme!;
+  AppearanceKitTheme get current {
+    if (mode == ThemeMode.system) {
+      final brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
+      return brightness == Brightness.dark
+          ? darkTheme!
+          : lightTheme!;
+    }
+
+    return mode == ThemeMode.light
+        ? lightTheme!
+        : darkTheme!;
+  }
 
   ThemeMode _loadFromPrefs() {
     final saved = _prefs.getString('themeMode');
-    if (saved == ThemeMode.dark.name) return ThemeMode.dark;
-    if (saved == ThemeMode.light.name) return ThemeMode.light;
-    return mode;
+
+    switch (saved) {
+      case 'light':
+        return ThemeMode.light;
+
+      case 'dark':
+        return ThemeMode.dark;
+
+      case 'system':
+        return ThemeMode.system;
+
+      default:
+        return mode;
+    }
   }
 
   void _saveInPrefs(ThemeMode themeMode) {

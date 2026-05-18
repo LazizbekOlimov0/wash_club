@@ -42,6 +42,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsAddCarEn addCar = TranslationsAddCarEn._(_root);
 	@override late final TranslationsNotificationEn notification = TranslationsNotificationEn._(_root);
 	@override late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
+	@override late final TranslationsSettingsEn settings = TranslationsSettingsEn._(_root);
 }
 
 // Path: splash
@@ -208,4 +209,49 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	@override String get bestPrice => 'Best price';
 	@override String get months3 => '3 months';
 	@override String get months6 => '6 months';
+}
+
+// Path: settings
+class TranslationsSettingsEn extends TranslationsSettingsUz {
+	TranslationsSettingsEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Settings';
+	@override String get account => 'ACCOUNT';
+	@override String get editProfile => 'Edit profile';
+	@override String get changePhone => 'Change phone number';
+	@override String get appearance => 'APPEARANCE';
+	@override String get theme => 'App theme';
+	@override String get themeLight => 'Light';
+	@override String get themeDark => 'Dark';
+	@override String get themeAuto => 'Auto';
+	@override String get notifications => 'NOTIFICATIONS';
+	@override String get pushNotifications => 'Push notifications';
+	@override String get pushSubtitle => 'Booking, status and reminders';
+	@override String get promoNotifications => 'Promo notifications';
+	@override String get promoSubtitle => 'Deals and special offers';
+	@override String get language => 'LANGUAGE';
+	@override String get appLanguage => 'App language';
+	@override String get history => 'HISTORY';
+	@override String get visitHistory => 'Visit history';
+	@override String get paymentHistory => 'Payment history';
+	@override String get support => 'SUPPORT';
+	@override String get contactSupport => 'Contact support';
+	@override String get telegramChannel => 'Telegram channel';
+	@override String get rateApp => 'Rate the app';
+	@override String get privacyPolicy => 'Privacy policy';
+	@override String get termsOfService => 'Terms of service';
+	@override String get dangerZone => 'ACCOUNT';
+	@override String get logout => 'Log out';
+	@override String get deleteAccount => 'Delete account';
+	@override String get logoutTitle => 'Log out?';
+	@override String get logoutBody => 'Are you sure you want to log out?';
+	@override String get deleteTitle => 'Delete account?';
+	@override String get deleteBody => 'All data will be permanently deleted. This action cannot be undone.';
+	@override String get cancel => 'Cancel';
+	@override String get confirm => 'Log out';
+	@override String get delete => 'Delete';
+	@override String get version => 'Wash Club · v1.0.0';
 }

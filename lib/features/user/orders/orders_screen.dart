@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
+import '../../../../core/theme/colors.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -14,7 +15,6 @@ class _OrdersScreenState extends State<OrdersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Mock orders
   final List<_Order> _active = [
     _Order(
       status: OrderStatus.confirmed,
@@ -53,6 +53,9 @@ class _OrdersScreenState extends State<OrdersScreen>
     ),
   ];
 
+  ApparenceKitColors get _c =>
+      Theme.of(context).extension<ApparenceKitColors>()!;
+
   @override
   void initState() {
     super.initState();
@@ -72,14 +75,15 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final colors = _c;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: colors.background,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ─────────────────────────────────────────
+            // ── Header ──────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Column(
@@ -87,8 +91,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                 children: [
                   Text(
                     t.orders.title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: colors.onBackground,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -96,34 +100,31 @@ class _OrdersScreenState extends State<OrdersScreen>
                   const SizedBox(height: 4),
                   Text(
                     '${_active.length} активных · $_totalCount всего',
-                    style: const TextStyle(
-                      color: Color(0xFF6B7280),
-                      fontSize: 13,
-                    ),
+                    style: TextStyle(color: colors.grey2, fontSize: 13),
                   ),
                 ],
               ),
             ),
 
-            // ── Tab bar ────────────────────────────────────────
+            // ── Tab bar ─────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1C2340),
+                  color: colors.onPrimaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: TabBar(
                   controller: _tabController,
                   indicator: BoxDecoration(
-                    color: Colors.white,
+                    color: colors.onBackground,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: Colors.transparent,
-                  labelColor: const Color(0xFF0D0D0D),
-                  unselectedLabelColor: const Color(0xFF6B7280),
+                  labelColor: colors.background,
+                  unselectedLabelColor: colors.grey2,
                   labelStyle: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
@@ -143,17 +144,27 @@ class _OrdersScreenState extends State<OrdersScreen>
               ),
             ),
 
-            // ── Tab views ──────────────────────────────────────
+            // ── Tab views ───────────────────────────────────
             Expanded(
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  _buildOrderList(_active, emptyLabel: 'Нет активных заказов'),
-                  _buildOrderList(_history,
-                      emptyLabel: 'Завершённых заказов пока нет',
-                      showBookButton: true),
-                  _buildOrderList(_cancelled,
-                      emptyLabel: 'Нет отменённых заказов'),
+                  _buildOrderList(
+                    _active,
+                    emptyLabel: 'Нет активных заказов',
+                    colors: colors,
+                  ),
+                  _buildOrderList(
+                    _history,
+                    emptyLabel: 'Завершённых заказов пока нет',
+                    showBookButton: true,
+                    colors: colors,
+                  ),
+                  _buildOrderList(
+                    _cancelled,
+                    emptyLabel: 'Нет отменённых заказов',
+                    colors: colors,
+                  ),
                 ],
               ),
             ),
@@ -163,25 +174,32 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  // ── Order list ─────────────────────────────────────────────────
   Widget _buildOrderList(
       List<_Order> orders, {
         required String emptyLabel,
         bool showBookButton = false,
+        required ApparenceKitColors colors,
       }) {
     if (orders.isEmpty) {
-      return _buildEmpty(emptyLabel, showBookButton: showBookButton);
+      return _buildEmpty(
+        emptyLabel,
+        showBookButton: showBookButton,
+        colors: colors,
+      );
     }
-
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: orders.length,
-      itemBuilder: (context, i) => _OrderCard(order: orders[i]),
+      itemBuilder: (context, i) =>
+          _OrderCard(order: orders[i], colors: colors),
     );
   }
 
-  // ── Empty state ────────────────────────────────────────────────
-  Widget _buildEmpty(String label, {bool showBookButton = false}) {
+  Widget _buildEmpty(
+      String label, {
+        bool showBookButton = false,
+        required ApparenceKitColors colors,
+      }) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -190,19 +208,16 @@ class _OrdersScreenState extends State<OrdersScreen>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: const Color(0xFF1C2340),
+              color: colors.onPrimaryContainer,
               borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(Icons.calendar_today_outlined,
-                color: Color(0xFF6B7280), size: 28),
+            child: Icon(Icons.calendar_today_outlined,
+                color: colors.grey2, size: 28),
           ),
           const SizedBox(height: 16),
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontSize: 15,
-            ),
+            style: TextStyle(color: colors.grey2, fontSize: 15),
           ),
           if (showBookButton) ...[
             const SizedBox(height: 20),
@@ -211,8 +226,8 @@ class _OrdersScreenState extends State<OrdersScreen>
               icon: const Icon(Icons.auto_awesome, size: 18),
               label: const Text('Забронировать'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4D9EFF),
-                foregroundColor: Colors.white,
+                backgroundColor: colors.info,
+                foregroundColor: colors.onPrimary,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
                     horizontal: 24, vertical: 12),
@@ -227,33 +242,30 @@ class _OrdersScreenState extends State<OrdersScreen>
   }
 }
 
-// ── Order card ─────────────────────────────────────────────────────
+// ── Order card ────────────────────────────────────────────────────
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, required this.colors});
 
   final _Order order;
+  final ApparenceKitColors colors;
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = order.status == OrderStatus.confirmed
-        ? const Color(0xFF4D9EFF)
-        : const Color(0xFFEF4444);
-
-    final statusLabel = order.status == OrderStatus.confirmed
-        ? 'Подтверждено'
-        : 'Отменено';
+    final isConfirmed = order.status == OrderStatus.confirmed;
+    final statusColor = isConfirmed ? colors.info : colors.error;
+    final statusLabel = isConfirmed ? 'Подтверждено' : 'Отменено';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C2340),
+        color: colors.onPrimaryContainer,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF2A3560), width: 1),
+        border: Border.all(color: colors.grey1, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Top row: status + menu ──────────────────────────
+          // ── Status + menu ──────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 8, 0),
             child: Row(
@@ -276,12 +288,11 @@ class _OrderCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (order.status == OrderStatus.confirmed)
+                if (isConfirmed)
                   IconButton(
-                    onPressed: () =>
-                        _showOrderMenu(context, order),
-                    icon: const Icon(Icons.more_horiz,
-                        color: Color(0xFF6B7280), size: 20),
+                    onPressed: () => _showOrderMenu(context),
+                    icon: Icon(Icons.more_horiz,
+                        color: colors.grey2, size: 20),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -298,8 +309,8 @@ class _OrderCard extends StatelessWidget {
               children: [
                 Text(
                   order.time,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colors.onBackground,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
@@ -307,10 +318,7 @@ class _OrderCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Text(
                   order.date,
-                  style: const TextStyle(
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 15,
-                  ),
+                  style: TextStyle(color: colors.grey2, fontSize: 15),
                 ),
               ],
             ),
@@ -325,16 +333,15 @@ class _OrderCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 _infoRow(Icons.directions_car_outlined, order.car),
                 const SizedBox(height: 6),
-                _infoRow(
-                    Icons.access_time_outlined, order.serviceType),
+                _infoRow(Icons.access_time_outlined, order.serviceType),
               ],
             ),
           ),
 
           // ── Divider ────────────────────────────────────────
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Divider(height: 1, color: Color(0xFF2A3560)),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, color: colors.grey1),
           ),
 
           // ── Payment + price ────────────────────────────────
@@ -345,15 +352,12 @@ class _OrderCard extends StatelessWidget {
               children: [
                 Text(
                   order.paymentMethod,
-                  style: const TextStyle(
-                    color: Color(0xFF9CA3AF),
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: colors.grey2, fontSize: 13),
                 ),
                 Text(
                   order.price,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: colors.onBackground,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -369,28 +373,24 @@ class _OrderCard extends StatelessWidget {
   Widget _infoRow(IconData icon, String label) {
     return Row(
       children: [
-        Icon(icon, color: const Color(0xFF6B7280), size: 16),
+        Icon(icon, color: colors.grey2, size: 16),
         const SizedBox(width: 8),
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF9CA3AF),
-              fontSize: 13,
-            ),
+            style: TextStyle(color: colors.grey2, fontSize: 13),
           ),
         ),
       ],
     );
   }
 
-  void _showOrderMenu(BuildContext context, _Order order) {
+  void _showOrderMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1C2340),
+      backgroundColor: colors.onPrimaryContainer,
       shape: const RoundedRectangleBorder(
-        borderRadius:
-        BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
         child: Column(
@@ -401,7 +401,7 @@ class _OrderCard extends StatelessWidget {
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: const Color(0xFF2A3560),
+                color: colors.grey1,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -410,13 +410,14 @@ class _OrderCard extends StatelessWidget {
               ctx,
               icon: Icons.calendar_today_outlined,
               label: 'Перенести',
+              color: colors.onBackground,
               onTap: () => Navigator.pop(ctx),
             ),
             _menuItem(
               ctx,
               icon: Icons.close,
               label: 'Отменить бронь',
-              color: const Color(0xFFEF4444),
+              color: colors.error,
               onTap: () => Navigator.pop(ctx),
             ),
             const SizedBox(height: 8),
@@ -431,24 +432,23 @@ class _OrderCard extends StatelessWidget {
         required IconData icon,
         required String label,
         required VoidCallback onTap,
-        Color? color,
+        required Color color,
       }) {
-    final c = color ?? Colors.white;
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding:
-        const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           children: [
-            Icon(icon, color: c, size: 22),
+            Icon(icon, color: color, size: 22),
             const SizedBox(width: 14),
             Text(
               label,
               style: TextStyle(
-                  color: c,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500),
+                color: color,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -457,7 +457,7 @@ class _OrderCard extends StatelessWidget {
   }
 }
 
-// ── Models ────────────────────────────────────────────────────────
+// ── Models ─────────────────────────────────────────────────────────
 enum OrderStatus { confirmed, cancelled }
 
 class _Order {

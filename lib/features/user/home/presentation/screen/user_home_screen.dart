@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 
+import '../../../../../core/theme/colors.dart';
+
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
 
@@ -11,7 +13,6 @@ class UserHomeScreen extends StatefulWidget {
 }
 
 class _UserHomeScreenState extends State<UserHomeScreen> {
-  // Mock data — backenddan keladi
   final bool _hasBooking = true;
   final String _userName = 'Bobur';
   final String _weather = '+18°';
@@ -40,7 +41,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   final List<Map<String, dynamic>> _branches = [
     {
       'name': 'Wash Club Yunusobod',
-      'address': 'Yunusobod tumani, Amir Temur ko\'chasi 108',
+      'address': "Yunusobod tumani, Amir Temur ko'chasi 108",
       'rating': '4.9',
       'distance': '1.2 km',
       'hours': '08:00 — 22:00',
@@ -55,8 +56,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       'isOpen': true,
     },
     {
-      'name': 'Wash Club Mirzo Ulug\'bek',
-      'address': 'Mirzo Ulug\'bek tumani',
+      'name': "Wash Club Mirzo Ulug'bek",
+      'address': "Mirzo Ulug'bek tumani",
       'rating': '4.7',
       'distance': '5.1 km',
       'hours': '09:00 — 21:00',
@@ -68,6 +69,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     {'name': 'Chevrolet Malibu', 'plate': '01 U 571 QA', 'color': 'Qora'},
   ];
 
+  ApparenceKitColors get _c =>
+      Theme.of(context).extension<ApparenceKitColors>()!;
+
   String _greeting(BuildContext context) {
     final t = context.t;
     final hour = DateTime.now().hour;
@@ -78,59 +82,59 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = _c;
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: colors.background,
       body: ListView(
         padding: EdgeInsets.zero,
         physics: const ClampingScrollPhysics(),
         children: [
-          _buildHeader(context),
+          _buildHeader(context, colors),
           if (_hasBooking) ...[
             const SizedBox(height: 16),
-            _buildBookingCard(context),
+            _buildBookingCard(context, colors),
           ],
           const SizedBox(height: 24),
-          _buildPromotions(context),
+          _buildPromotions(context, colors),
           const SizedBox(height: 24),
-          _buildQuickActions(context),
+          _buildQuickActions(context, colors),
           const SizedBox(height: 24),
-          _buildBranches(context),
+          _buildBranches(context, colors),
           const SizedBox(height: 24),
-          _buildMyCars(context),
+          _buildMyCars(context, colors),
           const SizedBox(height: 32),
         ],
       ),
     );
   }
 
-  // ── Header ────────────────────────────────────────────────────────
-  Widget _buildHeader(BuildContext context) {
+  // ── Header ──────────────────────────────────────────────────────
+  Widget _buildHeader(BuildContext context, ApparenceKitColors colors) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 56, 20, 24),
-      decoration: const BoxDecoration(color: Color(0xFF0D0D0D)),
+      color: colors.background,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Left: greeting + name + phone
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _greeting(context),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: Color(0xCCFFFFFF),
+                    color: colors.onBackground.withValues(alpha: 0.8),
                     fontSize: 12,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   _userName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: Colors.white,
+                    color: colors.onBackground,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -139,35 +143,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          // Right: weather + notification
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
-            spacing: 4,
             children: [
               // Weather chip
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: const Color(0x22FFFFFF),
+                  color: colors.onBackground.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(200),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
-                      Icons.wb_sunny_outlined,
-                      color: Colors.amber,
-                      size: 16,
-                    ),
+                    const Icon(Icons.wb_sunny_outlined,
+                        color: Colors.amber, size: 16),
                     const SizedBox(width: 4),
                     Text(
                       _weather,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'SF Pro Rounded',
-                        color: Colors.white,
+                        color: colors.onBackground,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -175,33 +171,30 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ],
                 ),
               ),
+              const SizedBox(width: 4),
               GestureDetector(
                 onTap: () => context.push(UserRoutePath.notifications),
                 child: Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0x22FFFFFF),
+                    color: colors.onBackground.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(200),
                   ),
                   child: Stack(
                     children: [
-                      const Center(
-                        child: Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.white,
-                          size: 16,
-                        ),
+                      Center(
+                        child: Icon(Icons.notifications_outlined,
+                            color: colors.onBackground, size: 16),
                       ),
-                      // Red dot
                       Positioned(
                         right: 8,
                         top: 8,
                         child: Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFFF3B30),
+                          decoration: BoxDecoration(
+                            color: colors.error,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -217,15 +210,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  // ── Booking card ──────────────────────────────────────────────────
-  Widget _buildBookingCard(BuildContext context) {
+  // ── Booking card ─────────────────────────────────────────────────
+  Widget _buildBookingCard(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF1C2340),
+          color: colors.onPrimaryContainer,
           borderRadius: BorderRadius.circular(18),
         ),
         child: Column(
@@ -233,8 +226,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           children: [
             Text(
               t.home.nearestBooking,
-              style: const TextStyle(
-                color: Color(0xFF4D9EFF),
+              style: TextStyle(
+                color: colors.info,
                 fontFamily: 'SF Pro Rounded',
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -245,11 +238,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text(
+                Text(
                   '10:00',
                   style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: Colors.white,
+                    color: colors.onBackground,
                     fontSize: 36,
                     fontWeight: FontWeight.bold,
                   ),
@@ -259,48 +252,47 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A3560),
+                    color: colors.grey1,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.qr_code_2,
-                    color: Colors.white,
-                    size: 24,
-                  ),
+                  child: Icon(Icons.qr_code_2,
+                      color: colors.onBackground, size: 24),
                 ),
               ],
             ),
             const SizedBox(height: 2),
             Text(
               '2026-05-03 · ${t.home.now}',
-              style: const TextStyle(
-                fontFamily: 'SF Pro Rounded',
-                color: Color(0xFF9EA3AE),
-                fontSize: 13,
-              ),
+              style: TextStyle(color: colors.grey2, fontSize: 13,
+                  fontFamily: 'SF Pro Rounded'),
             ),
             const SizedBox(height: 16),
-            const Divider(color: Color(0x22FFFFFF), height: 1),
+            Divider(
+                color: colors.onBackground.withValues(alpha: 0.1), height: 1),
             const SizedBox(height: 16),
             _bookingRow(
               icon: Icons.location_on_outlined,
               title: 'Wash Club Yunusobod',
-              subtitle: 'Yunusobod tumani, Amir Temur ko\'chasi 108',
+              subtitle: "Yunusobod tumani, Amir Temur ko'chasi 108",
+              colors: colors,
             ),
             const SizedBox(height: 10),
             _bookingRow(
               icon: Icons.directions_car_outlined,
               title: 'Chevrolet Malibu · 01 U 571 QA',
               subtitle: t.home.standard,
+              colors: colors,
             ),
             const SizedBox(height: 10),
             _bookingRow(
               icon: Icons.access_time_outlined,
               title: '${t.home.paymentMethod}: ${t.home.card}',
               subtitle: null,
+              colors: colors,
             ),
             const SizedBox(height: 16),
-            const Divider(color: Color(0x22FFFFFF), height: 1),
+            Divider(
+                color: colors.onBackground.withValues(alpha: 0.1), height: 1),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -308,17 +300,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 GestureDetector(
                   onTap: () {},
                   behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    padding: EdgeInsets.all(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Row(
-                      spacing: 12,
                       children: [
-                        Icon(Icons.date_range, color: Colors.white, size: 20),
+                        Icon(Icons.date_range,
+                            color: colors.onBackground, size: 20),
+                        const SizedBox(width: 12),
                         Text(
                           t.home.change,
                           style: TextStyle(
                             fontFamily: 'SF Pro Rounded',
-                            color: Colors.white,
+                            color: colors.onBackground,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
@@ -331,21 +324,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 GestureDetector(
                   onTap: () {},
                   behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    padding: EdgeInsets.all(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
                     child: Row(
-                      spacing: 12,
                       children: [
-                        Icon(
-                          Icons.cancel_outlined,
-                          color: Colors.red,
-                          size: 20,
-                        ),
+                        Icon(Icons.cancel_outlined,
+                            color: colors.error, size: 20),
+                        const SizedBox(width: 12),
                         Text(
                           t.home.cancel,
                           style: TextStyle(
                             fontFamily: 'SF Pro Rounded',
-                            color: Colors.red,
+                            color: colors.error,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
@@ -366,11 +356,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     required IconData icon,
     required String title,
     required String? subtitle,
+    required ApparenceKitColors colors,
   }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, color: const Color(0xFF9EA3AE), size: 18),
+        Icon(icon, color: colors.grey2, size: 18),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -378,9 +369,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             children: [
               Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'SF Pro Rounded',
-                  color: Colors.white,
+                  color: colors.onBackground,
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -389,9 +380,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: Color(0xFF9EA3AE),
+                    color: colors.grey2,
                     fontSize: 12,
                   ),
                 ),
@@ -403,8 +394,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  // ── Promotions ────────────────────────────────────────────────────
-  Widget _buildPromotions(BuildContext context) {
+  // ── Promotions ───────────────────────────────────────────────────
+  Widget _buildPromotions(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,9 +407,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             children: [
               Text(
                 t.home.promotions,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'SF Pro Rounded',
-                  color: Colors.white,
+                  color: colors.onBackground,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -427,10 +418,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 onPressed: () {},
                 child: Text(
                   t.home.seeAll,
-
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: Color(0xFF4D9EFF),
+                    color: colors.info,
                   ),
                 ),
               ),
@@ -446,7 +436,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             itemCount: _promotions.length,
             itemBuilder: (context, i) {
               final p = _promotions[i];
-              final colors = (p['gradient'] as List).cast<Color>();
+              // Promotion gradient — bu brend ranglari, tema bilan bog'liq emas
+              final gradientColors = (p['gradient'] as List).cast<Color>();
               return Container(
                 width: 280,
                 margin: const EdgeInsets.only(right: 12),
@@ -454,7 +445,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: colors,
+                    colors: gradientColors,
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -463,10 +454,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      p['tag'],
-                      style: TextStyle(
+                      p['tag'] as String,
+                      style: const TextStyle(
                         fontFamily: 'SF Pro Rounded',
-                        color: Colors.white.withValues(alpha: 0.75),
+                        color: Color(0xBFFFFFFF),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 0.5,
@@ -474,7 +465,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      p['title'],
+                      p['title'] as String,
                       style: const TextStyle(
                         fontFamily: 'SF Pro Rounded',
                         color: Colors.white,
@@ -485,15 +476,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     const Spacer(),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 6,
-                      ),
+                          horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
                         color: const Color(0x33000000),
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        p['button'],
+                        p['button'] as String,
                         style: const TextStyle(
                           fontFamily: 'SF Pro Rounded',
                           color: Colors.white,
@@ -513,13 +502,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   // ── Quick actions ─────────────────────────────────────────────────
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildQuickActions(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
     final actions = [
       {'icon': Icons.calendar_today_outlined, 'label': t.home.book},
-      {'icon': Icons.location_on_outlined, 'label': t.home.branches},
-      {'icon': Icons.history_outlined, 'label': t.home.history},
-      {'icon': Icons.help_outline, 'label': t.home.help},
+      {'icon': Icons.location_on_outlined,    'label': t.home.branches},
+      {'icon': Icons.history_outlined,        'label': t.home.history},
+      {'icon': Icons.help_outline,            'label': t.home.help},
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -534,21 +523,21 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1C2340),
+                    color: colors.onPrimaryContainer,
                     borderRadius: BorderRadius.circular(18),
                   ),
                   child: Icon(
                     a['icon'] as IconData,
-                    color: const Color(0xFF4D9EFF),
+                    color: colors.info,
                     size: 26,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   a['label'] as String,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: Color(0xFF9EA3AE),
+                    color: colors.grey2,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -562,7 +551,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   // ── Branches ──────────────────────────────────────────────────────
-  Widget _buildBranches(BuildContext context) {
+  Widget _buildBranches(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -574,9 +563,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             children: [
               Text(
                 t.home.nearestBranches,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'SF Pro Rounded',
-                  color: Colors.white,
+                  color: colors.onBackground,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -585,7 +574,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 onPressed: () {},
                 child: Text(
                   t.home.seeAll,
-                  style: const TextStyle(color: Color(0xFF4D9EFF)),
+                  style: TextStyle(color: colors.info),
                 ),
               ),
             ],
@@ -604,30 +593,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 width: 220,
                 margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1C2340),
+                  color: colors.onPrimaryContainer,
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Image placeholder
                     Stack(
                       children: [
                         Container(
                           height: 110,
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2A3560),
+                            color: colors.grey1,
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(16),
                               topRight: Radius.circular(16),
                             ),
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.local_car_wash,
-                              color: Color(0xFF4D9EFF),
-                              size: 40,
-                            ),
+                          child: Center(
+                            child: Icon(Icons.local_car_wash,
+                                color: colors.info, size: 40),
                           ),
                         ),
                         if (b['isOpen'] as bool)
@@ -636,18 +621,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                             left: 8,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF34C759),
+                                color: colors.success,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
                                 t.home.open,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontFamily: 'SF Pro Rounded',
-                                  color: Colors.white,
+                                  color: colors.onPrimary,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -660,16 +643,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       padding: const EdgeInsets.all(12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 2,
                         children: [
                           Row(
                             children: [
                               Expanded(
                                 child: Text(
-                                  b['name'],
-                                  style: const TextStyle(
+                                  b['name'] as String,
+                                  style: TextStyle(
                                     fontFamily: 'SF Pro Rounded',
-                                    color: Colors.white,
+                                    color: colors.onBackground,
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -677,17 +659,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Icon(
-                                Icons.star,
-                                color: Color(0xFFFFB800),
-                                size: 14,
-                              ),
+                              Icon(Icons.star,
+                                  color: colors.warning, size: 14),
                               const SizedBox(width: 2),
                               Text(
-                                b['rating'],
-                                style: const TextStyle(
+                                b['rating'] as String,
+                                style: TextStyle(
                                   fontFamily: 'SF Pro Rounded',
-                                  color: Colors.white,
+                                  color: colors.onBackground,
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -697,52 +676,45 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              const Icon(
-                                Icons.location_on_outlined,
-                                color: Color(0xFF9EA3AE),
-                                size: 12,
-                              ),
+                              Icon(Icons.location_on_outlined,
+                                  color: colors.grey2, size: 12),
                               const SizedBox(width: 2),
                               Expanded(
                                 child: Text(
-                                  b['address'],
-                                  style: const TextStyle(
-                                    color: Color(0xFF9EA3AE),
-                                    fontSize: 11,
-                                  ),
+                                  b['address'] as String,
+                                  style: TextStyle(
+                                      color: colors.grey2, fontSize: 11),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 4),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
-                                  const Icon(
-                                    Icons.access_time_outlined,
-                                    color: Color(0xFF9EA3AE),
-                                    size: 12,
-                                  ),
+                                  Icon(Icons.access_time_outlined,
+                                      color: colors.grey2, size: 12),
                                   const SizedBox(width: 2),
                                   Text(
-                                    b['hours'],
-                                    style: const TextStyle(
+                                    b['hours'] as String,
+                                    style: TextStyle(
                                       fontFamily: 'SF Pro Rounded',
-                                      color: Color(0xFF9EA3AE),
+                                      color: colors.grey2,
                                       fontSize: 11,
                                     ),
                                   ),
                                 ],
                               ),
                               Text(
-                                b['distance'],
-                                style: const TextStyle(
+                                b['distance'] as String,
+                                style: TextStyle(
                                   fontFamily: 'SF Pro Rounded',
-                                  color: Color(0xFF4D9EFF),
+                                  color: colors.info,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -763,7 +735,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   // ── My Cars ───────────────────────────────────────────────────────
-  Widget _buildMyCars(BuildContext context) {
+  Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -775,19 +747,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             children: [
               Text(
                 t.home.myCars,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'SF Pro Rounded',
-                  color: Colors.white,
+                  color: colors.onBackground,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               TextButton.icon(
                 onPressed: () => context.push(UserRoutePath.addCar),
-                icon: const Icon(Icons.add, color: Color(0xFF4D9EFF), size: 18),
+                icon: Icon(Icons.add, color: colors.info, size: 18),
                 label: Text(
                   t.home.manage,
-                  style: const TextStyle(color: Color(0xFF4D9EFF)),
+                  style: TextStyle(color: colors.info),
                 ),
               ),
             ],
@@ -796,9 +768,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ..._cars.map((car) {
             return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFF1C2340),
+                color: colors.onPrimaryContainer,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Row(
@@ -807,14 +780,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2A3560),
+                      color: colors.grey1,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: const Icon(
-                      Icons.directions_car_outlined,
-                      color: Color(0xFF4D9EFF),
-                      size: 22,
-                    ),
+                    child: Icon(Icons.directions_car_outlined,
+                        color: colors.info, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -822,31 +792,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          car['name'],
-                          style: const TextStyle(
+                          car['name'] as String,
+                          style: TextStyle(
                             fontFamily: 'SF Pro Rounded',
-                            color: Colors.white,
+                            color: colors.onBackground,
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${car['plate']} · ${car['color']}',
-                          style: const TextStyle(
+                          "${car['plate']} · ${car['color']}",
+                          style: TextStyle(
                             fontFamily: 'SF Pro Rounded',
-                            color: Color(0xFF9EA3AE),
+                            color: colors.grey2,
                             fontSize: 13,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(
-                    Icons.chevron_right,
-                    color: Color(0xFF9EA3AE),
-                    size: 20,
-                  ),
+                  Icon(Icons.chevron_right, color: colors.grey2, size: 20),
                 ],
               ),
             );
@@ -857,24 +823,21 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFF1C2340),
+                color: colors.onPrimaryContainer,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: const Color(0xFF2A3560), width: 1.5),
+                border: Border.all(color: colors.grey1, width: 1.5),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.add_circle_outline,
-                    color: Color(0xFF4D9EFF),
-                    size: 20,
-                  ),
+                  Icon(Icons.add_circle_outline,
+                      color: colors.info, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     t.home.addCar,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'SF Pro Rounded',
-                      color: Color(0xFF4D9EFF),
+                      color: colors.info,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),

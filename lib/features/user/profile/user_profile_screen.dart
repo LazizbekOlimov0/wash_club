@@ -2,30 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
+import '../../../../core/theme/colors.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  // Mock data
   static const String _userName = 'Bobur';
   static const String _userPhone = '+998 97 520 40 60';
   static const int _washCount = 2;
   static const int _savedAmount = 18000;
   static const String _level = 'Bronze';
 
+  ApparenceKitColors _colors(BuildContext context) =>
+      Theme.of(context).extension<ApparenceKitColors>()!;
+
   @override
   Widget build(BuildContext context) {
     final t = context.t;
+    final colors = _colors(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0D0D),
+      backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0D0D0D),
+        backgroundColor: colors.background,
         elevation: 0,
         title: Text(
           t.profile.title,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: colors.onBackground,
             fontSize: 17,
             fontWeight: FontWeight.w600,
           ),
@@ -34,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () => context.push(UserRoutePath.settings),
-            icon: const Icon(Icons.more_horiz, color: Colors.white, size: 24),
+            icon: Icon(Icons.more_horiz, color: colors.onBackground, size: 24),
           ),
         ],
       ),
@@ -42,53 +46,44 @@ class ProfileScreen extends StatelessWidget {
         padding: EdgeInsets.zero,
         physics: const ClampingScrollPhysics(),
         children: [
-          _buildHeader(),
+          _buildHeader(colors),
           const SizedBox(height: 16),
-          _buildStatsRow(),
+          _buildStatsRow(colors),
           const SizedBox(height: 12),
-          _buildSubscriptionBanner(),
+          _buildSubscriptionBanner(colors),
           const SizedBox(height: 24),
-          _buildSectionLabel('МОИ МАШИНЫ'),
-          _buildMyCars(context),
+          _buildSectionLabel('МОИ МАШИНЫ', colors),
+          _buildMyCars(context, colors),
           const SizedBox(height: 24),
-          // Go to settings hint
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: GestureDetector(
               onTap: () => context.push(UserRoutePath.settings),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
-                ),
+                    horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1C2340),
+                  color: colors.onPrimaryContainer,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF2A3560), width: 1),
+                  border: Border.all(color: colors.grey1, width: 1),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(
-                      Icons.settings_outlined,
-                      color: Color(0xFF9CA3AF),
-                      size: 20,
-                    ),
-                    SizedBox(width: 12),
+                    Icon(Icons.settings_outlined,
+                        color: colors.grey2, size: 20),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         'Настройки',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: colors.onBackground,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
-                    Icon(
-                      Icons.chevron_right,
-                      color: Color(0xFF4B5563),
-                      size: 18,
-                    ),
+                    Icon(Icons.chevron_right,
+                        color: colors.grey2, size: 18),
                   ],
                 ),
               ),
@@ -98,7 +93,7 @@ class ProfileScreen extends StatelessWidget {
           Center(
             child: Text(
               'Wash Club · v1.0.0',
-              style: const TextStyle(color: Color(0xFF4B5563), fontSize: 12),
+              style: TextStyle(color: colors.grey2, fontSize: 12),
             ),
           ),
           const SizedBox(height: 32),
@@ -107,23 +102,24 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(ApparenceKitColors colors) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
       child: Row(
         children: [
+          // Avatar
           Container(
             width: 64,
             height: 64,
-            decoration: const BoxDecoration(
-              color: Color(0xFF2B5FAD),
+            decoration: BoxDecoration(
+              color: colors.primary,
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 _userName[0].toUpperCase(),
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: colors.onPrimary,
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
@@ -131,76 +127,79 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   _userName,
                   style: TextStyle(
-                    color: Colors.white,
+                    color: colors.onBackground,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   _userPhone,
-                  style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                  style: TextStyle(color: colors.grey2, fontSize: 14),
                 ),
               ],
             ),
           ),
+          // Edit button
           Container(
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: const Color(0xFF1C2340),
+              color: colors.onPrimaryContainer,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF2A3560), width: 1),
+              border: Border.all(color: colors.grey1, width: 1),
             ),
-            child: const Icon(
-              Icons.edit_outlined,
-              color: Color(0xFF9CA3AF),
-              size: 18,
-            ),
+            child: Icon(Icons.edit_outlined, color: colors.grey2, size: 18),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatsRow() {
+  Widget _buildStatsRow(ApparenceKitColors colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF1C2340),
+          color: colors.onPrimaryContainer,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF2A3560), width: 1),
+          border: Border.all(color: colors.grey1, width: 1),
         ),
         child: Row(
           children: [
-            _statItem('$_washCount', 'МОЕК'),
-            _statDivider(),
-            _statItem('$_savedAmount', 'СЭКОНОМЛЕНО'),
-            _statDivider(),
-            _statItem(_level, 'УРОВЕНЬ', valueColor: const Color(0xFF4D9EFF)),
+            _statItem('$_washCount', 'МОЕК', colors: colors),
+            _statDivider(colors),
+            _statItem('$_savedAmount', 'СЭКОНОМЛЕНО', colors: colors),
+            _statDivider(colors),
+            _statItem(_level, 'УРОВЕНЬ',
+                colors: colors, valueColor: colors.info),
           ],
         ),
       ),
     );
   }
 
-  Widget _statItem(String value, String label, {Color? valueColor}) {
+  Widget _statItem(
+      String value,
+      String label, {
+        required ApparenceKitColors colors,
+        Color? valueColor,
+      }) {
     return Expanded(
       child: Column(
         children: [
           Text(
             value,
             style: TextStyle(
-              color: valueColor ?? Colors.white,
+              color: valueColor ?? colors.onBackground,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -208,35 +207,37 @@ class ProfileScreen extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(color: Color(0xFF6B7280), fontSize: 11),
+            style: TextStyle(color: colors.grey2, fontSize: 11),
           ),
         ],
       ),
     );
   }
 
-  Widget _statDivider() {
-    return Container(width: 1, height: 32, color: const Color(0xFF2A3560));
+  Widget _statDivider(ApparenceKitColors colors) {
+    return Container(width: 1, height: 32, color: colors.grey1);
   }
 
-  Widget _buildSubscriptionBanner() {
+  Widget _buildSubscriptionBanner(ApparenceKitColors colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF1C2340),
+          color: colors.onPrimaryContainer,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF2A3560), width: 1),
+          border: Border.all(color: colors.grey1, width: 1),
         ),
-        child: const Row(
+        child: Row(
           children: [
-            SizedBox(
+            const SizedBox(
               width: 40,
               height: 40,
-              child: Center(child: Text('👑', style: TextStyle(fontSize: 22))),
+              child: Center(
+                child: Text('👑', style: TextStyle(fontSize: 22)),
+              ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,33 +245,33 @@ class ProfileScreen extends StatelessWidget {
                   Text(
                     'Подписка не активна',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: colors.onBackground,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     'Экономьте до 70% с Wash Club',
-                    style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                    style: TextStyle(color: colors.grey2, fontSize: 12),
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: Color(0xFF6B7280), size: 20),
+            Icon(Icons.chevron_right, color: colors.grey2, size: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSectionLabel(String label) {
+  Widget _buildSectionLabel(String label, ApparenceKitColors colors) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
       child: Text(
         label,
-        style: const TextStyle(
-          color: Color(0xFF6B7280),
+        style: TextStyle(
+          color: colors.grey2,
           fontSize: 11,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.8,
@@ -279,7 +280,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildMyCars(BuildContext context) {
+  Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -289,14 +290,14 @@ class ProfileScreen extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: () => context.push(UserRoutePath.addCar),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.add, color: Color(0xFF4D9EFF), size: 16),
-                    SizedBox(width: 4),
+                    Icon(Icons.add, color: colors.info, size: 16),
+                    const SizedBox(width: 4),
                     Text(
                       'Добавить',
                       style: TextStyle(
-                        color: Color(0xFF4D9EFF),
+                        color: colors.info,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -308,11 +309,12 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
-              color: const Color(0xFF1C2340),
+              color: colors.onPrimaryContainer,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFF2A3560), width: 1),
+              border: Border.all(color: colors.grey1, width: 1),
             ),
             child: Row(
               children: [
@@ -320,46 +322,38 @@ class ProfileScreen extends StatelessWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A3560),
+                    color: colors.grey1,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
-                    Icons.directions_car_outlined,
-                    color: Color(0xFF4D9EFF),
-                    size: 22,
-                  ),
+                  child: Icon(Icons.directions_car_outlined,
+                      color: colors.info, size: 22),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Chevrolet Malibu',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: colors.onBackground,
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         '01 U 571 QA · Qora',
                         style: TextStyle(
-                          color: Color(0xFF9CA3AF),
-                          fontSize: 12,
-                        ),
+                            color: colors.grey2, fontSize: 12),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
                   onPressed: () {},
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    color: Color(0xFF6B7280),
-                    size: 20,
-                  ),
+                  icon: Icon(Icons.delete_outline,
+                      color: colors.grey2, size: 20),
                 ),
               ],
             ),

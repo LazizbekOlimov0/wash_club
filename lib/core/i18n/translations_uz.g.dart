@@ -44,6 +44,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsAddCarUz addCar = TranslationsAddCarUz.internal(_root);
 	late final TranslationsNotificationUz notification = TranslationsNotificationUz.internal(_root);
 	late final TranslationsProfileUz profile = TranslationsProfileUz.internal(_root);
+	late final TranslationsSettingsUz settings = TranslationsSettingsUz.internal(_root);
 }
 
 // Path: splash
@@ -380,4 +381,121 @@ class TranslationsProfileUz {
 
 	/// uz: '6 oy'
 	String get months6 => '6 oy';
+}
+
+// Path: settings
+class TranslationsSettingsUz {
+	TranslationsSettingsUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Sozlamalar'
+	String get title => 'Sozlamalar';
+
+	/// uz: 'HISOB'
+	String get account => 'HISOB';
+
+	/// uz: 'Profilni tahrirlash'
+	String get editProfile => 'Profilni tahrirlash';
+
+	/// uz: 'Telefon raqamni o'zgartirish'
+	String get changePhone => 'Telefon raqamni o\'zgartirish';
+
+	/// uz: 'KO'RINISH'
+	String get appearance => 'KO\'RINISH';
+
+	/// uz: 'Interfeys mavzusi'
+	String get theme => 'Interfeys mavzusi';
+
+	/// uz: 'Kunduz'
+	String get themeLight => 'Kunduz';
+
+	/// uz: 'Tun'
+	String get themeDark => 'Tun';
+
+	/// uz: 'Avto'
+	String get themeAuto => 'Avto';
+
+	/// uz: 'BILDIRISHNOMALAR'
+	String get notifications => 'BILDIRISHNOMALAR';
+
+	/// uz: 'Push-bildirishnomalar'
+	String get pushNotifications => 'Push-bildirishnomalar';
+
+	/// uz: 'Bron, holat va eslatmalar'
+	String get pushSubtitle => 'Bron, holat va eslatmalar';
+
+	/// uz: 'Promo-bildirishnomalar'
+	String get promoNotifications => 'Promo-bildirishnomalar';
+
+	/// uz: 'Aksiyalar va maxsus takliflar'
+	String get promoSubtitle => 'Aksiyalar va maxsus takliflar';
+
+	/// uz: 'TIL'
+	String get language => 'TIL';
+
+	/// uz: 'Ilova tili'
+	String get appLanguage => 'Ilova tili';
+
+	/// uz: 'TARIX'
+	String get history => 'TARIX';
+
+	/// uz: 'Tashrif tarixi'
+	String get visitHistory => 'Tashrif tarixi';
+
+	/// uz: 'To'lov tarixi'
+	String get paymentHistory => 'To\'lov tarixi';
+
+	/// uz: 'YORDAM'
+	String get support => 'YORDAM';
+
+	/// uz: 'Qo'llab-quvvatlash bilan bog'lanish'
+	String get contactSupport => 'Qo\'llab-quvvatlash bilan bog\'lanish';
+
+	/// uz: 'Telegram kanal'
+	String get telegramChannel => 'Telegram kanal';
+
+	/// uz: 'Ilovani baholash'
+	String get rateApp => 'Ilovani baholash';
+
+	/// uz: 'Maxfiylik siyosati'
+	String get privacyPolicy => 'Maxfiylik siyosati';
+
+	/// uz: 'Foydalanuvchi shartnomasi'
+	String get termsOfService => 'Foydalanuvchi shartnomasi';
+
+	/// uz: 'XAVFLI ZONA'
+	String get dangerZone => 'XAVFLI ZONA';
+
+	/// uz: 'Hisobdan chiqish'
+	String get logout => 'Hisobdan chiqish';
+
+	/// uz: 'Hisobni o'chirish'
+	String get deleteAccount => 'Hisobni o\'chirish';
+
+	/// uz: 'Hisobdan chiqmoqchimisiz?'
+	String get logoutTitle => 'Hisobdan chiqmoqchimisiz?';
+
+	/// uz: 'Haqiqatan ham chiqmoqchimisiz?'
+	String get logoutBody => 'Haqiqatan ham chiqmoqchimisiz?';
+
+	/// uz: 'Hisobni o'chirmoqchimisiz?'
+	String get deleteTitle => 'Hisobni o\'chirmoqchimisiz?';
+
+	/// uz: 'Barcha ma'lumotlar butunlay o'chiriladi. Bu amalni bekor qilib bo'lmaydi.'
+	String get deleteBody => 'Barcha ma\'lumotlar butunlay o\'chiriladi. Bu amalni bekor qilib bo\'lmaydi.';
+
+	/// uz: 'Bekor qilish'
+	String get cancel => 'Bekor qilish';
+
+	/// uz: 'Chiqish'
+	String get confirm => 'Chiqish';
+
+	/// uz: 'O'chirish'
+	String get delete => 'O\'chirish';
+
+	/// uz: 'Wash Club · v1.0.0'
+	String get version => 'Wash Club · v1.0.0';
 }

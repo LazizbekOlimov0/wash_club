@@ -42,6 +42,7 @@ class TranslationsRu extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsAddCarRu addCar = TranslationsAddCarRu._(_root);
 	@override late final TranslationsNotificationRu notification = TranslationsNotificationRu._(_root);
 	@override late final TranslationsProfileRu profile = TranslationsProfileRu._(_root);
+	@override late final TranslationsSettingsRu settings = TranslationsSettingsRu._(_root);
 }
 
 // Path: splash
@@ -208,4 +209,49 @@ class TranslationsProfileRu extends TranslationsProfileUz {
 	@override String get bestPrice => 'Лучшая цена';
 	@override String get months3 => '3 месяца';
 	@override String get months6 => '6 месяцев';
+}
+
+// Path: settings
+class TranslationsSettingsRu extends TranslationsSettingsUz {
+	TranslationsSettingsRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Настройки';
+	@override String get account => 'АККАУНТ';
+	@override String get editProfile => 'Редактировать профиль';
+	@override String get changePhone => 'Изменить номер телефона';
+	@override String get appearance => 'ВНЕШНИЙ ВИД';
+	@override String get theme => 'Тема оформления';
+	@override String get themeLight => 'Светлая';
+	@override String get themeDark => 'Тёмная';
+	@override String get themeAuto => 'Авто';
+	@override String get notifications => 'УВЕДОМЛЕНИЯ';
+	@override String get pushNotifications => 'Push-уведомления';
+	@override String get pushSubtitle => 'Бронь, статус и напоминания';
+	@override String get promoNotifications => 'Промо-уведомления';
+	@override String get promoSubtitle => 'Акции и специальные предложения';
+	@override String get language => 'ЯЗЫК';
+	@override String get appLanguage => 'Язык приложения';
+	@override String get history => 'ИСТОРИЯ';
+	@override String get visitHistory => 'История посещений';
+	@override String get paymentHistory => 'История платежей';
+	@override String get support => 'ПОДДЕРЖКА';
+	@override String get contactSupport => 'Связаться с поддержкой';
+	@override String get telegramChannel => 'Telegram канал';
+	@override String get rateApp => 'Оценить приложение';
+	@override String get privacyPolicy => 'Политика конфиденциальности';
+	@override String get termsOfService => 'Пользовательское соглашение';
+	@override String get dangerZone => 'АККАУНТ';
+	@override String get logout => 'Выйти из аккаунта';
+	@override String get deleteAccount => 'Удалить аккаунт';
+	@override String get logoutTitle => 'Выйти из аккаунта?';
+	@override String get logoutBody => 'Вы уверены, что хотите выйти?';
+	@override String get deleteTitle => 'Удалить аккаунт?';
+	@override String get deleteBody => 'Все данные будут безвозвратно удалены. Это действие нельзя отменить.';
+	@override String get cancel => 'Отмена';
+	@override String get confirm => 'Выйти';
+	@override String get delete => 'Удалить';
+	@override String get version => 'Wash Club · v1.0.0';
 }
