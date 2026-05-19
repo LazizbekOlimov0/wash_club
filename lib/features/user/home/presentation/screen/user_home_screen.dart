@@ -72,6 +72,35 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
+  /// Returns true when the current brightness is light.
+  bool get _isLight =>
+      Theme.of(context).brightness == Brightness.light;
+
+  /// Card background: white in light, onPrimaryContainer in dark.
+  Color _cardBg(ApparenceKitColors colors) =>
+      _isLight ? colors.surface : colors.onPrimaryContainer;
+
+  /// Subtle shadow for light mode cards; invisible in dark mode.
+  List<BoxShadow> _cardShadow(ApparenceKitColors colors) => _isLight
+      ? [
+    BoxShadow(
+      color: colors.shadow.withValues(alpha: 0.07),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+    BoxShadow(
+      color: colors.shadow.withValues(alpha: 0.04),
+      blurRadius: 4,
+      offset: const Offset(0, 1),
+    ),
+  ]
+      : [];
+
+  /// Thin border only in light mode to reinforce card edge.
+  Border? _cardBorder(ApparenceKitColors colors) => _isLight
+      ? Border.all(color: colors.divider, width: 1)
+      : null;
+
   String _greeting(BuildContext context) {
     final t = context.t;
     final hour = DateTime.now().hour;
@@ -125,7 +154,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   _greeting(context),
                   style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: colors.onBackground.withValues(alpha: 0.8),
+                    color: colors.onBackground.withValues(alpha: 0.6),
                     fontSize: 12,
                   ),
                 ),
@@ -148,10 +177,25 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             children: [
               // Weather chip
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
-                  color: colors.onBackground.withValues(alpha: 0.1),
+                  color: _isLight
+                      ? colors.surface
+                      : colors.onBackground.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(200),
+                  border: _isLight
+                      ? Border.all(color: colors.divider, width: 1)
+                      : null,
+                  boxShadow: _isLight
+                      ? [
+                    BoxShadow(
+                      color: colors.shadow.withValues(alpha: 0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    )
+                  ]
+                      : null,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -178,8 +222,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: colors.onBackground.withValues(alpha: 0.1),
+                    color: _isLight
+                        ? colors.surface
+                        : colors.onBackground.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(200),
+                    border: _isLight
+                        ? Border.all(color: colors.divider, width: 1)
+                        : null,
+                    boxShadow: _isLight
+                        ? [
+                      BoxShadow(
+                        color: colors.shadow.withValues(alpha: 0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      )
+                    ]
+                        : null,
                   ),
                   child: Stack(
                     children: [
@@ -218,8 +276,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: colors.onPrimaryContainer,
+          color: _cardBg(colors),
           borderRadius: BorderRadius.circular(18),
+          border: _cardBorder(colors),
+          boxShadow: _cardShadow(colors),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -252,7 +312,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: colors.grey1,
+                    color: _isLight ? colors.grey1 : colors.grey1,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(Icons.qr_code_2,
@@ -263,12 +323,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             const SizedBox(height: 2),
             Text(
               '2026-05-03 · ${t.home.now}',
-              style: TextStyle(color: colors.grey2, fontSize: 13,
+              style: TextStyle(
+                  color: colors.grey3,
+                  fontSize: 13,
                   fontFamily: 'SF Pro Rounded'),
             ),
             const SizedBox(height: 16),
-            Divider(
-                color: colors.onBackground.withValues(alpha: 0.1), height: 1),
+            Divider(color: colors.divider, height: 1),
             const SizedBox(height: 16),
             _bookingRow(
               icon: Icons.location_on_outlined,
@@ -291,8 +352,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               colors: colors,
             ),
             const SizedBox(height: 16),
-            Divider(
-                color: colors.onBackground.withValues(alpha: 0.1), height: 1),
+            Divider(color: colors.divider, height: 1),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -436,7 +496,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             itemCount: _promotions.length,
             itemBuilder: (context, i) {
               final p = _promotions[i];
-              // Promotion gradient — bu brend ranglari, tema bilan bog'liq emas
               final gradientColors = (p['gradient'] as List).cast<Color>();
               return Container(
                 width: 280,
@@ -448,6 +507,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     colors: gradientColors,
                   ),
                   borderRadius: BorderRadius.circular(16),
+                  boxShadow: _isLight
+                      ? [
+                    BoxShadow(
+                      color: gradientColors.first.withValues(alpha: 0.30),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                      : [],
                 ),
                 padding: const EdgeInsets.all(20),
                 child: Column(
@@ -506,9 +574,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final t = context.t;
     final actions = [
       {'icon': Icons.calendar_today_outlined, 'label': t.home.book},
-      {'icon': Icons.location_on_outlined,    'label': t.home.branches},
-      {'icon': Icons.history_outlined,        'label': t.home.history},
-      {'icon': Icons.help_outline,            'label': t.home.help},
+      {'icon': Icons.location_on_outlined, 'label': t.home.branches},
+      {'icon': Icons.history_outlined, 'label': t.home.history},
+      {'icon': Icons.help_outline, 'label': t.home.help},
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -523,8 +591,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   width: 64,
                   height: 64,
                   decoration: BoxDecoration(
-                    color: colors.onPrimaryContainer,
+                    color: _cardBg(colors),
                     borderRadius: BorderRadius.circular(18),
+                    border: _cardBorder(colors),
+                    boxShadow: _cardShadow(colors),
                   ),
                   child: Icon(
                     a['icon'] as IconData,
@@ -537,7 +607,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   a['label'] as String,
                   style: TextStyle(
                     fontFamily: 'SF Pro Rounded',
-                    color: colors.grey2,
+                    color: colors.grey3,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
@@ -593,8 +663,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 width: 220,
                 margin: const EdgeInsets.only(right: 12),
                 decoration: BoxDecoration(
-                  color: colors.onPrimaryContainer,
+                  color: _cardBg(colors),
                   borderRadius: BorderRadius.circular(16),
+                  border: _cardBorder(colors),
+                  boxShadow: _cardShadow(colors),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -604,7 +676,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         Container(
                           height: 110,
                           decoration: BoxDecoration(
-                            color: colors.grey1,
+                            // Light: slightly tinted placeholder; Dark: grey1
+                            color: _isLight
+                                ? colors.primary.withValues(alpha: 0.06)
+                                : colors.grey1,
                             borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(16),
                               topRight: Radius.circular(16),
@@ -692,8 +767,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           ),
                           const SizedBox(height: 4),
                           Row(
-                            mainAxisAlignment:
-                            MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Row(
                                 children: [
@@ -768,11 +842,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           ..._cars.map((car) {
             return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 14),
+              padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: colors.onPrimaryContainer,
+                color: _cardBg(colors),
                 borderRadius: BorderRadius.circular(14),
+                border: _cardBorder(colors),
+                boxShadow: _cardShadow(colors),
               ),
               child: Row(
                 children: [
@@ -780,7 +856,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: colors.grey1,
+                      color: _isLight
+                          ? colors.primary.withValues(alpha: 0.08)
+                          : colors.grey1,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(Icons.directions_car_outlined,
@@ -823,9 +901,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
-                color: colors.onPrimaryContainer,
+                color: _isLight
+                    ? colors.primary.withValues(alpha: 0.05)
+                    : colors.onPrimaryContainer,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: colors.grey1, width: 1.5),
+                border: Border.all(
+                  color: _isLight ? colors.primary.withValues(alpha: 0.20) : colors.grey1,
+                  width: 1.5,
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,

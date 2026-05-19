@@ -91,29 +91,21 @@ class _LoginScreenState extends State<LoginScreen>
                       children: [
                         _sectionLabel(t.login.name, colors),
                         const SizedBox(height: 10),
-                        _styledField(
-                          colors: colors,
-                          icon: Icons.person_outline_rounded,
-                          child: AppTextField(
-                            title: '',
-                            hintText: 'Jon Doe',
-                            controller: _nameController,
-                            keyboardType: TextInputType.name,
-                            textCapitalization: TextCapitalization.words,
-                            onChanged: (_) => setState(() {}),
-                          ),
+                        AppTextField(
+                          title: '',
+                          hintText: 'Jon Doe',
+                          controller: _nameController,
+                          keyboardType: TextInputType.name,
+                          textCapitalization: TextCapitalization.words,
+                          onChanged: (_) => setState(() {}),
                         ),
                         const SizedBox(height: 20),
                         _sectionLabel(t.login.phone, colors),
                         const SizedBox(height: 10),
-                        _styledField(
-                          colors: colors,
-                          icon: Icons.phone_outlined,
-                          child: AppTextField.phone(
-                            title: '',
-                            controller: _phoneController,
-                            onChanged: (_) => setState(() {}),
-                          ),
+                        AppTextField.phone(
+                          title: '',
+                          controller: _phoneController,
+                          onChanged: (_) => setState(() {}),
                         ),
                         const SizedBox(height: 10),
                         Padding(
