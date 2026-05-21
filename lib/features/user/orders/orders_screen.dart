@@ -56,6 +56,9 @@ class _OrdersScreenState extends State<OrdersScreen>
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
+  bool get _isDark =>
+      Theme.of(context).brightness == Brightness.dark;
+
   @override
   void initState() {
     super.initState();
@@ -76,6 +79,23 @@ class _OrdersScreenState extends State<OrdersScreen>
   Widget build(BuildContext context) {
     final t = context.t;
     final colors = _c;
+
+    // Tab bar renglari: dark vs light uchun alohida
+    final tabBarBg = _isDark
+        ? colors.onPrimaryContainer          // dark: #1A2B4A
+        : colors.grey1;                      // light: #E2E6EF — ko'zga tashlanarli
+
+    final tabIndicatorColor = _isDark
+        ? colors.onBackground                // dark: white pill
+        : colors.onBackground;               // light: #0F1B35 dark pill
+
+    final tabLabelColor = _isDark
+        ? colors.background                  // dark: white text on dark pill
+        : colors.onPrimary;                  // light: white text on dark pill
+
+    final tabUnselectedColor = _isDark
+        ? colors.grey2
+        : colors.grey3;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -110,35 +130,50 @@ class _OrdersScreenState extends State<OrdersScreen>
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
-                  color: colors.onPrimaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+                  color: tabBarBg,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    // light modeda border aniq ko'rinsin, dark'da ingichka
+                    color: _isDark
+                        ? colors.grey1.withValues(alpha: 0.6)
+                        : colors.grey2.withValues(alpha: 0.35),
+                    width: _isDark ? 1 : 1.5,
+                  ),
                 ),
                 child: TabBar(
                   controller: _tabController,
                   indicator: BoxDecoration(
-                    color: colors.onBackground,
-                    borderRadius: BorderRadius.circular(8),
+                    color: tabIndicatorColor,
+                    borderRadius: BorderRadius.circular(7),
+                    // pill'ga yengil shadow — ayniqsa light mode uchun
+                    boxShadow: [
+                      BoxShadow(
+                        color: colors.shadow.withValues(alpha: 0.12),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: Colors.transparent,
-                  labelColor: colors.background,
-                  unselectedLabelColor: colors.grey2,
+                  labelColor: tabLabelColor,
+                  unselectedLabelColor: tabUnselectedColor,
                   labelStyle: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w600,
                     fontFamily: 'SF Pro Rounded',
                   ),
                   unselectedLabelStyle: const TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     fontWeight: FontWeight.w400,
                     fontFamily: 'SF Pro Rounded',
                   ),
                   tabs: const [
-                    Tab(text: 'Активные'),
-                    Tab(text: 'История'),
-                    Tab(text: 'Отменённые'),
+                    Tab(text: 'Активные',   height: 34),
+                    Tab(text: 'История',    height: 34),
+                    Tab(text: 'Отменённые', height: 34),
                   ],
                 ),
               ),
@@ -148,6 +183,9 @@ class _OrdersScreenState extends State<OrdersScreen>
             Expanded(
               child: TabBarView(
                 controller: _tabController,
+                // Swipe gesture'ni yoqib qo'yamiz (default yoqiq, lekin
+                // parent scroll'lar bilan muammo bo'lsa physics belgilanadi)
+                physics: const BouncingScrollPhysics(),
                 children: [
                   _buildOrderList(
                     _active,
@@ -191,7 +229,7 @@ class _OrdersScreenState extends State<OrdersScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: orders.length,
       itemBuilder: (context, i) =>
-          _OrderCard(order: orders[i], colors: colors),
+          _OrderCard(order: orders[i], colors: colors, isDark: _isDark),
     );
   }
 
@@ -208,7 +246,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: colors.onPrimaryContainer,
+              color: _isDark ? colors.onPrimaryContainer : colors.grey1,
               borderRadius: BorderRadius.circular(18),
             ),
             child: Icon(Icons.calendar_today_outlined,
@@ -244,10 +282,23 @@ class _OrdersScreenState extends State<OrdersScreen>
 
 // ── Order card ────────────────────────────────────────────────────
 class _OrderCard extends StatelessWidget {
-  const _OrderCard({required this.order, required this.colors});
+  const _OrderCard({
+    required this.order,
+    required this.colors,
+    required this.isDark,
+  });
 
   final _Order order;
   final ApparenceKitColors colors;
+  final bool isDark;
+
+  // Karta foni: dark'da onPrimaryContainer (#1A2B4A), light'da surface (#FFF)
+  Color get _cardBg => isDark ? colors.onPrimaryContainer : colors.surface;
+
+  // Karta border: dark'da ingichka grey1, light'da ajralib tursin
+  Color get _cardBorder => isDark
+      ? colors.grey1
+      : colors.grey1; // light: #E2E6EF
 
   @override
   Widget build(BuildContext context) {
@@ -258,9 +309,19 @@ class _OrderCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: colors.onPrimaryContainer,
+        color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.grey1, width: 1),
+        border: Border.all(color: _cardBorder, width: 1),
+        // Light modeda kartalar background'dan ajralib turishi uchun shadow
+        boxShadow: isDark
+            ? null
+            : [
+          BoxShadow(
+            color: colors.shadow.withValues(alpha: 0.06),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,7 +449,7 @@ class _OrderCard extends StatelessWidget {
   void _showOrderMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: colors.onPrimaryContainer,
+      backgroundColor: isDark ? colors.onPrimaryContainer : colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
