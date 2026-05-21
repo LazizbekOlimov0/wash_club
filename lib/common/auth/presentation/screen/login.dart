@@ -1,6 +1,11 @@
+import 'dart:io';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import 'package:wash_club/core/widgets/app_text_field.dart';
@@ -65,6 +70,42 @@ class _LoginScreenState extends State<LoginScreen>
   void _onContinue() {
     if (!_isValid) return;
     context.go(UserRoutePath.home);
+  }
+
+  static const _googleServerClientId =
+      '565322626454-ikd1isvlucko712vr7bcp01lo1kvlh1d.apps.googleusercontent.com';
+
+  static const _appleClientId =
+      "565322626454-lhdd6lu93ufa430qqi33i23bjfj2ijv7.apps.googleusercontent.com";
+
+  /// use this for signin with google
+  Future<void> signInWithGoogle() async {
+    try {
+      final googleUser = await GoogleSignIn(
+        serverClientId: _googleServerClientId,
+        clientId: Platform.isIOS ? _appleClientId : null,
+      ).signIn();
+      log('$googleUser', name: "POTUS signIn()");
+
+      if (googleUser == null) {
+        return;
+      }
+      final auth = await googleUser.authentication;
+
+      if (auth.idToken == null) {
+        log('${auth.idToken}', name: "POTUS Failed to get Google ID token");
+      }
+
+      final result = await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: auth.idToken!,
+        accessToken: auth.accessToken!,
+      );
+
+      log(result.user?.email ?? '', name: "POTUS signInWithIdToken");
+    } catch (e) {
+      log(e.toString(), name: "POTUS signInWithGoogle");
+    }
   }
 
   @override
@@ -257,6 +298,7 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
+  // ignore: unused_element
   Widget _styledField({
     required Widget child,
     required IconData icon,
