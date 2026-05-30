@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
-
 import '../../../../core/theme/colors.dart';
+
+// ── Import our new services ──────────────────────────────────
+// NOTE: adjust import paths to match your project structure
+import '../../../../shared/services/client_session.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -42,9 +46,26 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
     _controller.forward();
-    Future.delayed(const Duration(milliseconds: 2800), () {
-      if (mounted) context.go(UserRoutePath.language);
-    });
+    _initAndRoute();
+  }
+
+  Future<void> _initAndRoute() async {
+    // Animatsiya tugagunicha kutish
+    await Future.delayed(const Duration(milliseconds: 1800));
+
+    // Session'ni init qilish (SharedPreferences'dan o'qish)
+    await ClientSession.instance.init();
+
+    if (!mounted) return;
+
+    // Routing logic:
+    // 1) Agar foydalanuvchi ismi/telefon saqlangan bo'lsa → home
+    // 2) Aks holda → language screen
+    if (ClientSession.instance.isOnboarded) {
+      context.go(UserRoutePath.home);
+    } else {
+      context.go(UserRoutePath.language);
+    }
   }
 
   @override
@@ -91,18 +112,6 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
               ),
             ),
-            Positioned(
-              bottom: -60,
-              right: 60,
-              child: Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: colors.info.withValues(alpha: 0.05),
-                ),
-              ),
-            ),
 
             // Main content
             Center(
@@ -112,7 +121,8 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _fadeAnim.value,
                   child: Transform.translate(
                     offset: Offset(0, _slideAnim.value),
-                    child: Transform.scale(scale: _scaleAnim.value, child: child),
+                    child:
+                    Transform.scale(scale: _scaleAnim.value, child: child),
                   ),
                 ),
                 child: Column(
@@ -124,10 +134,7 @@ class _SplashScreenState extends State<SplashScreen>
                       decoration: BoxDecoration(
                         color: colors.onPrimaryContainer,
                         borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: colors.grey1,
-                          width: 1.5,
-                        ),
+                        border: Border.all(color: colors.grey1, width: 1.5),
                         boxShadow: [
                           BoxShadow(
                             color: colors.info.withValues(alpha: 0.2),
@@ -180,16 +187,14 @@ class _SplashScreenState extends State<SplashScreen>
                       height: 24,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(colors.info),
+                        valueColor:
+                        AlwaysStoppedAnimation<Color>(colors.info),
                       ),
                     ),
                     const SizedBox(height: 14),
                     Text(
                       t.splash.loading,
-                      style: TextStyle(
-                        color: colors.grey3,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: colors.grey3, fontSize: 12),
                     ),
                   ]),
                 ),

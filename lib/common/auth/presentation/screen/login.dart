@@ -10,6 +10,8 @@ import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import 'package:wash_club/core/widgets/app_text_field.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../data/repositories/orders_repository.dart';
+import '../../../../shared/services/client_session.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,13 +22,15 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  final _nameController = TextEditingController();
+  final _nameController  = TextEditingController();
   final _phoneController = TextEditingController();
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
   late Animation<double> _scaleAnim;
+
+  bool _loading = false;
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -49,14 +53,19 @@ class _LoginScreenState extends State<LoginScreen>
     _slideAnim = Tween<Offset>(
       begin: const Offset(0, 0.1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(
+        CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
     _scaleAnim = Tween<double>(begin: 0.92, end: 1.0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
     );
     _animController.forward();
+
+    // Agar session allaqachon bor bo'lsa fields'ni to'ldirish
+    final session = ClientSession.instance;
+    if (session.name != null) {
+      _nameController.text  = session.name!;
+      _phoneController.text = session.phone ?? '';
+    }
   }
 
   @override
@@ -67,44 +76,76 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _onContinue() {
-    if (!_isValid) return;
-    context.go(UserRoutePath.home);
+  Future<void> _onContinue() async {
+    if (!_isValid || _loading) return;
+    setState(() => _loading = true);
+
+    try {
+      // Sessiyaga saqlash (SharedPreferences)
+      await ClientSession.instance.saveProfile(
+        name:  _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+      );
+
+      // Orders repository'ni invalidate qilish — yangi telefon bilan reload
+      OrdersRepository.instance.invalidate();
+
+      if (mounted) context.go(UserRoutePath.home);
+    } catch (e) {
+      log(e.toString(), name: 'LoginScreen._onContinue');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Xatolik: $e'), backgroundColor: _c.error),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
   }
 
+  // ── Google Sign-In (ixtiyoriy — Google bilan kirish) ──────
   static const _googleServerClientId =
       '565322626454-ikd1isvlucko712vr7bcp01lo1kvlh1d.apps.googleusercontent.com';
+  static const _googleIOSClientId =
+      '565322626454-lhdd6lu93ufa430qqi33i23bjfj2ijv7.apps.googleusercontent.com';
 
-  static const _appleClientId =
-      "565322626454-lhdd6lu93ufa430qqi33i23bjfj2ijv7.apps.googleusercontent.com";
-
-  /// use this for signin with google
-  Future<void> signInWithGoogle() async {
+  Future<void> _signInWithGoogle() async {
+    setState(() => _loading = true);
     try {
       final googleUser = await GoogleSignIn(
         serverClientId: _googleServerClientId,
-        clientId: Platform.isIOS ? _appleClientId : null,
+        clientId: Platform.isIOS ? _googleIOSClientId : null,
       ).signIn();
-      log('$googleUser', name: "POTUS signIn()");
 
-      if (googleUser == null) {
-        return;
-      }
+      if (googleUser == null) return;
+
       final auth = await googleUser.authentication;
+      if (auth.idToken == null) return;
 
-      if (auth.idToken == null) {
-        log('${auth.idToken}', name: "POTUS Failed to get Google ID token");
-      }
-
-      final result = await Supabase.instance.client.auth.signInWithIdToken(
+      await Supabase.instance.client.auth.signInWithIdToken(
         provider: OAuthProvider.google,
         idToken: auth.idToken!,
         accessToken: auth.accessToken!,
       );
 
-      log(result.user?.email ?? '', name: "POTUS signInWithIdToken");
+      // Google dan ism olish
+      final displayName = googleUser.displayName ?? '';
+      if (displayName.isNotEmpty && _nameController.text.isEmpty) {
+        _nameController.text = displayName;
+      }
+
+      await ClientSession.instance.saveProfile(
+        name:  _nameController.text.trim().isEmpty
+            ? displayName
+            : _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+      );
+
+      if (mounted) context.go(UserRoutePath.home);
     } catch (e) {
-      log(e.toString(), name: "POTUS signInWithGoogle");
+      log(e.toString(), name: 'LoginScreen._signInWithGoogle');
+    } finally {
+      if (mounted) setState(() => _loading = false);
     }
   }
 
@@ -164,7 +205,6 @@ class _LoginScreenState extends State<LoginScreen>
                                 style: TextStyle(
                                   color: colors.grey3.withValues(alpha: 0.6),
                                   fontSize: 12,
-                                  letterSpacing: 0.1,
                                 ),
                               ),
                             ],
@@ -265,22 +305,14 @@ class _LoginScreenState extends State<LoginScreen>
       ),
       child: Column(
         children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: colors.info,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
+          Text(value,
+              style: TextStyle(
+                  color: colors.info,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700)),
           const SizedBox(height: 1),
-          Text(
-            label,
-            style: TextStyle(
-              color: colors.grey3,
-              fontSize: 11,
-            ),
-          ),
+          Text(label,
+              style: TextStyle(color: colors.grey3, fontSize: 11)),
         ],
       ),
     );
@@ -298,32 +330,8 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  // ignore: unused_element
-  Widget _styledField({
-    required Widget child,
-    required IconData icon,
-    required ApparenceKitColors colors,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: colors.onCenterBG,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: colors.grey1),
-      ),
-      child: Row(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 14),
-            child: Icon(icon, color: colors.grey3, size: 18),
-          ),
-          Expanded(child: child),
-        ],
-      ),
-    );
-  }
-
   Widget _buildButton(dynamic t, ApparenceKitColors colors) {
-    final isActive = _isValid;
+    final isActive = _isValid && !_loading;
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -351,11 +359,19 @@ class _LoginScreenState extends State<LoginScreen>
             disabledBackgroundColor: Colors.transparent,
             disabledForegroundColor: colors.grey3,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+                borderRadius: BorderRadius.circular(16)),
             elevation: 0,
           ),
-          child: Row(
+          child: _loading
+              ? SizedBox(
+            width: 22,
+            height: 22,
+            child: CircularProgressIndicator(
+              strokeWidth: 2.5,
+              valueColor: AlwaysStoppedAnimation(colors.onPrimary),
+            ),
+          )
+              : Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
@@ -438,24 +454,16 @@ class _LoginScreenState extends State<LoginScreen>
                   child: Icon(f.$1, color: colors.info, size: 18),
                 ),
                 const SizedBox(height: 8),
-                Text(
-                  f.$2,
-                  style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                Text(f.$2,
+                    style: TextStyle(
+                        color: colors.onBackground,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 2),
-                Text(
-                  f.$3,
-                  style: TextStyle(
-                    color: colors.grey3,
-                    fontSize: 10,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                Text(f.$3,
+                    style: TextStyle(color: colors.grey3, fontSize: 10),
+                    textAlign: TextAlign.center),
               ],
             ),
           ),
@@ -465,7 +473,6 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// Extension for mapIndexed (agar loyihada yo'q bo'lsa)
 extension _IndexedIterable<T> on Iterable<T> {
   Iterable<R> mapIndexed<R>(R Function(int index, T item) f) sync* {
     var index = 0;
