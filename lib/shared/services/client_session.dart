@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:uuid/uuid.dart';
 import '../constants/app_constants.dart';
 
 /// Foydalanuvchi sessiyasini boshqaruvchi servis.
-///
+/// 
 /// Ilova login talab qilmaydi — foydalanuvchi nomi va telefoni kiritilgach,
 /// ular SharedPreferences'ga saqlanadi va barcha so'rovlarda ishlatiladi.
 /// car_number buyurtmalar uchun asosiy identifikator hisoblanadi.

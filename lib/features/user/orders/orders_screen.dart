@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../shared/services/supabase_service.dart';
+import '../../../../shared/constants/app_constants.dart';
+import '../../../data/repositories/orders_repository.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -14,56 +17,24 @@ class OrdersScreen extends StatefulWidget {
 class _OrdersScreenState extends State<OrdersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final _repo = OrdersRepository.instance;
 
-  final List<_Order> _active = [
-    _Order(
-      status: OrderStatus.confirmed,
-      time: '13:00',
-      date: '2026-05-04',
-      branch: 'Wash Club Yunusobod',
-      car: 'Chevrolet Malibu · 01 U 571 QA',
-      serviceType: 'Стандарт',
-      paymentMethod: 'Карта',
-      price: '60 000 сум',
-    ),
-    _Order(
-      status: OrderStatus.confirmed,
-      time: '10:00',
-      date: '2026-05-03',
-      branch: 'Wash Club Yunusobod',
-      car: 'Chevrolet Malibu · 01 U 571 QA',
-      serviceType: 'Стандарт',
-      paymentMethod: 'Карта',
-      price: '60 000 сум',
-    ),
-  ];
-
-  final List<_Order> _history = [];
-
-  final List<_Order> _cancelled = [
-    _Order(
-      status: OrderStatus.cancelled,
-      time: '10:00',
-      date: '2026-05-01',
-      branch: 'Wash Club Yunusobod',
-      car: 'Chevrolet Malibu · 01 U 571 QA',
-      serviceType: 'Стандарт',
-      paymentMethod: 'Карта',
-      price: '60 000 сум',
-    ),
-  ];
-
-  ApparenceKitColors get _c =>
-      Theme.of(context).extension<ApparenceKitColors>()!;
-
-  bool get _isDark =>
-      Theme.of(context).brightness == Brightness.dark;
+  List<OrderModel> _all = [];
+  bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(() => setState(() {}));
+
+    // Realtime stream
+    _repo.ordersStream.listen((orders) {
+      if (mounted) setState(() => _all = orders);
+    });
+
+    _load();
   }
 
   @override
@@ -72,30 +43,33 @@ class _OrdersScreenState extends State<OrdersScreen>
     super.dispose();
   }
 
-  int get _totalCount =>
-      _active.length + _history.length + _cancelled.length;
+  Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final orders = await _repo.loadOrders(forceRefresh: true);
+      if (mounted) setState(() { _all = orders; _loading = false; });
+    } catch (e) {
+      if (mounted) setState(() { _loading = false; _error = e.toString(); });
+    }
+  }
+
+  List<OrderModel> get _active    => _all.where((o) => o.isActive).toList();
+  List<OrderModel> get _history   => _all.where((o) => o.isCompleted).toList();
+  List<OrderModel> get _cancelled => _all.where((o) => o.isCancelled).toList();
+
+  ApparenceKitColors get _c =>
+      Theme.of(context).extension<ApparenceKitColors>()!;
+  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   @override
   Widget build(BuildContext context) {
     final t = context.t;
     final colors = _c;
 
-    // Tab bar renglari: dark vs light uchun alohida
-    final tabBarBg = _isDark
-        ? colors.onPrimaryContainer          // dark: #1A2B4A
-        : colors.grey1;                      // light: #E2E6EF — ko'zga tashlanarli
-
-    final tabIndicatorColor = _isDark
-        ? colors.onBackground                // dark: white pill
-        : colors.onBackground;               // light: #0F1B35 dark pill
-
-    final tabLabelColor = _isDark
-        ? colors.background                  // dark: white text on dark pill
-        : colors.onPrimary;                  // light: white text on dark pill
-
-    final tabUnselectedColor = _isDark
-        ? colors.grey2
-        : colors.grey3;
+    final tabBarBg   = _isDark ? colors.onPrimaryContainer : colors.grey1;
+    final tabIndClr  = _isDark ? colors.onBackground : colors.onBackground;
+    final tabLblClr  = _isDark ? colors.background   : colors.onPrimary;
+    final tabUnselClr= _isDark ? colors.grey2         : colors.grey3;
 
     return Scaffold(
       backgroundColor: colors.background,
@@ -103,7 +77,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────
+            // ── Header ──────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Column(
@@ -119,14 +93,14 @@ class _OrdersScreenState extends State<OrdersScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_active.length} активных · $_totalCount всего',
+                    '${_active.length} faol · ${_all.length} jami',
                     style: TextStyle(color: colors.grey2, fontSize: 13),
                   ),
                 ],
               ),
             ),
 
-            // ── Tab bar ─────────────────────────────────────
+            // ── Tabs ─────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Container(
@@ -135,7 +109,6 @@ class _OrdersScreenState extends State<OrdersScreen>
                   color: tabBarBg,
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    // light modeda border aniq ko'rinsin, dark'da ingichka
                     color: _isDark
                         ? colors.grey1.withValues(alpha: 0.6)
                         : colors.grey2.withValues(alpha: 0.35),
@@ -145,9 +118,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                 child: TabBar(
                   controller: _tabController,
                   indicator: BoxDecoration(
-                    color: tabIndicatorColor,
+                    color: tabIndClr,
                     borderRadius: BorderRadius.circular(7),
-                    // pill'ga yengil shadow — ayniqsa light mode uchun
                     boxShadow: [
                       BoxShadow(
                         color: colors.shadow.withValues(alpha: 0.12),
@@ -158,8 +130,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                   ),
                   indicatorSize: TabBarIndicatorSize.tab,
                   dividerColor: Colors.transparent,
-                  labelColor: tabLabelColor,
-                  unselectedLabelColor: tabUnselectedColor,
+                  labelColor: tabLblClr,
+                  unselectedLabelColor: tabUnselClr,
                   labelStyle: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -171,40 +143,42 @@ class _OrdersScreenState extends State<OrdersScreen>
                     fontFamily: 'SF Pro Rounded',
                   ),
                   tabs: const [
-                    Tab(text: 'Активные',   height: 34),
-                    Tab(text: 'История',    height: 34),
-                    Tab(text: 'Отменённые', height: 34),
+                    Tab(text: 'Faol',     height: 34),
+                    Tab(text: 'Tarix',    height: 34),
+                    Tab(text: 'Bekor',    height: 34),
                   ],
                 ),
               ),
             ),
 
-            // ── Tab views ───────────────────────────────────
+            // ── Tab views ─────────────────────────────────────────────
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                // Swipe gesture'ni yoqib qo'yamiz (default yoqiq, lekin
-                // parent scroll'lar bilan muammo bo'lsa physics belgilanadi)
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  _buildOrderList(
-                    _active,
-                    emptyLabel: 'Нет активных заказов',
-                    colors: colors,
-                  ),
-                  _buildOrderList(
-                    _history,
-                    emptyLabel: 'Завершённых заказов пока нет',
-                    showBookButton: true,
-                    colors: colors,
-                  ),
-                  _buildOrderList(
-                    _cancelled,
-                    emptyLabel: 'Нет отменённых заказов',
-                    colors: colors,
-                  ),
-                ],
-              ),
+              child: _loading
+                  ? Center(
+                      child: CircularProgressIndicator(color: colors.info),
+                    )
+                  : _error != null
+                      ? _buildError(colors)
+                      : RefreshIndicator(
+                          onRefresh: _load,
+                          color: colors.info,
+                          child: TabBarView(
+                            controller: _tabController,
+                            physics: const BouncingScrollPhysics(),
+                            children: [
+                              _buildList(_active,
+                                  emptyLabel: 'Faol buyurtmalar yo\'q',
+                                  colors: colors),
+                              _buildList(_history,
+                                  emptyLabel: 'Bajarilgan buyurtmalar yo\'q',
+                                  showBookButton: true,
+                                  colors: colors),
+                              _buildList(_cancelled,
+                                  emptyLabel: 'Bekor qilingan buyurtmalar yo\'q',
+                                  colors: colors),
+                            ],
+                          ),
+                        ),
             ),
           ],
         ),
@@ -212,32 +186,32 @@ class _OrdersScreenState extends State<OrdersScreen>
     );
   }
 
-  Widget _buildOrderList(
-      List<_Order> orders, {
-        required String emptyLabel,
-        bool showBookButton = false,
-        required ApparenceKitColors colors,
-      }) {
+  Widget _buildList(
+    List<OrderModel> orders, {
+    required String emptyLabel,
+    bool showBookButton = false,
+    required ApparenceKitColors colors,
+  }) {
     if (orders.isEmpty) {
-      return _buildEmpty(
-        emptyLabel,
-        showBookButton: showBookButton,
-        colors: colors,
-      );
+      return _buildEmpty(emptyLabel,
+          showBookButton: showBookButton, colors: colors);
     }
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: orders.length,
       itemBuilder: (context, i) =>
-          _OrderCard(order: orders[i], colors: colors, isDark: _isDark),
+          _OrderCard(order: orders[i], colors: colors, isDark: _isDark,
+              onCancel: orders[i].canCancel
+                  ? () => _confirmCancel(orders[i])
+                  : null),
     );
   }
 
   Widget _buildEmpty(
-      String label, {
-        bool showBookButton = false,
-        required ApparenceKitColors colors,
-      }) {
+    String label, {
+    bool showBookButton = false,
+    required ApparenceKitColors colors,
+  }) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -253,16 +227,13 @@ class _OrdersScreenState extends State<OrdersScreen>
                 color: colors.grey2, size: 28),
           ),
           const SizedBox(height: 16),
-          Text(
-            label,
-            style: TextStyle(color: colors.grey2, fontSize: 15),
-          ),
+          Text(label, style: TextStyle(color: colors.grey2, fontSize: 15)),
           if (showBookButton) ...[
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () => context.go(UserRoutePath.booking),
-              icon: const Icon(Icons.auto_awesome, size: 18),
-              label: const Text('Забронировать'),
+              icon: const Icon(Icons.add, size: 18),
+              label: const Text('Band qilish'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.info,
                 foregroundColor: colors.onPrimary,
@@ -278,55 +249,108 @@ class _OrdersScreenState extends State<OrdersScreen>
       ),
     );
   }
+
+  Widget _buildError(ApparenceKitColors colors) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.wifi_off_rounded, color: colors.grey2, size: 40),
+          const SizedBox(height: 12),
+          Text('Xatolik yuz berdi',
+              style: TextStyle(color: colors.onBackground, fontSize: 15)),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _load,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: colors.info,
+              foregroundColor: colors.onPrimary,
+              elevation: 0,
+            ),
+            child: const Text('Qayta urinish'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmCancel(OrderModel order) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _c.onPrimaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Bekor qilish',
+            style: TextStyle(color: _c.onBackground)),
+        content: Text('Buyurtmani bekor qilmoqchimisiz?',
+            style: TextStyle(color: _c.grey2)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text("Yo'q", style: TextStyle(color: _c.info)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _repo.cancelOrder(order.id);
+            },
+            child: Text('Ha', style: TextStyle(color: _c.error)),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ── Order card ────────────────────────────────────────────────────
+// ── Order Card ─────────────────────────────────────────────────────
 class _OrderCard extends StatelessWidget {
   const _OrderCard({
     required this.order,
     required this.colors,
     required this.isDark,
+    this.onCancel,
   });
 
-  final _Order order;
+  final OrderModel order;
   final ApparenceKitColors colors;
   final bool isDark;
+  final VoidCallback? onCancel;
 
-  // Karta foni: dark'da onPrimaryContainer (#1A2B4A), light'da surface (#FFF)
-  Color get _cardBg => isDark ? colors.onPrimaryContainer : colors.surface;
+  Color get _cardBg =>
+      isDark ? colors.onPrimaryContainer : colors.surface;
 
-  // Karta border: dark'da ingichka grey1, light'da ajralib tursin
-  Color get _cardBorder => isDark
-      ? colors.grey1
-      : colors.grey1; // light: #E2E6EF
+  Color _statusColor() {
+    switch (order.status) {
+      case AppConstants.statusPending:   return colors.warning;
+      case AppConstants.statusWashing:   return colors.info;
+      case AppConstants.statusReady:     return colors.success;
+      case AppConstants.statusCompleted: return colors.success;
+      default:                           return colors.error;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isConfirmed = order.status == OrderStatus.confirmed;
-    final statusColor = isConfirmed ? colors.info : colors.error;
-    final statusLabel = isConfirmed ? 'Подтверждено' : 'Отменено';
-
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: _cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _cardBorder, width: 1),
-        // Light modeda kartalar background'dan ajralib turishi uchun shadow
+        border: Border.all(color: colors.grey1, width: 1),
         boxShadow: isDark
             ? null
             : [
-          BoxShadow(
-            color: colors.shadow.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+                BoxShadow(
+                  color: colors.shadow.withValues(alpha: 0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Status + menu ──────────────────────────────────
+          // ── Status + menu ────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 8, 0),
             child: Row(
@@ -335,23 +359,23 @@ class _OrderCard extends StatelessWidget {
                   width: 8,
                   height: 8,
                   decoration: BoxDecoration(
-                    color: statusColor,
+                    color: _statusColor(),
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  statusLabel,
+                  order.statusLabel,
                   style: TextStyle(
-                    color: statusColor,
+                    color: _statusColor(),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const Spacer(),
-                if (isConfirmed)
+                if (onCancel != null)
                   IconButton(
-                    onPressed: () => _showOrderMenu(context),
+                    onPressed: () => _showMenu(context),
                     icon: Icon(Icons.more_horiz,
                         color: colors.grey2, size: 20),
                     padding: EdgeInsets.zero,
@@ -361,7 +385,7 @@ class _OrderCard extends StatelessWidget {
             ),
           ),
 
-          // ── Time + date ────────────────────────────────────
+          // ── Time ─────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 6, 16, 12),
             child: Row(
@@ -369,7 +393,7 @@ class _OrderCard extends StatelessWidget {
               textBaseline: TextBaseline.alphabetic,
               children: [
                 Text(
-                  order.time,
+                  _displayTime(),
                   style: TextStyle(
                     color: colors.onBackground,
                     fontSize: 28,
@@ -378,45 +402,48 @@ class _OrderCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  order.date,
+                  _displayDate(),
                   style: TextStyle(color: colors.grey2, fontSize: 15),
                 ),
               ],
             ),
           ),
 
-          // ── Info rows ──────────────────────────────────────
+          // ── Info rows ─────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
             child: Column(
               children: [
-                _infoRow(Icons.location_on_outlined, order.branch),
+                _row(Icons.location_on_outlined,
+                    order.branchName ?? order.branchId),
                 const SizedBox(height: 6),
-                _infoRow(Icons.directions_car_outlined, order.car),
-                const SizedBox(height: 6),
-                _infoRow(Icons.access_time_outlined, order.serviceType),
+                _row(Icons.directions_car_outlined, order.carNumber),
+                if (order.serviceName != null) ...[
+                  const SizedBox(height: 6),
+                  _row(Icons.local_car_wash_outlined, order.serviceName!),
+                ],
               ],
             ),
           ),
 
-          // ── Divider ────────────────────────────────────────
+          // ── Divider ───────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Divider(height: 1, color: colors.grey1),
           ),
 
-          // ── Payment + price ────────────────────────────────
+          // ── Price ────────────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  order.paymentMethod,
+                  _paymentLabel(order.paymentMethod),
                   style: TextStyle(color: colors.grey2, fontSize: 13),
                 ),
                 Text(
-                  order.price,
+                  _formatPrice(order.totalAmount),
                   style: TextStyle(
                     color: colors.onBackground,
                     fontSize: 16,
@@ -431,25 +458,44 @@ class _OrderCard extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label) {
+  String _displayTime() {
+    final dt = order.scheduledAt ?? order.createdAt;
+    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+  }
+
+  String _displayDate() {
+    final dt = order.scheduledAt ?? order.createdAt;
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  }
+
+  String _paymentLabel(String method) {
+    switch (method) {
+      case 'card':  return 'Karta';
+      case 'cash':  return 'Naqd';
+      case 'click': return 'Click';
+      case 'payme': return 'Payme';
+      default:      return method;
+    }
+  }
+
+  Widget _row(IconData icon, String label) {
     return Row(
       children: [
         Icon(icon, color: colors.grey2, size: 16),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            label,
-            style: TextStyle(color: colors.grey2, fontSize: 13),
-          ),
+          child: Text(label,
+              style: TextStyle(color: colors.grey2, fontSize: 13)),
         ),
       ],
     );
   }
 
-  void _showOrderMenu(BuildContext context) {
+  void _showMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? colors.onPrimaryContainer : colors.surface,
+      backgroundColor:
+          isDark ? colors.onPrimaryContainer : colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -467,19 +513,14 @@ class _OrderCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            _menuItem(
-              ctx,
-              icon: Icons.calendar_today_outlined,
-              label: 'Перенести',
-              color: colors.onBackground,
-              onTap: () => Navigator.pop(ctx),
-            ),
-            _menuItem(
-              ctx,
+            _menuItem(ctx,
               icon: Icons.close,
-              label: 'Отменить бронь',
+              label: 'Buyurtmani bekor qilish',
               color: colors.error,
-              onTap: () => Navigator.pop(ctx),
+              onTap: () {
+                Navigator.pop(ctx);
+                onCancel?.call();
+              },
             ),
             const SizedBox(height: 8),
           ],
@@ -489,12 +530,12 @@ class _OrderCard extends StatelessWidget {
   }
 
   Widget _menuItem(
-      BuildContext context, {
-        required IconData icon,
-        required String label,
-        required VoidCallback onTap,
-        required Color color,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
     return InkWell(
       onTap: onTap,
       child: Padding(
@@ -503,14 +544,11 @@ class _OrderCard extends StatelessWidget {
           children: [
             Icon(icon, color: color, size: 22),
             const SizedBox(width: 14),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
+            Text(label,
+                style: TextStyle(
+                    color: color,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500)),
           ],
         ),
       ),
@@ -518,27 +556,12 @@ class _OrderCard extends StatelessWidget {
   }
 }
 
-// ── Models ─────────────────────────────────────────────────────────
-enum OrderStatus { confirmed, cancelled }
-
-class _Order {
-  final OrderStatus status;
-  final String time;
-  final String date;
-  final String branch;
-  final String car;
-  final String serviceType;
-  final String paymentMethod;
-  final String price;
-
-  const _Order({
-    required this.status,
-    required this.time,
-    required this.date,
-    required this.branch,
-    required this.car,
-    required this.serviceType,
-    required this.paymentMethod,
-    required this.price,
-  });
+String _formatPrice(int sum) {
+  final s = sum.toString();
+  final buf = StringBuffer();
+  for (int i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
+    buf.write(s[i]);
+  }
+  return "${buf.toString()} so'm";
 }

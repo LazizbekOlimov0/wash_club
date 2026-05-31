@@ -2,7 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../constants/app_constants.dart';
 
 /// Supabase bilan barcha muloqot shu yerda.
-///
+/// 
 /// Mobile app ANON key bilan ishlaydi — auth token shart emas.
 /// `source = 'by_client_app'` — server RLS da tekshiriladi.
 class SupabaseService {
@@ -109,13 +109,13 @@ class SupabaseService {
     final inserted = await _client
         .from('customers')
         .insert({
-      'branch_id': branchId,
-      'full_name': fullName,
-      'phone': phone,
-      'car_number': carNumber,
-      'car_model': carModel,
-      'vehicle_category': vehicleCategory,
-    })
+          'branch_id': branchId,
+          'full_name': fullName,
+          'phone': phone,
+          'car_number': carNumber,
+          'car_model': carModel,
+          'vehicle_category': vehicleCategory,
+        })
         .select()
         .single();
 
@@ -243,19 +243,19 @@ class SupabaseService {
     return _client
         .channel('order-$orderId')
         .onPostgresChanges(
-      event: PostgresChangeEvent.update,
-      schema: 'public',
-      table: 'orders',
-      filter: PostgresChangeFilter(
-        type: PostgresChangeFilterType.eq,
-        column: 'id',
-        value: orderId,
-      ),
-      callback: (payload) {
-        final data = payload.newRecord;
-        onUpdate(OrderModel.fromJson(data));
-      },
-    )
+          event: PostgresChangeEvent.update,
+          schema: 'public',
+          table: 'orders',
+          filter: PostgresChangeFilter(
+            type: PostgresChangeFilterType.eq,
+            column: 'id',
+            value: orderId,
+          ),
+          callback: (payload) {
+            final data = payload.newRecord;
+            onUpdate(OrderModel.fromJson(data));
+          },
+        )
         .subscribe();
   }
 }

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../core/theme/providers/theme_provider.dart';
+import '../../../../shared/services/client_session.dart';
+import '../../../data/repositories/branches_repository.dart';
+import '../../../data/repositories/orders_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,22 +19,17 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
-  bool _promoNotifications = false;
+  bool _promoNotifications   = false;
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
-  // Language code → display name
   String get _currentLanguageName {
     final locale = LocaleSettings.currentLocale.languageCode;
     switch (locale) {
-      case 'uz':
-        return "O'zbek";
-      case 'ru':
-        return 'Русский';
-      case 'en':
-      default:
-        return 'English';
+      case 'uz': return "O'zbek";
+      case 'ru': return 'Русский';
+      default:   return 'English';
     }
   }
 
@@ -63,30 +62,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 16),
         physics: const ClampingScrollPhysics(),
         children: [
-          // ── Hisob ─────────────────────────────────────────────
+          // ── Hisob ───────────────────────────────────────────────
           _sectionLabel(t.settings.account, colors),
           _settingsGroup([
             _navItem(
               icon: Icons.person_outline,
               label: t.settings.editProfile,
-              onTap: () {},
+              onTap: () => _showEditProfile(context, t, colors),
               colors: colors,
             ),
             _navItem(
               icon: Icons.phone_outlined,
               label: t.settings.changePhone,
-              onTap: () {},
+              onTap: () => _showEditProfile(context, t, colors),
               colors: colors,
             ),
           ], colors),
           const SizedBox(height: 24),
 
-          // ── Ko'rinish ──────────────────────────────────────────
+          // ── Ko'rinish ────────────────────────────────────────────
           _sectionLabel(t.settings.appearance, colors),
           _settingsGroup([_themeItem(t, colors)], colors),
           const SizedBox(height: 24),
 
-          // ── Bildirishnomalar ───────────────────────────────────
+          // ── Bildirishnomalar ─────────────────────────────────────
           _sectionLabel(t.settings.notifications, colors),
           _settingsGroup([
             _toggleItem(
@@ -108,7 +107,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ], colors),
           const SizedBox(height: 24),
 
-          // ── Til ───────────────────────────────────────────────
+          // ── Til ──────────────────────────────────────────────────
           _sectionLabel(t.settings.language, colors),
           _settingsGroup([
             _navItem(
@@ -121,25 +120,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ], colors),
           const SizedBox(height: 24),
 
-          // ── Tarix ──────────────────────────────────────────────
-          _sectionLabel(t.settings.history, colors),
-          _settingsGroup([
-            _navItem(
-              icon: Icons.history_outlined,
-              label: t.settings.visitHistory,
-              onTap: () {},
-              colors: colors,
-            ),
-            _navItem(
-              icon: Icons.receipt_long_outlined,
-              label: t.settings.paymentHistory,
-              onTap: () {},
-              colors: colors,
-            ),
-          ], colors),
-          const SizedBox(height: 24),
-
-          // ── Yordam ─────────────────────────────────────────────
+          // ── Yordam ───────────────────────────────────────────────
           _sectionLabel(t.settings.support, colors),
           _settingsGroup([
             _navItem(
@@ -166,16 +147,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () {},
               colors: colors,
             ),
-            _navItem(
-              icon: Icons.gavel_outlined,
-              label: t.settings.termsOfService,
-              onTap: () {},
-              colors: colors,
-            ),
           ], colors),
           const SizedBox(height: 24),
 
-          // ── Xavfli zona ────────────────────────────────────────
+          // ── Xavfli zona ──────────────────────────────────────────
           _sectionLabel(t.settings.dangerZone, colors),
           _settingsGroup([
             _navItem(
@@ -227,7 +202,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ── Group container ────────────────────────────────────────────
   Widget _settingsGroup(
       List<Widget> children, ApparenceKitColors colors) {
     return Padding(
@@ -243,8 +217,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             for (int i = 0; i < children.length; i++) ...[
               children[i],
               if (i < children.length - 1)
-                Divider(
-                    height: 1, color: colors.grey1, indent: 48),
+                Divider(height: 1, color: colors.grey1, indent: 48),
             ],
           ],
         ),
@@ -252,7 +225,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ── Nav item ───────────────────────────────────────────────────
   Widget _navItem({
     required IconData icon,
     required String label,
@@ -270,24 +242,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Icon(icon,
-                color: iconColor ?? colors.grey2, size: 20),
+            Icon(icon, color: iconColor ?? colors.grey2, size: 20),
             const SizedBox(width: 12),
             Expanded(
-              child: Text(
-                label,
-                style: TextStyle(
-                  color: labelColor ?? colors.onBackground,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              child: Text(label,
+                  style: TextStyle(
+                    color: labelColor ?? colors.onBackground,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  )),
             ),
             if (trailing != null) ...[
-              Text(
-                trailing,
-                style: TextStyle(color: colors.grey2, fontSize: 13),
-              ),
+              Text(trailing,
+                  style: TextStyle(color: colors.grey2, fontSize: 13)),
               const SizedBox(width: 4),
             ],
             if (showArrow)
@@ -298,7 +265,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ── Toggle item ────────────────────────────────────────────────
   Widget _toggleItem({
     required IconData icon,
     required String label,
@@ -317,20 +283,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text(label,
+                    style: TextStyle(
+                        color: colors.onBackground,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500)),
                 if (subtitle != null) ...[
                   const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(color: colors.grey2, fontSize: 12),
-                  ),
+                  Text(subtitle,
+                      style: TextStyle(color: colors.grey2, fontSize: 12)),
                 ],
               ],
             ),
@@ -348,32 +309,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ── Theme item (ishlaydigan) ────────────────────────────────────
   Widget _themeItem(dynamic t, ApparenceKitColors colors) {
     final appTheme = ThemeProvider.of(context);
-
     final currentMode = switch (appTheme.mode) {
-      ThemeMode.light => 'light',
-      ThemeMode.dark => 'dark',
+      ThemeMode.light  => 'light',
+      ThemeMode.dark   => 'dark',
       ThemeMode.system => 'auto',
     };
-
     final themes = [
-      {
-        'key': 'light',
-        'icon': Icons.wb_sunny_outlined,
-        'label': t.settings.themeLight as String,
-      },
-      {
-        'key': 'dark',
-        'icon': Icons.dark_mode_outlined,
-        'label': t.settings.themeDark as String,
-      },
-      {
-        'key': 'auto',
-        'icon': Icons.computer_outlined,
-        'label': t.settings.themeAuto as String,
-      },
+      {'key': 'light', 'icon': Icons.wb_sunny_outlined,
+        'label': t.settings.themeLight as String},
+      {'key': 'dark',  'icon': Icons.dark_mode_outlined,
+        'label': t.settings.themeDark  as String},
+      {'key': 'auto',  'icon': Icons.computer_outlined,
+        'label': t.settings.themeAuto  as String},
     ];
 
     return Padding(
@@ -385,20 +334,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             padding: const EdgeInsets.only(left: 4, bottom: 10),
             child: Row(
               children: [
-                Icon(
-                  Icons.palette_outlined,
-                  color: colors.grey2,
-                  size: 20,
-                ),
+                Icon(Icons.palette_outlined, color: colors.grey2, size: 20),
                 const SizedBox(width: 12),
-                Text(
-                  t.settings.theme as String,
-                  style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+                Text(t.settings.theme as String,
+                    style: TextStyle(
+                        color: colors.onBackground,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500)),
               ],
             ),
           ),
@@ -410,69 +352,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             child: Row(
               children: themes.map((theme) {
-                final isSelected =
-                    currentMode == theme['key'];
-
+                final isSelected = currentMode == theme['key'];
                 return Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      final key = theme['key'] as String;
-
-                      switch (key) {
+                      switch (theme['key'] as String) {
                         case 'light':
-                          appTheme.setMode(
-                            ThemeMode.light,
-                          );
+                          appTheme.setMode(ThemeMode.light);
                           break;
-
                         case 'dark':
-                          appTheme.setMode(
-                            ThemeMode.dark,
-                          );
+                          appTheme.setMode(ThemeMode.dark);
                           break;
-
                         case 'auto':
-                          appTheme.setMode(
-                            ThemeMode.system,
-                          );
+                          appTheme.setMode(ThemeMode.system);
                           break;
                       }
                     },
                     child: AnimatedContainer(
-                      duration:
-                      const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                      ),
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? colors.info
-                            : Colors.transparent,
-                        borderRadius:
-                        BorderRadius.circular(8),
+                        color: isSelected ? colors.info : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Column(
                         children: [
-                          Icon(
-                            theme['icon'] as IconData,
-                            color: isSelected
-                                ? colors.onPrimary
-                                : colors.grey2,
-                            size: 18,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            theme['label'] as String,
-                            style: TextStyle(
+                          Icon(theme['icon'] as IconData,
                               color: isSelected
                                   ? colors.onPrimary
                                   : colors.grey2,
-                              fontSize: 11,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                            ),
-                          ),
+                              size: 18),
+                          const SizedBox(height: 4),
+                          Text(theme['label'] as String,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? colors.onPrimary
+                                    : colors.grey2,
+                                fontSize: 11,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                              )),
                         ],
                       ),
                     ),
@@ -486,17 +406,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ── Language bottom sheet ──────────────────────────────────────
   void _showLanguageSheet(BuildContext context, ApparenceKitColors colors) {
     final languages = [
-      {'code': 'uz', 'flag': '🇺🇿', 'name': "O'zbek", 'native': "O'zbekcha"},
+      {'code': 'uz', 'flag': '🇺🇿', 'name': "O'zbek",  'native': "O'zbekcha"},
       {'code': 'ru', 'flag': '🇷🇺', 'name': 'Русский', 'native': 'Русский язык'},
       {'code': 'en', 'flag': '🇬🇧', 'name': 'English', 'native': 'English'},
     ];
-
     String selected = LocaleSettings.currentLocale.languageCode;
-    final t =
-        BuildContextTranslationsExtension(context).t;
+    final t = BuildContextTranslationsExtension(context).t;
 
     showModalBottomSheet(
       context: context,
@@ -512,11 +429,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Handle
                 Center(
                   child: Container(
-                    width: 40,
-                    height: 4,
+                    width: 40, height: 4,
                     decoration: BoxDecoration(
                       color: colors.grey1,
                       borderRadius: BorderRadius.circular(2),
@@ -524,23 +439,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                // Title
-                Text(
-                  t.settings.appLanguage,
-                  style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(t.settings.appLanguage,
+                    style: TextStyle(
+                        color: colors.onBackground,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700)),
                 const SizedBox(height: 16),
-                // Language list
                 ...languages.map((lang) {
                   final isSelected = selected == lang['code'];
                   return GestureDetector(
-                    onTap: () {
-                      setSheetState(() => selected = lang['code']!);
-                    },
+                    onTap: () =>
+                        setSheetState(() => selected = lang['code']!),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 180),
                       margin: const EdgeInsets.only(bottom: 8),
@@ -552,8 +461,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             : colors.onPrimaryContainer,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
-                          color:
-                          isSelected ? colors.info : colors.grey1,
+                          color: isSelected ? colors.info : colors.grey1,
                           width: isSelected ? 1.5 : 1,
                         ),
                       ),
@@ -566,28 +474,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  lang['name']!,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? colors.info
-                                        : colors.onBackground,
-                                    fontSize: 15,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  lang['native']!,
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? colors.info.withValues(alpha: 0.7)
-                                        : colors.grey3,
-                                    fontSize: 12,
-                                  ),
-                                ),
+                                Text(lang['name']!,
+                                    style: TextStyle(
+                                        color: isSelected
+                                            ? colors.info
+                                            : colors.onBackground,
+                                        fontSize: 15,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w700
+                                            : FontWeight.w500)),
+                                Text(lang['native']!,
+                                    style: TextStyle(
+                                        color: isSelected
+                                            ? colors.info.withValues(alpha: 0.7)
+                                            : colors.grey3,
+                                        fontSize: 12)),
                               ],
                             ),
                           ),
@@ -595,29 +496,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             duration: const Duration(milliseconds: 180),
                             child: isSelected
                                 ? Container(
-                              key: ValueKey(lang['code']),
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                color: colors.info,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(Icons.check,
-                                  color: colors.onPrimary,
-                                  size: 14),
-                            )
+                                    key: ValueKey(lang['code']),
+                                    width: 24, height: 24,
+                                    decoration: BoxDecoration(
+                                      color: colors.info,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(Icons.check,
+                                        color: colors.onPrimary, size: 14),
+                                  )
                                 : Container(
-                              key: ValueKey(
-                                  'empty_${lang['code']}'),
-                              width: 24,
-                              height: 24,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                    color: colors.grey1,
-                                    width: 1.5),
-                              ),
-                            ),
+                                    key: ValueKey('empty_${lang['code']}'),
+                                    width: 24, height: 24,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                          color: colors.grey1, width: 1.5),
+                                    ),
+                                  ),
                           ),
                         ],
                       ),
@@ -625,27 +521,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   );
                 }),
                 const SizedBox(height: 8),
-                // Apply button
                 SizedBox(
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
                     onPressed: () async {
                       await LocaleSettings.setLocaleRaw(selected);
-
-                      final prefs =
-                      await SharedPreferences.getInstance();
-
-                      await prefs.setString(
-                        'locale',
-                        selected,
-                      );
-
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setString('locale', selected);
                       setState(() {});
-
-                      if (context.mounted) {
-                        Navigator.pop(ctx);
-                      }
+                      if (context.mounted) Navigator.pop(ctx);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: colors.info,
@@ -654,14 +539,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14)),
                     ),
-                    child: Text(
-                      t.settings.confirm,
-                      style: TextStyle(
-                        color: colors.onPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: Text(t.settings.confirm,
+                        style: TextStyle(
+                            color: colors.onPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],
@@ -672,41 +554,142 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  // ── Dialogs ────────────────────────────────────────────────────
+  /// Chiqish: session + cache tozalash
+  Future<void> _logout() async {
+    // 1) Supabase auth signout (agar Google bilan kirgan bo'lsa)
+    try {
+      await Supabase.instance.client.auth.signOut();
+    } catch (_) {}
+
+    // 2) Session tozalash
+    await ClientSession.instance.clear();
+
+    // 3) Cache tozalash
+    OrdersRepository.instance.invalidate();
+    BranchesRepository.instance.invalidate();
+
+    if (mounted) context.go(UserRoutePath.login);
+  }
+
+  void _showEditProfile(
+      BuildContext context, dynamic t, ApparenceKitColors colors) {
+    final session = ClientSession.instance;
+    final nameCtrl  = TextEditingController(text: session.name);
+    final phoneCtrl = TextEditingController(text: session.phone);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: colors.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.fromLTRB(20, 20, 20,
+            MediaQuery.of(ctx).viewInsets.bottom + 20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: colors.grey1,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(t.settings.editProfile,
+                style: TextStyle(
+                    color: colors.onBackground,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700)),
+            const SizedBox(height: 20),
+            TextField(
+              controller: nameCtrl,
+              style: TextStyle(color: colors.onSurface),
+              decoration: InputDecoration(
+                labelText: 'Ism',
+                labelStyle: TextStyle(color: colors.grey2),
+                filled: true,
+                fillColor: colors.onPrimaryContainer,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: phoneCtrl,
+              keyboardType: TextInputType.phone,
+              style: TextStyle(color: colors.onSurface),
+              decoration: InputDecoration(
+                labelText: 'Telefon',
+                labelStyle: TextStyle(color: colors.grey2),
+                filled: true,
+                fillColor: colors.onPrimaryContainer,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await session.saveProfile(
+                    name:  nameCtrl.text.trim(),
+                    phone: phoneCtrl.text.trim(),
+                  );
+                  Navigator.pop(ctx);
+                  if (mounted) setState(() {});
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colors.info,
+                  foregroundColor: colors.onPrimary,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                ),
+                child: const Text('Saqlash',
+                    style: TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.w600)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showLogoutDialog(
       BuildContext context, dynamic t, ApparenceKitColors colors) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.onPrimaryContainer,
-        shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          t.settings.logoutTitle as String,
-          style: TextStyle(
-              color: colors.onBackground, fontSize: 17),
-        ),
-        content: Text(
-          t.settings.logoutBody as String,
-          style: TextStyle(color: colors.grey2, fontSize: 14),
-        ),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: Text(t.settings.logoutTitle as String,
+            style: TextStyle(color: colors.onBackground, fontSize: 17)),
+        content: Text(t.settings.logoutBody as String,
+            style: TextStyle(color: colors.grey2, fontSize: 14)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              t.settings.cancel as String,
-              style: TextStyle(color: colors.info),
-            ),
+            child: Text(t.settings.cancel as String,
+                style: TextStyle(color: colors.info)),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.go(UserRoutePath.login);
+              _logout();
             },
-            child: Text(
-              t.settings.confirm as String,
-              style: TextStyle(color: colors.error),
-            ),
+            child: Text(t.settings.confirm as String,
+                style: TextStyle(color: colors.error)),
           ),
         ],
       ),
@@ -719,31 +702,29 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: colors.onPrimaryContainer,
-        shape:
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          t.settings.deleteTitle as String,
-          style: TextStyle(
-              color: colors.onBackground, fontSize: 17),
-        ),
-        content: Text(
-          t.settings.deleteBody as String,
-          style: TextStyle(color: colors.grey2, fontSize: 14),
-        ),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: Text(t.settings.deleteTitle as String,
+            style: TextStyle(color: colors.onBackground, fontSize: 17)),
+        content: Text(t.settings.deleteBody as String,
+            style: TextStyle(color: colors.grey2, fontSize: 14)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              t.settings.cancel as String,
-              style: TextStyle(color: colors.info),
-            ),
+            child: Text(t.settings.cancel as String,
+                style: TextStyle(color: colors.info)),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              t.settings.delete as String,
-              style: TextStyle(color: colors.error),
-            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              // Hamma ma'lumotni tozalab, login'ga yuborish
+              await ClientSession.instance.clear();
+              OrdersRepository.instance.invalidate();
+              BranchesRepository.instance.invalidate();
+              if (mounted) context.go(UserRoutePath.login);
+            },
+            child: Text(t.settings.delete as String,
+                style: TextStyle(color: colors.error)),
           ),
         ],
       ),
