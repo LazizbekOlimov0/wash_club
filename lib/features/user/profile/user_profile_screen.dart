@@ -19,7 +19,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
-  bool get _isDark => Theme.of(context).brightness == Brightness.dark;
 
   int get _completedCount =>
       _ordersRepo.cachedOrders.where((o) => o.isCompleted).length;

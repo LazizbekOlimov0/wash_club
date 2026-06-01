@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
@@ -373,14 +374,13 @@ class _OrderCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                if (onCancel != null)
-                  IconButton(
-                    onPressed: () => _showMenu(context),
-                    icon: Icon(Icons.more_horiz,
-                        color: colors.grey2, size: 20),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
+                IconButton(
+                  onPressed: () => _showMenu(context),
+                  icon: Icon(Icons.more_horiz,
+                      color: colors.grey2, size: 20),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ],
             ),
           ),
@@ -514,18 +514,122 @@ class _OrderCard extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             _menuItem(ctx,
-              icon: Icons.close,
-              label: 'Buyurtmani bekor qilish',
-              color: colors.error,
+              icon: Icons.qr_code_2,
+              label: 'QR kodni ko\'rsatish',
+              color: colors.primary,
               onTap: () {
                 Navigator.pop(ctx);
-                onCancel?.call();
+                _showQrDialog(context);
               },
             ),
+            if (onCancel != null) ...[
+              const SizedBox(height: 4),
+              _menuItem(ctx,
+                icon: Icons.close,
+                label: 'Buyurtmani bekor qilish',
+                color: colors.error,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  onCancel?.call();
+                },
+              ),
+            ],
             const SizedBox(height: 8),
           ],
         ),
       ),
+    );
+  }
+
+  void _showQrDialog(BuildContext context) {
+    final qrData = 'washclub:order:${order.id}';
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final c = Theme.of(ctx).extension<ApparenceKitColors>()!;
+        return Dialog(
+          backgroundColor: c.onPrimaryContainer,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(ctx),
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: c.surface,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.close, color: c.grey2, size: 16),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: QrImageView(
+                    data: qrData,
+                    version: QrVersions.auto,
+                    size: 220,
+                    backgroundColor: Colors.white,
+                    eyeStyle: const QrEyeStyle(
+                      eyeShape: QrEyeShape.square,
+                      color: Color(0xFF0F1B35),
+                    ),
+                    dataModuleStyle: const QrDataModuleStyle(
+                      dataModuleShape: QrDataModuleShape.square,
+                      color: Color(0xFF0F1B35),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  order.carNumber,
+                  style: TextStyle(
+                    color: c.onBackground,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  order.branchName ?? '',
+                  style: TextStyle(color: c.grey2, fontSize: 14),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _statusColor().withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    order.statusLabel.toUpperCase(),
+                    style: TextStyle(
+                      color: _statusColor(),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

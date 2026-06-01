@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../../core/theme/colors.dart';
@@ -25,6 +26,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   bool _loading = true;
   String? _error;
   int _unreadNotifCount = 0;
+  String _branchSearch = '';
 
   @override
   void initState() {
@@ -117,7 +119,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             _buildHeader(context, colors),
             if (_activeOrders.isNotEmpty) ...[
               const SizedBox(height: 16),
-              _buildActiveOrderCard(context, colors, _activeOrders.first),
+              _buildActiveOrdersSection(context, colors),
             ],
             const SizedBox(height: 24),
             _buildQuickActions(context, colors),
@@ -220,146 +222,211 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  // ── Active order card ─────────────────────────────────────────────
-  Widget _buildActiveOrderCard(
-      BuildContext context, ApparenceKitColors colors, OrderModel order) {
-    final t = context.t;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: _cardBg(colors),
-          borderRadius: BorderRadius.circular(18),
-          border: _cardBorder(colors),
-          boxShadow: _cardShadow(colors),
+  // ── Active orders — stacked cards ───────────────────────────────
+  Widget _buildActiveOrdersSection(
+      BuildContext context, ApparenceKitColors colors) {
+    final orders = _activeOrders.take(3).toList();
+    final cardHeight = 130.0;
+    final stackHeight = cardHeight + (orders.length - 1) * 12.0;
+
+    return GestureDetector(
+      onTap: () => context.go(UserRoutePath.orders),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SizedBox(
+          height: stackHeight,
+          child: Stack(
+            children: List.generate(orders.length, (i) {
+              return Positioned(
+                top: i * 12.0,
+                left: 0,
+                right: 0,
+                child: _buildOrderCard(
+                    context, colors, orders[i],
+                    isTop: i == 0, isStacked: i > 0),
+              );
+            }),
+          ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status badge
-            Row(
+      ),
+    );
+  }
+
+  Widget _buildOrderCard(
+    BuildContext context,
+    ApparenceKitColors colors,
+    OrderModel order, {
+    bool isTop = true,
+    bool isStacked = false,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isStacked ? colors.surface : _cardBg(colors),
+        borderRadius: BorderRadius.circular(18),
+        border: isStacked
+            ? Border.all(color: colors.divider, width: 1)
+            : _cardBorder(colors),
+        boxShadow: isTop ? _cardShadow(colors) : null,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: _statusColor(order.status, colors),
-                    shape: BoxShape.circle,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _statusColor(order.status, colors),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      order.statusLabel.toUpperCase(),
+                      style: TextStyle(
+                        color: _statusColor(order.status, colors),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(height: 6),
                 Text(
+                  order.branchName ?? '—',
+                  style: TextStyle(
+                    color: colors.onBackground,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Text(
+                      order.carNumber,
+                      style: TextStyle(color: colors.grey2, fontSize: 12),
+                    ),
+                    if (order.scheduledAt != null) ...[
+                      const SizedBox(width: 8),
+                      Icon(Icons.access_time, color: colors.grey2, size: 12),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${order.scheduledAt!.hour.toString().padLeft(2, '0')}:${order.scheduledAt!.minute.toString().padLeft(2, '0')}',
+                        style: TextStyle(color: colors.grey2, fontSize: 12),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // QR code button
+          GestureDetector(
+            onTap: () => _showQrCode(context, order),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.qr_code, color: colors.primary, size: 22),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showQrCode(BuildContext context, OrderModel order) {
+    final qrData = 'washclub:order:${order.id}';
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        final colors = Theme.of(ctx).extension<ApparenceKitColors>()!;
+        return AlertDialog(
+          backgroundColor: colors.onPrimaryContainer,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(ctx),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: colors.surface,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.close, color: colors.grey2, size: 16),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              QrImageView(
+                data: qrData,
+                version: QrVersions.auto,
+                size: 200,
+                backgroundColor: Colors.white,
+                eyeStyle: QrEyeStyle(
+                  eyeShape: QrEyeShape.square,
+                  color: const Color(0xFF0F1B35),
+                ),
+                dataModuleStyle: QrDataModuleStyle(
+                  dataModuleShape: QrDataModuleShape.square,
+                  color: const Color(0xFF0F1B35),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                order.carNumber,
+                style: TextStyle(
+                  color: colors.onBackground,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                order.branchName ?? '',
+                style: TextStyle(color: colors.grey2, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _statusColor(order.status, colors).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
                   order.statusLabel.toUpperCase(),
                   style: TextStyle(
                     color: _statusColor(order.status, colors),
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    letterSpacing: 0.8,
+                    letterSpacing: 0.5,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            // Time
-            Text(
-              order.scheduledAt != null
-                  ? '${order.scheduledAt!.hour.toString().padLeft(2, '0')}:${order.scheduledAt!.minute.toString().padLeft(2, '0')}'
-                  : '—',
-              style: TextStyle(
-                color: colors.onBackground,
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              order.scheduledAt != null
-                  ? '${order.scheduledAt!.year}-${order.scheduledAt!.month.toString().padLeft(2, '0')}-${order.scheduledAt!.day.toString().padLeft(2, '0')}'
-                  : order.createdAt.toString().substring(0, 10),
-              style: TextStyle(color: colors.grey3, fontSize: 13),
-            ),
-            const SizedBox(height: 16),
-            Divider(color: colors.divider, height: 1),
-            const SizedBox(height: 16),
-            _bookingRow(
-              icon: Icons.location_on_outlined,
-              title: order.branchName ?? '—',
-              subtitle: order.branchAddress,
-              colors: colors,
-            ),
-            const SizedBox(height: 10),
-            _bookingRow(
-              icon: Icons.directions_car_outlined,
-              title: order.carNumber,
-              subtitle: order.carModel.isNotEmpty ? order.carModel : null,
-              colors: colors,
-            ),
-            if (order.serviceName != null) ...[
-              const SizedBox(height: 10),
-              _bookingRow(
-                icon: Icons.local_car_wash_outlined,
-                title: order.serviceName!,
-                subtitle: null,
-                colors: colors,
               ),
             ],
-            const SizedBox(height: 16),
-            Divider(color: colors.divider, height: 1),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                if (order.canCancel)
-                  GestureDetector(
-                    onTap: () => _confirmCancel(context, order),
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Icon(Icons.cancel_outlined,
-                              color: colors.error, size: 20),
-                          const SizedBox(width: 12),
-                          Text(
-                            t.home.cancel,
-                            style: TextStyle(
-                              color: colors.error,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                GestureDetector(
-                  onTap: () => context.go(UserRoutePath.orders),
-                  behavior: HitTestBehavior.opaque,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Icon(Icons.list_alt_outlined,
-                            color: colors.info, size: 20),
-                        const SizedBox(width: 12),
-                        Text(
-                          'Barchasi',
-                          style: TextStyle(
-                            color: colors.info,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -371,66 +438,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       case 'completed': return colors.success;
       default:          return colors.error;
     }
-  }
-
-  void _confirmCancel(BuildContext context, OrderModel order) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: _c.onPrimaryContainer,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Bekor qilish', style: TextStyle(color: _c.onBackground)),
-        content: Text(
-          "Buyurtmani bekor qilmoqchimisiz?",
-          style: TextStyle(color: _c.grey2),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('Yo\'q', style: TextStyle(color: _c.info)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _ordersRepo.cancelOrder(order.id);
-            },
-            child: Text('Ha', style: TextStyle(color: _c.error)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _bookingRow({
-    required IconData icon,
-    required String title,
-    required String? subtitle,
-    required ApparenceKitColors colors,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: colors.grey2, size: 18),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title,
-                  style: TextStyle(
-                      color: colors.onBackground,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500)),
-              if (subtitle != null && subtitle.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(subtitle,
-                    style: TextStyle(color: colors.grey2, fontSize: 12)),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
   }
 
   // ── Quick actions ─────────────────────────────────────────────────
@@ -490,6 +497,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   // ── Branches ──────────────────────────────────────────────────────
   Widget _buildBranches(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
+    final filtered = _branches.where((b) {
+      if (_branchSearch.isEmpty) return true;
+      return b.name.toLowerCase().contains(_branchSearch.toLowerCase()) ||
+          b.address.toLowerCase().contains(_branchSearch.toLowerCase());
+    }).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -504,19 +517,50 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
+        // Search field
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: TextField(
+            onChanged: (v) => setState(() => _branchSearch = v),
+            style: TextStyle(color: colors.onSurface, fontSize: 14),
+            decoration: InputDecoration(
+              hintText: 'Filial qidirish...',
+              hintStyle: TextStyle(color: colors.grey2, fontSize: 14),
+              prefixIcon:
+                  Icon(Icons.search, color: colors.grey2, size: 20),
+              filled: true,
+              fillColor: _isLight ? colors.surface : colors.onPrimaryContainer,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: colors.divider),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: colors.divider),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide(color: colors.primary, width: 1.5),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         SizedBox(
           height: 220,
-          child: _branches.isEmpty
+          child: filtered.isEmpty
               ? Center(
               child: Text('Filiallar topilmadi',
                   style: TextStyle(color: colors.grey2)))
               : ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _branches.length,
+            itemCount: filtered.length,
             itemBuilder: (context, i) {
-              final b = _branches[i];
+              final b = filtered[i];
               return GestureDetector(
                 onTap: () => context.push(
                   UserRoutePath.booking,

@@ -14,8 +14,9 @@ import '../../../data/repositories/orders_repository.dart';
 // ─────────────────────────────────────────────────────────────
 
 class BookingScreen extends StatefulWidget {
-  /// Agar home'dan filial tanlangan bo'lsa: extra = {'branchId': '...'}
-  const BookingScreen({super.key});
+  final String? presetBranchId;
+
+  const BookingScreen({super.key, this.presetBranchId});
 
   @override
   State<BookingScreen> createState() => _BookingScreenState();
@@ -34,7 +35,6 @@ class _BookingScreenState extends State<BookingScreen> {
   bool _loadingBranches  = true;
   bool _loadingServices  = false;
   bool _submitting       = false;
-  String? _error;
 
   BranchModel?  _selectedBranch;
   ServiceModel? _selectedService;
@@ -65,6 +65,30 @@ class _BookingScreenState extends State<BookingScreen> {
     super.initState();
     _loadBranches();
     _initCarSelection();
+    if (widget.presetBranchId != null) {
+      _preselectBranch(widget.presetBranchId!);
+    }
+  }
+
+  void _preselectBranch(String branchId) async {
+    setState(() { _loadingBranches = true; });
+    try {
+      _branches = await _branchRepo.getBranches(forceRefresh: true);
+      if (mounted) {
+        final found = _branches.where((b) => b.id == branchId).firstOrNull;
+        if (found != null) {
+          setState(() {
+            _selectedBranch = found;
+            _loadingBranches = false;
+            _step = 1;
+          });
+          _loadServices(branchId);
+          return;
+        }
+      }
+    } finally {
+      if (mounted) setState(() => _loadingBranches = false);
+    }
   }
 
   void _initCarSelection() {
@@ -79,11 +103,9 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // ── Load branches ─────────────────────────────────────────
   Future<void> _loadBranches() async {
-    setState(() { _loadingBranches = true; _error = null; });
+    setState(() { _loadingBranches = true; });
     try {
       _branches = await _branchRepo.getBranches(forceRefresh: true);
-    } catch (e) {
-      _error = e.toString();
     } finally {
       if (mounted) setState(() => _loadingBranches = false);
     }
@@ -93,8 +115,6 @@ class _BookingScreenState extends State<BookingScreen> {
     setState(() { _loadingServices = true; });
     try {
       _services = await _branchRepo.getServices(branchId);
-    } catch (e) {
-      _error = e.toString();
     } finally {
       if (mounted) setState(() => _loadingServices = false);
     }

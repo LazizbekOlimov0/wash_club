@@ -22,6 +22,7 @@ class SupabaseService {
         .from('branches')
         .select('''
           id, name, address, is_active, created_at,
+          latitude, longitude,
           services (
             id, name, description, is_active, is_addon, icon, sort_order,
             service_prices ( vehicle_category, price )
@@ -204,14 +205,11 @@ class SupabaseService {
         .toList();
   }
 
-  /// Buyurtmani bekor qilish
-  /// (Supabase'da client app orderlarini o'chirish mumkin — lekin bu yerda
-  /// biz statusni 'cancelled' ga o'zgartirishni EMAS, balki o'chirishni ishlatamiz)
+  /// Buyurtmani bekor qilish — status'ni 'cancelled' ga o'zgartiradi
   Future<void> cancelOrder(String orderId) async {
-    // Faqat pending va scheduled holatdagi buyurtmalarni bekor qilish mumkin
     await _client
         .from('orders')
-        .delete()
+        .update({'status': AppConstants.statusCancelled})
         .eq('id', orderId)
         .eq('source', AppConstants.orderSourceClientApp)
         .inFilter('status', [AppConstants.statusPending]);
@@ -299,6 +297,8 @@ class BranchModel {
   final String name;
   final String address;
   final bool isActive;
+  final double? latitude;
+  final double? longitude;
   final List<ServiceModel> services;
 
   const BranchModel({
@@ -307,6 +307,8 @@ class BranchModel {
     required this.address,
     required this.isActive,
     required this.services,
+    this.latitude,
+    this.longitude,
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> j) {
@@ -320,6 +322,8 @@ class BranchModel {
       name:      j['name'] as String,
       address:   j['address'] as String? ?? '',
       isActive:  j['is_active'] as bool? ?? true,
+      latitude:  (j['latitude'] as num?)?.toDouble(),
+      longitude: (j['longitude'] as num?)?.toDouble(),
       services:  services,
     );
   }

@@ -117,7 +117,27 @@ class OrdersRepository {
   Future<void> cancelOrder(String orderId) async {
     await _api.cancelOrder(orderId);
     _unsubscribeFromOrder(orderId);
-    _orders.removeWhere((o) => o.id == orderId);
+    final idx = _orders.indexWhere((o) => o.id == orderId);
+    if (idx >= 0) {
+      _orders[idx] = OrderModel(
+        id: _orders[idx].id,
+        status: 'cancelled',
+        carNumber: _orders[idx].carNumber,
+        carModel: _orders[idx].carModel,
+        totalAmount: _orders[idx].totalAmount,
+        paymentMethod: _orders[idx].paymentMethod,
+        paymentStatus: _orders[idx].paymentStatus,
+        source: _orders[idx].source,
+        scheduledAt: _orders[idx].scheduledAt,
+        createdAt: _orders[idx].createdAt,
+        completedAt: _orders[idx].completedAt,
+        branchId: _orders[idx].branchId,
+        branchName: _orders[idx].branchName,
+        branchAddress: _orders[idx].branchAddress,
+        serviceId: _orders[idx].serviceId,
+        serviceName: _orders[idx].serviceName,
+      );
+    }
     _controller.add(_orders);
   }
 

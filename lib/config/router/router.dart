@@ -12,6 +12,7 @@ import '../../features/user/home/presentation/screen/notification/notification_s
 import '../../features/user/orders/orders_screen.dart';
 import '../../features/user/profile/settings_screen.dart';
 import '../../features/user/profile/user_profile_screen.dart';
+import '../../features/user/map/map_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -51,6 +52,10 @@ final GoRouter generateRouter = GoRouter(
       path: UserRoutePath.settings,
       builder: (context, state) => const SettingsScreen(),
     ),
+    GoRoute(
+      path: UserRoutePath.map,
+      builder: (context, state) => const MapScreen(),
+    ),
     StatefulShellRoute.indexedStack(
       parentNavigatorKey: navigatorKey,
       restorationScopeId: 'main-shell',
@@ -69,7 +74,10 @@ final GoRouter generateRouter = GoRouter(
           routes: [
             GoRoute(
               path: UserRoutePath.booking,
-              builder: (context, state) => const BookingScreen(),
+              builder: (context, state) {
+                final extra = state.extra as Map<String, dynamic>?;
+                return BookingScreen(presetBranchId: extra?['branchId'] as String?);
+              },
             ),
           ],
         ),
@@ -105,4 +113,5 @@ class UserRoutePath {
   static const addCar = '/add-car';
   static const notifications = '/notifications';
   static const settings = '/settings';
+  static const map = '/map';
 }

@@ -7,8 +7,6 @@ import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
-import '../../../../shared/constants/app_constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
