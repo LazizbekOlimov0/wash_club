@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
-
 import '../../../../../../core/theme/colors.dart';
+import '../../../../../../shared/services/orders_repository.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -11,66 +12,70 @@ class NotificationScreen extends StatefulWidget {
 }
 
 class _NotificationScreenState extends State<NotificationScreen> {
-  final List<_NotifItem> _notifications = [
-    _NotifItem(
-      type: NotifType.booking,
-      title: 'Bron tasdiqlandi',
-      body: 'Wash Club Yunusobod · 10:00 · 2026-05-03',
-      time: '2 daqiqa oldin',
-      isRead: false,
-    ),
-    _NotifItem(
-      type: NotifType.promo,
-      title: '–15% Premium-detailing',
-      body: 'Butun aprel davomida aksiya. Hoziroq foydalaning!',
-      time: '1 soat oldin',
-      isRead: false,
-    ),
-    _NotifItem(
-      type: NotifType.promo,
-      title: 'Promo-kod WEEKDAY',
-      body: 'Hafta kunlari –20% chegirma. Aktiv qiling!',
-      time: '3 soat oldin',
-      isRead: true,
-    ),
-    _NotifItem(
-      type: NotifType.system,
-      title: 'Ilovaga xush kelibsiz!',
-      body:
-      'Wash Club ilovasini yuklab oldingiz. Birinchi broningizni qiling.',
-      time: 'Kecha',
-      isRead: true,
-    ),
-    _NotifItem(
-      type: NotifType.booking,
-      title: 'Bron yakunlandi',
-      body: 'Wash Club Chilonzor · 15:00 · 2026-05-02',
-      time: '2 kun oldin',
-      isRead: true,
-    ),
-  ];
+  final _repo = OrdersRepository.instance;
+  late StreamSubscription<AppNotification> _sub;
 
-  void _markAllRead() {
-    setState(() {
-      for (final n in _notifications) {
-        n.isRead = true;
+  // Lokal nusxa — realtime'dan yangilanadi
+  List<AppNotification> _items = [];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Mavjud notiflarni ko'rsatish
+    _items = List<AppNotification>.from(_repo.notifications);
+
+    // Yangi notif kelsa — UI yangilanadi
+    _sub = _repo.notificationStream.listen((notif) {
+      if (mounted) {
+        setState(() {
+          // duplicate check
+          if (!_items.any((n) => n.id == notif.id)) {
+            _items.insert(0, notif);
+          }
+        });
       }
     });
   }
 
   @override
+  void dispose() {
+    _sub.cancel();
+    super.dispose();
+  }
+
+  void _markAllRead() {
+    _repo.markAllRead();
+    setState(() {
+      for (final n in _items) {
+        n.isRead = true;
+      }
+    });
+  }
+
+  void _markRead(AppNotification n) {
+    _repo.markRead(n.id);
+    setState(() => n.isRead = true);
+  }
+
+  bool get _hasUnread => _items.any((n) => !n.isRead);
+
+  ApparenceKitColors get _c =>
+      Theme.of(context).extension<ApparenceKitColors>()!;
+
+  @override
   Widget build(BuildContext context) {
     final t = context.t;
-    final colors = Theme.of(context).extension<ApparenceKitColors>()!;
-    final hasUnread = _notifications.any((n) => !n.isRead);
+    final colors = _c;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       backgroundColor: colors.background,
       appBar: AppBar(
-        backgroundColor: colors.surface,
+        backgroundColor: isDark ? colors.background : colors.surface,
         elevation: 0,
-        centerTitle: true,
         scrolledUnderElevation: 0,
+        centerTitle: true,
         leading: IconButton(
           onPressed: () => Navigator.pop(context),
           icon: Icon(
@@ -79,17 +84,41 @@ class _NotificationScreenState extends State<NotificationScreen> {
             size: 18,
           ),
         ),
-        title: Text(
-          t.notification.title,
-          style: TextStyle(
-            color: colors.onSurface,
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            letterSpacing: -0.2,
-          ),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              t.notification.title,
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.2,
+              ),
+            ),
+            if (_hasUnread) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 7, vertical: 2),
+                decoration: BoxDecoration(
+                  color: colors.error,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  '${_items.where((n) => !n.isRead).length}',
+                  style: TextStyle(
+                    color: colors.onPrimary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
-          if (hasUnread)
+          if (_hasUnread)
             TextButton(
               onPressed: _markAllRead,
               child: Text(
@@ -103,25 +132,33 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
         ],
       ),
-      body: _notifications.isEmpty
+      body: _items.isEmpty
           ? _buildEmpty(context, colors)
-          : ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        itemCount: _notifications.length,
-        itemBuilder: (context, i) {
-          final n = _notifications[i];
-          return _buildNotifTile(context, n, i, colors);
-        },
-      ),
+          : RefreshIndicator(
+              onRefresh: () async {
+                // Orders reload qilganda yangi notiflar ham kelishi mumkin
+                await _repo.loadOrders(forceRefresh: true);
+                if (mounted) {
+                  setState(() {
+                    _items = List<AppNotification>.from(_repo.notifications);
+                  });
+                }
+              },
+              color: colors.info,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                itemCount: _items.length,
+                itemBuilder: (context, i) {
+                  final n = _items[i];
+                  return _buildTile(context, n, colors, isDark);
+                },
+              ),
+            ),
     );
   }
 
-  Widget _buildEmpty(
-      BuildContext context,
-      ApparenceKitColors colors,
-      ) {
+  Widget _buildEmpty(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -134,9 +171,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
               decoration: BoxDecoration(
                 color: colors.surface,
                 borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: colors.divider,
-                ),
+                border: Border.all(color: colors.divider),
               ),
               child: Icon(
                 Icons.notifications_none_rounded,
@@ -166,76 +201,83 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 height: 1.4,
               ),
             ),
+            const SizedBox(height: 24),
+            Text(
+              'Buyurtma berib, status o\'zgarishlarini kuting —\nbildirishnomalar shu yerda ko\'rinadi',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colors.grey3.withValues(alpha: 0.7),
+                fontSize: 12,
+                height: 1.5,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildNotifTile(
-      BuildContext context,
-      _NotifItem n,
-      int index,
-      ApparenceKitColors colors,
-      ) {
-    Color iconColor;
-    IconData iconData;
-    String typeLabel;
+  Widget _buildTile(
+    BuildContext context,
+    AppNotification n,
+    ApparenceKitColors colors,
+    bool isDark,
+  ) {
+    final Color iconColor;
+    final IconData iconData;
+    final String typeLabel;
+    final t = context.t;
 
     switch (n.type) {
       case NotifType.booking:
         iconColor = colors.primary;
-        iconData = Icons.calendar_today_outlined;
-        typeLabel = context.t.notification.booking;
+        iconData  = Icons.calendar_today_outlined;
+        typeLabel = t.notification.booking;
         break;
-
       case NotifType.promo:
         iconColor = colors.warning;
-        iconData = Icons.local_offer_outlined;
-        typeLabel = context.t.notification.promo;
+        iconData  = Icons.local_offer_outlined;
+        typeLabel = t.notification.promo;
         break;
-
       case NotifType.system:
         iconColor = colors.success;
-        iconData = Icons.info_outline_rounded;
-        typeLabel = context.t.notification.system;
+        iconData  = Icons.info_outline_rounded;
+        typeLabel = t.notification.system;
         break;
     }
 
     final cardColor = n.isRead
-        ? colors.surface
-        : colors.primary.withValues(alpha: 0.08);
+        ? (isDark ? colors.onPrimaryContainer : colors.surface)
+        : colors.primary.withValues(alpha: isDark ? 0.12 : 0.06);
 
     final borderColor = n.isRead
         ? colors.divider
-        : colors.primary.withValues(alpha: 0.25);
+        : colors.primary.withValues(alpha: 0.30);
 
     return GestureDetector(
-      onTap: () {
-        setState(() => n.isRead = true);
-      },
+      onTap: () => _markRead(n),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: cardColor,
           borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: borderColor,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colors.shadow.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: borderColor),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: colors.shadow.withValues(alpha: 0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // icon
+            // Icon
             Container(
               width: 46,
               height: 46,
@@ -243,16 +285,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 color: iconColor.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(
-                iconData,
-                color: iconColor,
-                size: 22,
-              ),
+              child: Icon(iconData, color: iconColor, size: 22),
             ),
-
             const SizedBox(width: 14),
 
-            // content
+            // Content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,9 +298,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
+                            horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
                           color: iconColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
@@ -280,7 +315,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        n.time,
+                        n.relativeTime,
                         style: TextStyle(
                           color: colors.grey3,
                           fontSize: 11,
@@ -289,9 +324,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                     ],
                   ),
-
                   const SizedBox(height: 10),
-
                   Text(
                     n.title,
                     style: TextStyle(
@@ -299,12 +332,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       fontSize: 14,
                       height: 1.25,
                       fontWeight:
-                      n.isRead ? FontWeight.w500 : FontWeight.w700,
+                          n.isRead ? FontWeight.w500 : FontWeight.w700,
                     ),
                   ),
-
                   const SizedBox(height: 4),
-
                   Text(
                     n.body,
                     maxLines: 2,
@@ -313,13 +344,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       color: colors.grey3,
                       fontSize: 13,
                       height: 1.45,
-                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ],
               ),
             ),
 
+            // Unread dot
             if (!n.isRead) ...[
               const SizedBox(width: 10),
               Container(
@@ -343,26 +374,4 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
     );
   }
-}
-
-enum NotifType {
-  booking,
-  promo,
-  system,
-}
-
-class _NotifItem {
-  final NotifType type;
-  final String title;
-  final String body;
-  final String time;
-  bool isRead;
-
-  _NotifItem({
-    required this.type,
-    required this.title,
-    required this.body,
-    required this.time,
-    required this.isRead,
-  });
 }

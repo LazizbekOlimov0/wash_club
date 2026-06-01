@@ -1,13 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
-
-// ── Import our new services ──────────────────────────────────
-// NOTE: adjust import paths to match your project structure
 import '../../../../shared/services/client_session.dart';
+import '../../../../shared/constants/app_constants.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,6 +22,8 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeAnim;
   late Animation<double> _slideAnim;
   late Animation<double> _scaleAnim;
+
+  StreamSubscription? _authSub;
 
   @override
   void initState() {
@@ -51,25 +54,52 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _initAndRoute() async {
     // Animatsiya tugagunicha kutish
-    await Future.delayed(const Duration(milliseconds: 1800));
+    await Future.delayed(const Duration(milliseconds: 1600));
 
-    // Session'ni init qilish (SharedPreferences'dan o'qish)
+    // ClientSession'ni init qilish
     await ClientSession.instance.init();
 
+    // Supabase session'ni tiklashni kutish (autoRefreshToken)
+    final completer = Completer<void>();
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
+      if (!completer.isCompleted && event.session != null) {
+        completer.complete();
+      }
+    });
+
+    try {
+      await completer.future.timeout(const Duration(seconds: 2));
+    } on TimeoutException {
+      // Session tiklanmadi — bu normal, foydalanuvchi birinchi marta kiryapti
+    }
+
+    _authSub?.cancel();
     if (!mounted) return;
 
     // Routing logic:
-    // 1) Agar foydalanuvchi ismi/telefon saqlangan bo'lsa → home
-    // 2) Aks holda → language screen
-    if (ClientSession.instance.isOnboarded) {
+    // 1) Agar Supabase session bor va ClientSession ham bor → home
+    // 2) Agar faqat Supabase session bor, lekin name/phone yo'q → login
+    // 3) Agar oldin kirgan bo'lsa (local flag) lekin Supabase session yo'q → login
+    // 4) Aks holda → language screen
+    final hasSupabaseSession =
+        Supabase.instance.client.auth.currentSession != null;
+    final isOnboarded = ClientSession.instance.isOnboarded;
+
+    if (isOnboarded) {
+      // Foydalanuvchi oldin to'liq ro'yxatdan o'tgan → home
       context.go(UserRoutePath.home);
+    } else if (hasSupabaseSession) {
+      // Google auth qilingan, name/phone kiritilmagan → login
+      context.go(UserRoutePath.login);
     } else {
+      // Birinchi marta kirish → language
       context.go(UserRoutePath.language);
     }
   }
 
   @override
   void dispose() {
+    _authSub?.cancel();
     _controller.dispose();
     super.dispose();
   }
@@ -122,7 +152,7 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Transform.translate(
                     offset: Offset(0, _slideAnim.value),
                     child:
-                    Transform.scale(scale: _scaleAnim.value, child: child),
+                        Transform.scale(scale: _scaleAnim.value, child: child),
                   ),
                 ),
                 child: Column(
@@ -188,7 +218,7 @@ class _SplashScreenState extends State<SplashScreen>
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor:
-                        AlwaysStoppedAnimation<Color>(colors.info),
+                            AlwaysStoppedAnimation<Color>(colors.info),
                       ),
                     ),
                     const SizedBox(height: 14),

@@ -3,6 +3,37 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/client_session.dart';
 
+/// Notifikatsiya turi
+enum NotifType { booking, promo, system }
+
+/// Notifikatsiya modeli
+class AppNotification {
+  final String id;
+  final NotifType type;
+  final String title;
+  final String body;
+  final DateTime createdAt;
+  bool isRead;
+
+  AppNotification({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.body,
+    required this.createdAt,
+    this.isRead = false,
+  });
+
+  String get relativeTime {
+    final diff = DateTime.now().difference(createdAt);
+    if (diff.inMinutes < 1) return 'hozir';
+    if (diff.inMinutes < 60) return '${diff.inMinutes} daq';
+    if (diff.inHours < 24) return '${diff.inHours} soat';
+    if (diff.inDays < 7) return '${diff.inDays} kun';
+    return '${createdAt.day}/${createdAt.month}';
+  }
+}
+
 /// Orders'ni boshqaruvchi repository.
 /// Cache va realtime subscription shu yerda.
 class OrdersRepository {
@@ -22,6 +53,14 @@ class OrdersRepository {
   // Stream controller for UI updates
   final _controller = StreamController<List<OrderModel>>.broadcast();
   Stream<List<OrderModel>> get ordersStream => _controller.stream;
+
+  // Notifications
+  final List<AppNotification> _notifications = [];
+  final _notifController = StreamController<AppNotification>.broadcast();
+  Stream<AppNotification> get notificationStream => _notifController.stream;
+
+  List<AppNotification> get notifications => List.unmodifiable(_notifications);
+  int get unreadCount => _notifications.where((n) => !n.isRead).length;
 
   List<OrderModel> get cachedOrders => List.unmodifiable(_orders);
 
@@ -119,9 +158,18 @@ class OrdersRepository {
       orderId: orderId,
       onUpdate: (updated) {
         final idx = _orders.indexWhere((o) => o.id == orderId);
+        final oldStatus = idx >= 0 ? _orders[idx].status : null;
         if (idx >= 0) {
           _orders[idx] = updated;
           _controller.add(_orders);
+        }
+        // Status o'zgarganda notifikatsiya yaratish
+        if (oldStatus != null && oldStatus != updated.status) {
+          _addNotification(
+            type: NotifType.booking,
+            title: _statusToTitle(updated.status),
+            body: '${updated.carNumber} · ${updated.serviceName ?? "Xizmat"}',
+          );
         }
         // Aktiv emas bo'lsa — unsubscribe
         if (!updated.isActive) {
@@ -130,6 +178,44 @@ class OrdersRepository {
       },
     );
     _channels[orderId] = channel;
+  }
+
+  void _addNotification({
+    required NotifType type,
+    required String title,
+    required String body,
+  }) {
+    final notif = AppNotification(
+      id: 'n_${DateTime.now().millisecondsSinceEpoch}',
+      type: type,
+      title: title,
+      body: body,
+      createdAt: DateTime.now(),
+    );
+    _notifications.insert(0, notif);
+    _notifController.add(notif);
+  }
+
+  String _statusToTitle(String status) {
+    switch (status) {
+      case 'pending':   return 'Buyurtma qabul qilindi';
+      case 'washing':   return 'Yuvish boshlandi';
+      case 'ready':     return 'Mashinangiz tayyor';
+      case 'completed': return 'Buyurtma yakunlandi';
+      case 'cancelled': return 'Buyurtma bekor qilindi';
+      default:          return 'Holat yangilandi';
+    }
+  }
+
+  void markRead(String id) {
+    final idx = _notifications.indexWhere((n) => n.id == id);
+    if (idx >= 0) _notifications[idx].isRead = true;
+  }
+
+  void markAllRead() {
+    for (final n in _notifications) {
+      n.isRead = true;
+    }
   }
 
   void _unsubscribeFromOrder(String orderId) {
@@ -143,10 +229,12 @@ class OrdersRepository {
     }
     _channels.clear();
     _controller.close();
+    _notifController.close();
   }
 
   void invalidate() {
     _loaded = false;
     _orders = [];
+    _notifications.clear();
   }
 }

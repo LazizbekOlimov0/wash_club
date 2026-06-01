@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../../core/theme/colors.dart';
-import '../../../../../data/repositories/branches_repository.dart';
-import '../../../../../data/repositories/orders_repository.dart';
 import '../../../../../shared/services/client_session.dart';
+import '../../../../../shared/services/branches_repository.dart';
+import '../../../../../shared/services/orders_repository.dart';
 import '../../../../../shared/services/supabase_service.dart';
 
 class UserHomeScreen extends StatefulWidget {
@@ -24,6 +24,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   List<OrderModel>  _activeOrders = [];
   bool _loading = true;
   String? _error;
+  int _unreadNotifCount = 0;
 
   @override
   void initState() {
@@ -33,8 +34,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     // Orders stream kuzatish
     _ordersRepo.ordersStream.listen((orders) {
       if (mounted) {
-        setState(() => _activeOrders = orders.where((o) => o.isActive).toList());
+        setState(() {
+          _activeOrders      = orders.where((o) => o.isActive).toList();
+          _unreadNotifCount  = _ordersRepo.unreadCount;
+        });
       }
+    });
+
+    // Notification stream — badge yangilash
+    _ordersRepo.notificationStream.listen((_) {
+      if (mounted) setState(() => _unreadNotifCount = _ordersRepo.unreadCount);
     });
   }
 
@@ -47,9 +56,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ]);
       if (mounted) {
         setState(() {
-          _branches     = results[0] as List<BranchModel>;
-          _activeOrders = (_ordersRepo.activeOrders);
-          _loading      = false;
+          _branches          = results[0] as List<BranchModel>;
+          _activeOrders      = (_ordersRepo.activeOrders);
+          _unreadNotifCount  = _ordersRepo.unreadCount;
+          _loading           = false;
         });
       }
     } catch (e) {
@@ -174,17 +184,31 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     child: Icon(Icons.notifications_outlined,
                         color: colors.onBackground, size: 16),
                   ),
-                  if (_activeOrders.isNotEmpty)
+                  if (_unreadNotifCount > 0)
                     Positioned(
-                      right: 8,
-                      top: 8,
+                      right: 6,
+                      top: 6,
                       child: Container(
-                        width: 8,
-                        height: 8,
+                        width: _unreadNotifCount > 9 ? 14 : 10,
+                        height: 10,
                         decoration: BoxDecoration(
                           color: colors.error,
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(5),
                         ),
+                        child: _unreadNotifCount > 1
+                            ? Center(
+                          child: Text(
+                            _unreadNotifCount > 9
+                                ? '9+'
+                                : '$_unreadNotifCount',
+                            style: TextStyle(
+                              color: colors.onPrimary,
+                              fontSize: 7,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        )
+                            : null,
                       ),
                     ),
                 ],
@@ -598,6 +622,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
+  // ── Navigation helper — addCar + callback ─────────────────────────
+  void _goToAddCar(BuildContext context) {
+    context.push(
+      UserRoutePath.addCar,
+      extra: () {
+        // AddCarScreen pop bo'lgandan keyin chaqiriladi
+        if (mounted) setState(() {});
+      },
+    );
+  }
+
   // ── My Cars ───────────────────────────────────────────────────────
   Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
@@ -619,7 +654,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 ),
               ),
               TextButton.icon(
-                onPressed: () => context.push(UserRoutePath.addCar),
+                onPressed: () => _goToAddCar(context),
                 icon: Icon(Icons.add, color: colors.info, size: 18),
                 label:
                 Text(t.home.manage, style: TextStyle(color: colors.info)),
@@ -629,7 +664,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           const SizedBox(height: 8),
           if (cars.isEmpty)
             GestureDetector(
-              onTap: () => context.push(UserRoutePath.addCar),
+              onTap: () => _goToAddCar(context),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 decoration: BoxDecoration(

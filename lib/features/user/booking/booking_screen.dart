@@ -48,7 +48,13 @@ class _BookingScreenState extends State<BookingScreen> {
 
   final TextEditingController _promoController = TextEditingController();
 
-  static const _timeSlots = [
+  // Time slots — API dan keladi
+  List<String> _timeSlots = [];
+  Set<String> _bookedSlots = {};
+  bool _loadingSlots = false;
+
+  // Default time slots (09:00 - 20:00 har soat)
+  static const _defaultTimeSlots = [
     '09:00','10:00','11:00','12:00',
     '13:00','14:00','15:00','16:00',
     '17:00','18:00','19:00','20:00',
@@ -58,7 +64,10 @@ class _BookingScreenState extends State<BookingScreen> {
   void initState() {
     super.initState();
     _loadBranches();
-    // Birinchi mashina tanlash
+    _initCarSelection();
+  }
+
+  void _initCarSelection() {
     if (_session.cars.isNotEmpty) _selectedCar = _session.cars.first;
   }
 
@@ -72,10 +81,7 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<void> _loadBranches() async {
     setState(() { _loadingBranches = true; _error = null; });
     try {
-      _branches = await _branchRepo.getBranches();
-      // extra'dan branchId kelgan bo'lsa
-      // final extra = GoRouterState.of(context).extra as Map?;
-      // if (extra != null && extra['branchId'] != null) { ... }
+      _branches = await _branchRepo.getBranches(forceRefresh: true);
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -94,10 +100,44 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  Future<void> _fetchTimeSlots() async {
+    if (_selectedBranch == null) return;
+    setState(() {
+      _loadingSlots = true;
+      _timeSlots = [];
+      _bookedSlots = {};
+      _selectedTime = null;
+    });
+
+    try {
+      final booked = await SupabaseService.instance.getBookedTimeSlots(
+        branchId: _selectedBranch!.id,
+        date: _selectedDate,
+      );
+      if (mounted) {
+        setState(() {
+          _bookedSlots = booked.toSet();
+          _timeSlots = _defaultTimeSlots;
+          _loadingSlots = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _timeSlots = _defaultTimeSlots;
+          _loadingSlots = false;
+        });
+      }
+    }
+  }
+
   // ── Helpers ───────────────────────────────────────────────
   void _nextStep() {
     if (_step == 0 && _selectedBranch != null) {
       _loadServices(_selectedBranch!.id);
+    }
+    if (_step == 1 && _selectedService != null) {
+      _fetchTimeSlots();
     }
     if (_step < 3) setState(() => _step++);
   }
@@ -141,19 +181,19 @@ class _BookingScreenState extends State<BookingScreen> {
   Future<void> _submitOrder() async {
     if (_submitting) return;
     if (_selectedBranch == null || _selectedService == null || _selectedTime == null) return;
-    if (!_session.isOnboarded) {
-      // Login page'ga redirect
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Buyurtma berish uchun isminglizni kiriting')),
-      );
-      context.push(UserRoutePath.login);
+
+    // Car check - agar mashina yo'q bo'lsa addCar'ga o'tish
+    if (_selectedCar == null && _session.cars.isEmpty) {
+      await context.push(UserRoutePath.addCar);
+      if (mounted) {
+        _initCarSelection();
+        setState(() {});
+      }
       return;
     }
-    if (_selectedCar == null && _session.cars.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Avtomobil qo\'shing')),
-      );
-      context.push(UserRoutePath.addCar);
+
+    if (!_session.isOnboarded) {
+      await context.push(UserRoutePath.login);
       return;
     }
 
@@ -265,7 +305,16 @@ class _BookingScreenState extends State<BookingScreen> {
             _buildHeader(context),
             _buildStepIndicator(context),
             Expanded(
-              child: AnimatedSwitcher(
+              child: RefreshIndicator(
+                onRefresh: _step == 0
+                    ? _loadBranches
+                    : _step == 1 && _selectedBranch != null
+                        ? () => _loadServices(_selectedBranch!.id)
+                        : _step == 2
+                            ? _fetchTimeSlots
+                            : () async {},
+                color: colors.info,
+                child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 250),
                 transitionBuilder: (child, anim) =>
                     FadeTransition(opacity: anim, child: child),
@@ -274,6 +323,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   child: _buildStepContent(context),
                 ),
               ),
+            ),
             ),
             _buildBottomBar(context),
           ],
@@ -370,11 +420,17 @@ class _BookingScreenState extends State<BookingScreen> {
           }),
         );
       case 2:
-        return _TimeStep(
+        return _loadingSlots
+            ? const Center(child: CircularProgressIndicator())
+            : _TimeStep(
           selectedDate:  _selectedDate,
           selectedTime:  _selectedTime,
           timeSlots:     _timeSlots,
-          onDateSelect:  (d) => setState(() => _selectedDate = d),
+          bookedSlots:   _bookedSlots,
+          onDateSelect:  (d) {
+            setState(() => _selectedDate = d);
+            _fetchTimeSlots();
+          },
           onTimeSelect:  (t) => setState(() => _selectedTime = t),
         );
       case 3:
@@ -786,6 +842,7 @@ class _TimeStep extends StatelessWidget {
   final DateTime selectedDate;
   final String? selectedTime;
   final List<String> timeSlots;
+  final Set<String> bookedSlots;
   final ValueChanged<DateTime> onDateSelect;
   final ValueChanged<String> onTimeSelect;
 
@@ -793,6 +850,7 @@ class _TimeStep extends StatelessWidget {
     required this.selectedDate,
     required this.selectedTime,
     required this.timeSlots,
+    required this.bookedSlots,
     required this.onDateSelect,
     required this.onTimeSelect,
   });
@@ -888,21 +946,34 @@ class _TimeStep extends StatelessWidget {
             itemBuilder: (context, i) {
               final t = timeSlots[i];
               final isSelected = t == selectedTime;
+              final isBooked = bookedSlots.contains(t);
               return GestureDetector(
-                onTap: () => onTimeSelect(t),
+                onTap: isBooked ? null : () => onTimeSelect(t),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   decoration: BoxDecoration(
-                    color: isSelected ? colors.primary : cardBg,
+                    color: isSelected
+                        ? colors.primary
+                        : isBooked
+                            ? colors.disabled
+                            : cardBg,
                     borderRadius: BorderRadius.circular(12),
                     border: isSelected
                         ? null
-                        : Border.all(color: colors.divider, width: 1),
+                        : Border.all(
+                            color: isBooked
+                                ? colors.disabledContent.withValues(alpha: 0.3)
+                                : colors.divider,
+                            width: 1),
                   ),
                   child: Center(
                     child: Text(t,
                         style: TextStyle(
-                            color: isSelected ? colors.onPrimary : colors.onSurface,
+                            color: isSelected
+                                ? colors.onPrimary
+                                : isBooked
+                                    ? colors.disabledContent
+                                    : colors.onSurface,
                             fontSize: 14,
                             fontWeight: isSelected
                                 ? FontWeight.w600

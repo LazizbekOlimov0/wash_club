@@ -24,6 +24,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int get _completedCount =>
       _ordersRepo.cachedOrders.where((o) => o.isCompleted).length;
 
+  Future<void> _refresh() async {
+    await _ordersRepo.loadOrders(forceRefresh: true);
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t;
@@ -53,7 +58,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: ListView(
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        color: colors.info,
+        child: ListView(
         padding: EdgeInsets.zero,
         physics: const ClampingScrollPhysics(),
         children: [
@@ -109,6 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 32),
         ],
+      ),
       ),
     );
   }

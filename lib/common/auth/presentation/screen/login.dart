@@ -22,22 +22,23 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  final _nameController  = TextEditingController();
-  final _phoneController = TextEditingController();
-
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
   late Animation<double> _scaleAnim;
 
   bool _loading = false;
+  bool _googleDone = false;
+
+  final _nameController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
-  bool get _isValid =>
+  bool get _formValid =>
       _nameController.text.trim().isNotEmpty &&
-          _phoneController.text.trim().length >= 9;
+      _phoneController.text.trim().length >= 9;
 
   @override
   void initState() {
@@ -60,10 +61,9 @@ class _LoginScreenState extends State<LoginScreen>
     );
     _animController.forward();
 
-    // Agar session allaqachon bor bo'lsa fields'ni to'ldirish
     final session = ClientSession.instance;
     if (session.name != null) {
-      _nameController.text  = session.name!;
+      _nameController.text = session.name!;
       _phoneController.text = session.phone ?? '';
     }
   }
@@ -76,18 +76,67 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  Future<void> _onContinue() async {
-    if (!_isValid || _loading) return;
+  static const _googleServerClientId =
+      '565322626454-ikd1isvlucko712vr7bcp01lo1kvlh1d.apps.googleusercontent.com';
+  static const _googleIOSClientId =
+      '565322626454-lhdd6lu93ufa430qqi33i23bjfj2ijv7.apps.googleusercontent.com';
+
+  Future<void> _signInWithGoogle() async {
+    if (_loading) return;
     setState(() => _loading = true);
 
     try {
-      // Sessiyaga saqlash (SharedPreferences)
+      final googleUser = await GoogleSignIn(
+        serverClientId: _googleServerClientId,
+        clientId: Platform.isIOS ? _googleIOSClientId : null,
+      ).signIn();
+
+      if (googleUser == null) {
+        if (mounted) setState(() => _loading = false);
+        return;
+      }
+
+      final auth = await googleUser.authentication;
+      if (auth.idToken == null) {
+        if (mounted) setState(() => _loading = false);
+        return;
+      }
+
+      await Supabase.instance.client.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: auth.idToken!,
+        accessToken: auth.accessToken!,
+      );
+
+      final displayName = googleUser.displayName ?? '';
+      if (displayName.isNotEmpty && _nameController.text.trim().isEmpty) {
+        _nameController.text = displayName;
+        setState(() {});
+      }
+
+      _googleDone = true;
+      if (mounted) setState(() => _loading = false);
+    } catch (e) {
+      log(e.toString(), name: 'LoginScreen._signInWithGoogle');
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Google orqali kirishda xatolik'), backgroundColor: _c.error),
+        );
+      }
+    }
+  }
+
+  Future<void> _onContinue() async {
+    if (!_formValid || _loading) return;
+    setState(() => _loading = true);
+
+    try {
       await ClientSession.instance.saveProfile(
-        name:  _nameController.text.trim(),
+        name: _nameController.text.trim(),
         phone: _phoneController.text.trim(),
       );
 
-      // Orders repository'ni invalidate qilish — yangi telefon bilan reload
       OrdersRepository.instance.invalidate();
 
       if (mounted) context.go(UserRoutePath.home);
@@ -98,52 +147,6 @@ class _LoginScreenState extends State<LoginScreen>
           SnackBar(content: Text('Xatolik: $e'), backgroundColor: _c.error),
         );
       }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  // ── Google Sign-In (ixtiyoriy — Google bilan kirish) ──────
-  static const _googleServerClientId =
-      '565322626454-ikd1isvlucko712vr7bcp01lo1kvlh1d.apps.googleusercontent.com';
-  static const _googleIOSClientId =
-      '565322626454-lhdd6lu93ufa430qqi33i23bjfj2ijv7.apps.googleusercontent.com';
-
-  Future<void> _signInWithGoogle() async {
-    setState(() => _loading = true);
-    try {
-      final googleUser = await GoogleSignIn(
-        serverClientId: _googleServerClientId,
-        clientId: Platform.isIOS ? _googleIOSClientId : null,
-      ).signIn();
-
-      if (googleUser == null) return;
-
-      final auth = await googleUser.authentication;
-      if (auth.idToken == null) return;
-
-      await Supabase.instance.client.auth.signInWithIdToken(
-        provider: OAuthProvider.google,
-        idToken: auth.idToken!,
-        accessToken: auth.accessToken!,
-      );
-
-      // Google dan ism olish
-      final displayName = googleUser.displayName ?? '';
-      if (displayName.isNotEmpty && _nameController.text.isEmpty) {
-        _nameController.text = displayName;
-      }
-
-      await ClientSession.instance.saveProfile(
-        name:  _nameController.text.trim().isEmpty
-            ? displayName
-            : _nameController.text.trim(),
-        phone: _phoneController.text.trim(),
-      );
-
-      if (mounted) context.go(UserRoutePath.home);
-    } catch (e) {
-      log(e.toString(), name: 'LoginScreen._signInWithGoogle');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -168,64 +171,186 @@ class _LoginScreenState extends State<LoginScreen>
                   position: _slideAnim,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _sectionLabel(t.login.name, colors),
-                        const SizedBox(height: 10),
-                        AppTextField(
-                          title: '',
-                          hintText: 'Jon Doe',
-                          controller: _nameController,
-                          keyboardType: TextInputType.name,
-                          textCapitalization: TextCapitalization.words,
-                          onChanged: (_) => setState(() {}),
-                        ),
-                        const SizedBox(height: 20),
-                        _sectionLabel(t.login.phone, colors),
-                        const SizedBox(height: 10),
-                        AppTextField.phone(
-                          title: '',
-                          controller: _phoneController,
-                          onChanged: (_) => setState(() {}),
-                        ),
-                        const SizedBox(height: 10),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 4),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.lock_outline_rounded,
-                                size: 12,
-                                color: colors.grey3.withValues(alpha: 0.6),
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                "Ma'lumotlaringiz xavfsiz saqlanadi",
-                                style: TextStyle(
-                                  color: colors.grey3.withValues(alpha: 0.6),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 36),
-                        ScaleTransition(
-                          scale: _scaleAnim,
-                          child: _buildButton(t, colors),
-                        ),
-                        const SizedBox(height: 24),
-                        _buildDivider(colors),
-                        const SizedBox(height: 20),
-                        _buildFeatures(colors),
-                      ],
-                    ),
+                    child: _buildForm(t, colors),
                   ),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm(dynamic t, ApparenceKitColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionLabel(t.login.name, colors),
+        const SizedBox(height: 10),
+        AppTextField(
+          title: '',
+          hintText: 'Jon Doe',
+          controller: _nameController,
+          keyboardType: TextInputType.name,
+          textCapitalization: TextCapitalization.words,
+          onChanged: (_) => setState(() {}),
+        ),
+        const SizedBox(height: 20),
+        _sectionLabel(t.login.phone, colors),
+        const SizedBox(height: 10),
+        AppTextField.phone(
+          title: '',
+          controller: _phoneController,
+          onChanged: (_) => setState(() {}),
+        ),
+        const SizedBox(height: 10),
+        Padding(
+          padding: const EdgeInsets.only(left: 4),
+          child: Row(
+            children: [
+              Icon(
+                Icons.lock_outline_rounded,
+                size: 12,
+                color: colors.grey3.withValues(alpha: 0.6),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                "Ma'lumotlaringiz xavfsiz saqlanadi",
+                style: TextStyle(
+                  color: colors.grey3.withValues(alpha: 0.6),
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 36),
+        ScaleTransition(
+          scale: _scaleAnim,
+          child: _buildContinueButton(colors),
+        ),
+        const SizedBox(height: 24),
+        _buildDivider(colors),
+        const SizedBox(height: 20),
+        _buildGoogleButton(colors),
+        const SizedBox(height: 24),
+        _buildFeatures(colors),
+      ],
+    );
+  }
+
+  Widget _buildContinueButton(ApparenceKitColors colors) {
+    final isActive = _formValid && !_loading;
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isActive ? colors.primary : colors.surface,
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : null,
+        ),
+        child: ElevatedButton(
+          onPressed: isActive ? _onContinue : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: colors.onPrimary,
+            disabledBackgroundColor: Colors.transparent,
+            disabledForegroundColor: colors.grey3,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            elevation: 0,
+          ),
+          child: _loading && !_googleDone
+              ? SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation(colors.onPrimary),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Davom etish',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: isActive ? colors.onPrimary : colors.grey3,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? colors.onPrimary.withValues(alpha: 0.2)
+                            : colors.grey1,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 16,
+                        color: isActive ? colors.onPrimary : colors.grey3,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoogleButton(ApparenceKitColors colors) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton.icon(
+        onPressed: _loading ? null : _signInWithGoogle,
+        icon: _loading
+            ? SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(colors.grey2),
+                ),
+              )
+            : Image.asset(
+                'assets/image/car_img.png', // placeholder, Google icon would be better
+                width: 20,
+                height: 20,
+                errorBuilder: (_, __, ___) =>
+                    Icon(Icons.login_rounded, color: colors.grey2, size: 20),
+              ),
+        label: Text(
+          'Google orqali kirish',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: colors.onBackground,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: colors.surface,
+          side: BorderSide(color: colors.divider),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16)),
         ),
       ),
     );
@@ -330,154 +455,46 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildButton(dynamic t, ApparenceKitColors colors) {
-    final isActive = _isValid && !_loading;
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: isActive ? colors.primary : colors.surface,
-          boxShadow: isActive
-              ? [
-            BoxShadow(
-              color: colors.primary.withValues(alpha: 0.35),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ]
-              : null,
-        ),
-        child: ElevatedButton(
-          onPressed: isActive ? _onContinue : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            foregroundColor: colors.onPrimary,
-            disabledBackgroundColor: Colors.transparent,
-            disabledForegroundColor: colors.grey3,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
-            elevation: 0,
-          ),
-          child: _loading
-              ? SizedBox(
-            width: 22,
-            height: 22,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation(colors.onPrimary),
-            ),
-          )
-              : Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                t.login.button,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: isActive ? colors.onPrimary : colors.grey3,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              const SizedBox(width: 10),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: isActive
-                      ? colors.onPrimary.withValues(alpha: 0.2)
-                      : colors.grey1,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 16,
-                  color: isActive ? colors.onPrimary : colors.grey3,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _buildDivider(ApparenceKitColors colors) {
     return Row(
       children: [
-        Expanded(child: Divider(color: colors.grey1, thickness: 1)),
+        Expanded(child: Divider(color: colors.divider)),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Text(
-            'Nima uchun biz?',
-            style: TextStyle(
-              color: colors.grey3.withValues(alpha: 0.6),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text('yoki', style: TextStyle(color: colors.grey2, fontSize: 12)),
         ),
-        Expanded(child: Divider(color: colors.grey1, thickness: 1)),
+        Expanded(child: Divider(color: colors.divider)),
       ],
     );
   }
 
   Widget _buildFeatures(ApparenceKitColors colors) {
-    final features = [
-      (Icons.bolt_rounded, 'Tez xizmat', 'Eng tez avtoyuv'),
-      (Icons.verified_rounded, 'Sertifikatlangan', 'Ishonchli xizmat'),
-      (Icons.wallet_rounded, "Qulay to'lov", 'Karta va naqd'),
-    ];
-    return Row(
-      children: features.mapIndexed((i, f) {
-        return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(right: i < features.length - 1 ? 10 : 0),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-            decoration: BoxDecoration(
-              color: colors.surface,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: colors.grey1),
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: colors.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(f.$1, color: colors.info, size: 18),
-                ),
-                const SizedBox(height: 8),
-                Text(f.$2,
-                    style: TextStyle(
-                        color: colors.onBackground,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 2),
-                Text(f.$3,
-                    style: TextStyle(color: colors.grey3, fontSize: 10),
-                    textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
+    return Column(
+      children: [
+        _featureRow(Icons.speed_rounded, 'Tezkor bron qilish', colors),
+        const SizedBox(height: 12),
+        _featureRow(Icons.history_rounded, 'Buyurtmalar tarixi', colors),
+        const SizedBox(height: 12),
+        _featureRow(Icons.local_offer_rounded, 'Chegirmalar va bonuslar', colors),
+      ],
     );
   }
-}
 
-extension _IndexedIterable<T> on Iterable<T> {
-  Iterable<R> mapIndexed<R>(R Function(int index, T item) f) sync* {
-    var index = 0;
-    for (final item in this) {
-      yield f(index++, item);
-    }
+  Widget _featureRow(IconData icon, String text, ApparenceKitColors colors) {
+    return Row(
+      children: [
+        Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: colors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: colors.primary, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Text(text, style: TextStyle(color: colors.grey3, fontSize: 13)),
+      ],
+    );
   }
 }

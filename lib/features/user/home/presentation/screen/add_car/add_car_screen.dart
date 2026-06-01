@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:go_router/go_router.dart';
 import '../../../../../../core/i18n/translations.g.dart';
 import '../../../../../../core/theme/colors.dart';
+import '../../../../../../shared/services/client_session.dart';
 
 extension ThemeX on BuildContext {
   ApparenceKitColors get colors =>
@@ -20,55 +21,85 @@ class AddCarScreen extends StatefulWidget {
 
 class _AddCarScreenState extends State<AddCarScreen>
     with SingleTickerProviderStateMixin {
-  String selectedBodyType = 'Sedan';
+  String _selectedBodyType = 'Sedan';
 
   late AnimationController _animController;
+  late Animation<double>   _fadeAnim;
+  late Animation<Offset>   _slideAnim;
 
-  late Animation<double> _fadeAnim;
+  final _plateController = TextEditingController();
+  final _brandController = TextEditingController();
+  final _modelController = TextEditingController();
+  final _colorController = TextEditingController();
 
-  late Animation<Offset> _slideAnim;
+  bool _saving = false;
+  String? _error;
 
-  final TextEditingController _plateController = TextEditingController();
-
-  final TextEditingController _brandController = TextEditingController();
-
-  final TextEditingController _modelController = TextEditingController();
-
-  final List<Map<String, dynamic>> bodyTypes = [
-    {'label': 'Sedan', 'icon': Icons.directions_car_rounded},
-    {'label': 'SUV', 'icon': Icons.directions_car_filled_rounded},
+  final List<Map<String, dynamic>> _bodyTypes = [
+    {'label': 'Sedan',   'icon': Icons.directions_car_rounded},
+    {'label': 'SUV',     'icon': Icons.directions_car_filled_rounded},
     {'label': 'Minivan', 'icon': Icons.airport_shuttle_rounded},
-    {'label': 'Others', 'icon': Icons.commute_rounded},
+    {'label': 'Others',  'icon': Icons.commute_rounded},
   ];
 
   @override
   void initState() {
     super.initState();
-
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-
-    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
-
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
-        .animate(
-          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-        );
-
+    _fadeAnim  = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _slideAnim = Tween<Offset>(
+            begin: const Offset(0, 0.08), end: Offset.zero)
+        .animate(CurvedAnimation(
+            parent: _animController, curve: Curves.easeOutCubic));
     _animController.forward();
   }
 
   @override
   void dispose() {
     _animController.dispose();
-
     _plateController.dispose();
     _brandController.dispose();
     _modelController.dispose();
-
+    _colorController.dispose();
     super.dispose();
+  }
+
+  bool get _isValid =>
+      _plateController.text.trim().length >= 5;
+
+  Future<void> _save() async {
+    if (!_isValid || _saving) return;
+
+    // Keyboard yopish
+    FocusScope.of(context).unfocus();
+
+    setState(() { _saving = true; _error = null; });
+
+    try {
+      final car = SavedCar(
+        plate:    _plateController.text.trim().toUpperCase(),
+        brand:    _brandController.text.trim(),
+        model:    _modelController.text.trim(),
+        bodyType: _selectedBodyType,
+        color:    _colorController.text.trim(),
+      );
+
+      // 1) SharedPrefs'ga saqlaymiz
+      await ClientSession.instance.addCar(car);
+
+      // 2) Callbackni pop'dan oldin chaqiramiz
+      widget.onCarAdded?.call();
+
+      // 3) Pop
+      if (mounted) {
+        context.pop();
+      }
+    } catch (e) {
+      if (mounted) setState(() { _error = e.toString(); _saving = false; });
+    }
   }
 
   @override
@@ -82,11 +113,12 @@ class _AddCarScreenState extends State<AddCarScreen>
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        systemOverlayStyle: Theme.of(context).brightness == Brightness.dark
-            ? SystemUiOverlayStyle.light
-            : SystemUiOverlayStyle.dark,
+        systemOverlayStyle:
+            Theme.of(context).brightness == Brightness.dark
+                ? SystemUiOverlayStyle.light
+                : SystemUiOverlayStyle.dark,
         leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
+          onTap: () => context.pop(),
           child: Container(
             margin: const EdgeInsets.all(10),
             decoration: BoxDecoration(
@@ -94,11 +126,8 @@ class _AddCarScreenState extends State<AddCarScreen>
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: colors.divider),
             ),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              color: colors.onSurface,
-              size: 16,
-            ),
+            child: Icon(Icons.arrow_back_ios_new_rounded,
+                color: colors.onSurface, size: 16),
           ),
         ),
         title: Text(
@@ -118,22 +147,29 @@ class _AddCarScreenState extends State<AddCarScreen>
           position: _slideAnim,
           child: Column(
             children: [
-              _buildHeroHeader(),
-
+              _buildHeroHeader(colors),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(20, 24, 20, 16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _sectionLabel(t.addCar.plate, required: true),
-
+                      if (_error != null)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: colors.error.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(_error!,
+                              style: TextStyle(
+                                  color: colors.error, fontSize: 13)),
+                        ),
+                      _sectionLabel(t.addCar.plate, required: true, colors: colors),
                       const SizedBox(height: 10),
-
-                      _plateField(),
-
+                      _plateField(colors),
                       const SizedBox(height: 6),
-
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
                         child: Text(
@@ -141,68 +177,61 @@ class _AddCarScreenState extends State<AddCarScreen>
                           style: TextStyle(
                             color: colors.grey2.withValues(alpha: 0.7),
                             fontSize: 12,
-                            letterSpacing: 0.1,
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 22),
-
                       Row(
                         children: [
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _sectionLabel('Marka'),
-
+                                _sectionLabel('Marka', colors: colors),
                                 const SizedBox(height: 10),
-
-                                _buildTextField(
-                                  controller: _brandController,
-                                  hint: 'Chevrolet',
-                                  icon: Icons.directions_car_outlined,
-                                ),
+                                _buildField(
+                                    controller: _brandController,
+                                    hint: 'Chevrolet',
+                                    icon: Icons.directions_car_outlined,
+                                    colors: colors),
                               ],
                             ),
                           ),
-
                           const SizedBox(width: 14),
-
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _sectionLabel('Model'),
-
+                                _sectionLabel('Model', colors: colors),
                                 const SizedBox(height: 10),
-
-                                _buildTextField(
-                                  controller: _modelController,
-                                  hint: 'Cobalt 2024',
-                                  icon: Icons.calendar_today_outlined,
-                                ),
+                                _buildField(
+                                    controller: _modelController,
+                                    hint: 'Cobalt 2024',
+                                    icon: Icons.calendar_today_outlined,
+                                    colors: colors),
                               ],
                             ),
                           ),
                         ],
                       ),
-
+                      const SizedBox(height: 22),
+                      _sectionLabel('Rang', colors: colors),
+                      const SizedBox(height: 10),
+                      _buildField(
+                          controller: _colorController,
+                          hint: 'Qora, Oq, Kumush...',
+                          icon: Icons.color_lens_outlined,
+                          colors: colors),
                       const SizedBox(height: 26),
-
-                      _sectionLabel(t.addCar.bodyType),
-
+                      _sectionLabel(t.addCar.bodyType, colors: colors),
                       const SizedBox(height: 14),
-
-                      _bodyTypeGrid(),
-
+                      _bodyTypeGrid(colors),
                       const SizedBox(height: 30),
                     ],
                   ),
                 ),
               ),
-
-              _buildBottomButton(),
+              _buildBottomButton(colors),
             ],
           ),
         ),
@@ -210,9 +239,7 @@ class _AddCarScreenState extends State<AddCarScreen>
     );
   }
 
-  Widget _buildHeroHeader() {
-    final colors = context.colors;
-
+  Widget _buildHeroHeader(ApparenceKitColors colors) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -225,7 +252,10 @@ class _AddCarScreenState extends State<AddCarScreen>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [colors.primary.withValues(alpha: 0.25), colors.background],
+          colors: [
+            colors.primary.withValues(alpha: 0.25),
+            colors.background,
+          ],
         ),
       ),
       child: Row(
@@ -237,26 +267,14 @@ class _AddCarScreenState extends State<AddCarScreen>
               color: colors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: colors.primary.withValues(alpha: 0.3),
-                width: 1.5,
-              ),
+                  color: colors.primary.withValues(alpha: 0.3), width: 1.5),
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Image.asset(
-                'assets/image/car_img.png',
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => Icon(
-                  Icons.directions_car_rounded,
-                  color: colors.primary,
-                  size: 40,
-                ),
-              ),
+            child: Center(
+              child: Icon(Icons.directions_car_rounded,
+                  color: colors.primary, size: 40),
             ),
           ),
-
           const SizedBox(width: 18),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,36 +289,26 @@ class _AddCarScreenState extends State<AddCarScreen>
                     height: 1.2,
                   ),
                 ),
-
                 const SizedBox(height: 6),
-
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
+                      horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: colors.infoSurface,
+                    color: colors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.shield_outlined,
-                        color: colors.primary,
-                        size: 13,
-                      ),
-
+                      Icon(Icons.shield_outlined,
+                          color: colors.primary, size: 13),
                       const SizedBox(width: 5),
-
                       Text(
                         'Xavfsiz saqlash',
                         style: TextStyle(
-                          color: colors.primary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
+                            color: colors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500),
                       ),
                     ],
                   ),
@@ -313,30 +321,23 @@ class _AddCarScreenState extends State<AddCarScreen>
     );
   }
 
-  Widget _sectionLabel(String text, {bool required = false}) {
-    final colors = context.colors;
-
+  Widget _sectionLabel(String text,
+      {bool required = false, required ApparenceKitColors colors}) {
     return Row(
       children: [
-        Text(
-          text,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: colors.grey2,
-            letterSpacing: 0.5,
-          ),
-        ),
-
+        Text(text,
+            style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: colors.grey2,
+                letterSpacing: 0.5)),
         if (required)
           Text(' *', style: TextStyle(color: colors.error, fontSize: 13)),
       ],
     );
   }
 
-  Widget _plateField() {
-    final colors = context.colors;
-
+  Widget _plateField(ApparenceKitColors colors) {
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -352,64 +353,52 @@ class _AddCarScreenState extends State<AddCarScreen>
               color: colors.primary,
               borderRadius: BorderRadius.circular(11),
             ),
-            child: Text(
-              'UZ',
-              style: TextStyle(
-                color: colors.onPrimary,
-                fontWeight: FontWeight.w800,
-                fontSize: 14,
-                letterSpacing: 1,
-              ),
-            ),
+            child: Text('UZ',
+                style: TextStyle(
+                    color: colors.onPrimary,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 14,
+                    letterSpacing: 1)),
           ),
-
           Expanded(
             child: TextField(
               controller: _plateController,
               style: TextStyle(
-                color: colors.onSurface,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 2,
-              ),
+                  color: colors.onSurface,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 2),
               textCapitalization: TextCapitalization.characters,
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 hintText: '01A 123 BC',
                 hintStyle: TextStyle(
-                  color: colors.disabledContent,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 2,
-                ),
+                    color: colors.disabledContent,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 2),
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 14,
-                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.only(right: 14),
-            child: Icon(
-              Icons.qr_code_scanner_rounded,
-              color: colors.grey2,
-              size: 22,
-            ),
+            child: Icon(Icons.qr_code_scanner_rounded,
+                color: colors.grey2, size: 22),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTextField({
+  Widget _buildField({
     required TextEditingController controller,
     required String hint,
     required IconData icon,
+    required ApparenceKitColors colors,
   }) {
-    final colors = context.colors;
-
     return Container(
       decoration: BoxDecoration(
         color: colors.surface,
@@ -419,27 +408,23 @@ class _AddCarScreenState extends State<AddCarScreen>
       child: TextField(
         controller: controller,
         style: TextStyle(
-          color: colors.onSurface,
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-        ),
+            color: colors.onSurface,
+            fontSize: 15,
+            fontWeight: FontWeight.w500),
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: TextStyle(color: colors.disabledContent, fontSize: 15),
+          hintStyle:
+              TextStyle(color: colors.disabledContent, fontSize: 15),
           prefixIcon: Icon(icon, color: colors.grey2, size: 18),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
     );
   }
 
-  Widget _bodyTypeGrid() {
-    final colors = context.colors;
-
+  Widget _bodyTypeGrid(ApparenceKitColors colors) {
     return GridView.count(
       crossAxisCount: 2,
       crossAxisSpacing: 12,
@@ -447,20 +432,17 @@ class _AddCarScreenState extends State<AddCarScreen>
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       childAspectRatio: 2.4,
-      children: bodyTypes.map((type) {
-        final isSelected = selectedBodyType == type['label'];
-
+      children: _bodyTypes.map((type) {
+        final isSelected = _selectedBodyType == type['label'];
         return GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedBodyType = type['label'];
-            });
-          },
+          onTap: () => setState(() => _selectedBodyType = type['label']),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
             decoration: BoxDecoration(
-              color: isSelected ? colors.infoSurface : colors.surface,
+              color: isSelected
+                  ? colors.primary.withValues(alpha: 0.1)
+                  : colors.surface,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isSelected ? colors.primary : colors.divider,
@@ -475,26 +457,23 @@ class _AddCarScreenState extends State<AddCarScreen>
                   padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? colors.primaryWithOpacity(0.15)
+                        ? colors.primary.withValues(alpha: 0.15)
                         : colors.background,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    type['icon'] as IconData,
-                    size: 18,
-                    color: isSelected ? colors.primary : colors.grey2,
-                  ),
+                  child: Icon(type['icon'] as IconData,
+                      size: 18,
+                      color: isSelected ? colors.primary : colors.grey2),
                 ),
-
                 const SizedBox(width: 10),
-
                 Text(
                   type['label'] as String,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontWeight: isSelected
+                        ? FontWeight.w700
+                        : FontWeight.w500,
                     color: isSelected ? colors.primary : colors.grey2,
-                    letterSpacing: 0.1,
                   ),
                 ),
               ],
@@ -505,64 +484,60 @@ class _AddCarScreenState extends State<AddCarScreen>
     );
   }
 
-  Widget _buildBottomButton() {
-    final colors = context.colors;
-
+  Widget _buildBottomButton(ApparenceKitColors colors) {
+    final isActive = _isValid && !_saving;
     return Container(
       color: colors.background,
       padding: EdgeInsets.fromLTRB(
-        20,
-        12,
-        20,
+        20, 12, 20,
         MediaQuery.of(context).padding.bottom + 16,
       ),
       child: SizedBox(
         width: double.infinity,
         height: 56,
         child: ElevatedButton(
-          onPressed: () {
-            widget.onCarAdded?.call();
-
-            Navigator.pop(context);
-          },
+          onPressed: isActive ? _save : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: colors.primary,
+            disabledBackgroundColor: colors.disabled,
             foregroundColor: colors.onPrimary,
+            disabledForegroundColor: colors.disabledContent,
             elevation: 0,
-            shadowColor: colors.primaryWithOpacity(0.4),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+                borderRadius: BorderRadius.circular(16)),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                t.addCar.continueButton,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.3,
-                  color: colors.onPrimary,
+          child: _saving
+              ? SizedBox(
+                  width: 22, height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.5,
+                    valueColor: AlwaysStoppedAnimation(colors.onPrimary),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      t.addCar.continueButton,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.3,
+                        color: colors.onPrimary,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: colors.onPrimary.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.arrow_forward_rounded,
+                          size: 16, color: colors.onPrimary),
+                    ),
+                  ],
                 ),
-              ),
-
-              const SizedBox(width: 8),
-
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: colors.onPrimary.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Icons.arrow_forward_rounded,
-                  size: 16,
-                  color: colors.onPrimary,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );

@@ -235,6 +235,36 @@ class SupabaseService {
     return OrderModel.fromJson(response as Map<String, dynamic>);
   }
 
+  /// Berilgan sana va filial uchun band qilingan vaqtlarni qaytaradi.
+  /// Format: ['09:00', '10:30', ...]
+  Future<List<String>> getBookedTimeSlots({
+    required String branchId,
+    required DateTime date,
+  }) async {
+    final dayStart = DateTime(date.year, date.month, date.day);
+    final dayEnd = dayStart.add(const Duration(days: 1));
+
+    final response = await _client
+        .from('orders')
+        .select('scheduled_at')
+        .eq('branch_id', branchId)
+        .gte('scheduled_at', dayStart.toIso8601String())
+        .lt('scheduled_at', dayEnd.toIso8601String())
+        .neq('status', 'cancelled');
+
+    final slots = <String>{};
+    for (final row in response as List<dynamic>) {
+      final scheduledAt = row['scheduled_at'] as String?;
+      if (scheduledAt != null) {
+        final dt = DateTime.parse(scheduledAt);
+        final hour = dt.hour.toString().padLeft(2, '0');
+        final minute = dt.minute.toString().padLeft(2, '0');
+        slots.add('$hour:$minute');
+      }
+    }
+    return slots.toList();
+  }
+
   /// Real-time — buyurtma statusini kuzatish
   RealtimeChannel watchOrderStatus({
     required String orderId,
