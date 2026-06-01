@@ -122,9 +122,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               _buildActiveOrdersSection(context, colors),
             ],
             const SizedBox(height: 24),
-            _buildQuickActions(context, colors),
-            const SizedBox(height: 24),
             _buildBranches(context, colors),
+            const SizedBox(height: 24),
+            _buildQuickActions(context, colors),
             const SizedBox(height: 24),
             _buildMyCars(context, colors),
             const SizedBox(height: 32),
@@ -357,7 +357,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         return AlertDialog(
           backgroundColor: colors.onPrimaryContainer,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          content: Column(
+          content: SizedBox(
+            width: 280,
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Row(
@@ -424,6 +426,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 ),
               ),
             ],
+          ),
           ),
         );
       },

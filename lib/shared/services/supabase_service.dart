@@ -322,9 +322,9 @@ class BranchModel {
       name:      j['name'] as String,
       address:   j['address'] as String? ?? '',
       isActive:  j['is_active'] as bool? ?? true,
-      latitude:  (j['latitude'] as num?)?.toDouble(),
-      longitude: (j['longitude'] as num?)?.toDouble(),
-      services:  services,
+      latitude:    (j['latitude'] as num?)?.toDouble(),
+      longitude:   (j['longitude'] as num?)?.toDouble(),
+      services:    services,
     );
   }
 }
