@@ -7,7 +7,7 @@ import '../../../../../shared/services/client_session.dart';
 import '../../../../../shared/services/supabase_service.dart';
 import '../../../../../shared/constants/app_constants.dart';
 import '../../../data/repositories/branches_repository.dart';
-import '../../../data/repositories/orders_repository.dart';
+import '../../../../shared/services/orders_repository.dart';
 
 // ─────────────────────────────────────────────────────────────
 // BOOKING SCREEN — 4 qadam, real Supabase data

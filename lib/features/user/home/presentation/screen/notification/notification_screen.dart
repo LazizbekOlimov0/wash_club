@@ -137,7 +137,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
           : RefreshIndicator(
               onRefresh: () async {
                 // Orders reload qilganda yangi notiflar ham kelishi mumkin
-                await _repo.loadOrders(forceRefresh: true);
+                await _repo.loadOrders();
                 if (mounted) {
                   setState(() {
                     _items = List<AppNotification>.from(_repo.notifications);

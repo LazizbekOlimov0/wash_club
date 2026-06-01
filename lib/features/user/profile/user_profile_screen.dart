@@ -4,7 +4,7 @@ import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
-import '../../../data/repositories/orders_repository.dart';
+import '../../../../shared/services/orders_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -24,7 +24,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _ordersRepo.cachedOrders.where((o) => o.isCompleted).length;
 
   Future<void> _refresh() async {
-    await _ordersRepo.loadOrders(forceRefresh: true);
+    await _ordersRepo.loadOrders();
     if (mounted) setState(() {});
   }
 

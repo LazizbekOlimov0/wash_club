@@ -6,7 +6,7 @@ import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/supabase_service.dart';
 import '../../../../shared/constants/app_constants.dart';
-import '../../../data/repositories/orders_repository.dart';
+import '../../../../shared/services/orders_repository.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -47,7 +47,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   Future<void> _load() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final orders = await _repo.loadOrders(forceRefresh: true);
+      final orders = await _repo.loadOrders();
       if (mounted) setState(() { _all = orders; _loading = false; });
     } catch (e) {
       if (mounted) setState(() { _loading = false; _error = e.toString(); });

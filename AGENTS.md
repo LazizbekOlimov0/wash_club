@@ -23,10 +23,10 @@ flutter build apk --split-per-abi
 flutter build appbundle --release
 flutter build ios --release
 
-# Test (test file exists but is effectively empty — no test suite yet)
+# Test
 flutter test
 
-# Lint
+# Lint / analyze
 flutter analyze
 ```
 
@@ -61,17 +61,15 @@ main.dart           →  Supabase init, SharedPreferences, locale setup
 
 ```
 UI (Screens)
-  → Repositories (in-memory cache + API calls)
+  → Repositories (API-first, no cache)
       → SupabaseService (raw Supabase queries)
 ```
 
-**Important gotcha**: Repositories are **duplicated** in two locations:
-- `lib/shared/services/` — **originals** (BranchesRepository, OrdersRepository)
-- `lib/data/repositories/` — **copies** (identical code)
+**All repositories live in `lib/shared/services/`** — `BranchesRepository`, `OrdersRepository`. The `lib/data/repositories/` directory still has `BranchesRepository` (duplicate), but OrdersRepository duplication has been resolved. When editing, always update the `lib/shared/services/` versions.
 
-The `lib/data/` directory also has empty `models/` and `datasources/` directories suggesting a planned clean architecture that was never fully implemented. When editing repositories, update **both copies** or consolidate them.
+**API-first approach**: Repositories do NOT cache data in memory. Every call to `loadOrders()` or `getBranches()` hits the Supabase API directly. Realtime subscriptions (Supabase RealtimeChannel) push updates to streams, which UI listens to for live updates.
 
-**Screens import from either location**. `UserHomeScreen` imports from `shared/services/` while `BookingScreen` imports from `data/repositories/`. The shared location is the one actively maintained — when adding new repository methods, add them to `lib/shared/services/` versions.
+The `lib/data/` directory also has empty `models/` and `datasources/` directories suggesting a planned clean architecture that was never fully implemented.
 
 ### Models
 
@@ -191,7 +189,7 @@ dart run slang
 
 ## Gotchas
 
-1. **Repository duplication** — `lib/shared/services/` and `lib/data/repositories/` have identical `OrdersRepository` and `BranchesRepository`. Screens import from different locations. Change both when modifying repository logic, or consolidate.
+1. **Repository duplication** — `lib/shared/services/` and `lib/data/repositories/` had identical `OrdersRepository`. The duplicate in `lib/data/repositories/` has been deleted. All screens now import from `lib/shared/services/orders_repository.dart`. `BranchesRepository` still exists in both locations.
 
 2. **Models in supabase_service.dart** — `BranchModel`, `ServiceModel`, `CustomerModel`, `OrderModel` are all defined at the bottom of `lib/shared/services/supabase_service.dart`. This is a 400+ line file.
 

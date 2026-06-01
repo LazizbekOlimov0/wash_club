@@ -10,7 +10,7 @@ import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import 'package:wash_club/core/widgets/app_text_field.dart';
 import '../../../../core/theme/colors.dart';
-import '../../../../data/repositories/orders_repository.dart';
+import '../../../../shared/services/orders_repository.dart';
 import '../../../../shared/services/client_session.dart';
 
 class LoginScreen extends StatefulWidget {

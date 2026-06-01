@@ -44,9 +44,7 @@ class OrdersRepository {
   final SupabaseService _api = SupabaseService.instance;
   final ClientSession   _session = ClientSession.instance;
 
-  // In-memory cache
   List<OrderModel> _orders = [];
-  bool _loaded = false;
 
   // Active realtime channels keyed by orderId
   final Map<String, RealtimeChannel> _channels = {};
@@ -68,14 +66,11 @@ class OrdersRepository {
   List<OrderModel> get activeOrders =>
       _orders.where((o) => o.isActive).toList();
 
-  // ── Load ──────────────────────────────────────────────────
-  Future<List<OrderModel>> loadOrders({bool forceRefresh = false}) async {
-    if (_loaded && !forceRefresh) return _orders;
-
+  // ── Load (har doim API'dan yangi malumot) ─────────────────
+  Future<List<OrderModel>> loadOrders() async {
     final cars = _session.cars.map((c) => c.plate).toList();
     if (cars.isEmpty) {
       _orders = [];
-      _loaded = true;
       _controller.add(_orders);
       return _orders;
     }
@@ -84,7 +79,6 @@ class OrdersRepository {
       phone:      _session.phone ?? '',
       carNumbers: cars,
     );
-    _loaded = true;
     _controller.add(_orders);
 
     // Active orderlar uchun realtime subscription
@@ -255,7 +249,6 @@ class OrdersRepository {
   }
 
   void invalidate() {
-    _loaded = false;
     _orders = [];
     _notifications.clear();
   }

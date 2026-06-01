@@ -8,7 +8,7 @@ import '../../../../core/theme/colors.dart';
 import '../../../core/theme/providers/theme_provider.dart';
 import '../../../../shared/services/client_session.dart';
 import '../../../data/repositories/branches_repository.dart';
-import '../../../data/repositories/orders_repository.dart';
+import '../../../../shared/services/orders_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
