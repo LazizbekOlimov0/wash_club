@@ -75,22 +75,13 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     // Routing logic:
-    // 1) Agar Supabase session bor va ClientSession ham bor → home
-    // 2) Agar faqat Supabase session bor, lekin name/phone yo'q → login
-    // 3) Agar oldin kirgan bo'lsa (local flag) lekin Supabase session yo'q → login
-    // 4) Aks holda → language screen
-    final hasSupabaseSession =
-        Supabase.instance.client.auth.currentSession != null;
+    // Agar avval ro'yxatdan o'tgan bo'lsa → home
+    // Aks holda → language
     final isOnboarded = ClientSession.instance.isOnboarded;
 
     if (isOnboarded) {
-      // Foydalanuvchi oldin to'liq ro'yxatdan o'tgan → home
       context.go(UserRoutePath.home);
-    } else if (hasSupabaseSession) {
-      // Google auth qilingan, name/phone kiritilmagan → login
-      context.go(UserRoutePath.login);
     } else {
-      // Birinchi marta kirish → language
       context.go(UserRoutePath.language);
     }
   }

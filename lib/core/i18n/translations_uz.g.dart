@@ -37,6 +37,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	// Translations
 	late final TranslationsSplashUz splash = TranslationsSplashUz.internal(_root);
 	late final TranslationsLoginUz login = TranslationsLoginUz.internal(_root);
+	late final TranslationsRegisterUz register = TranslationsRegisterUz.internal(_root);
 	late final TranslationsNavUz nav = TranslationsNavUz.internal(_root);
 	late final TranslationsHomeUz home = TranslationsHomeUz.internal(_root);
 	late final TranslationsBookingUz booking = TranslationsBookingUz.internal(_root);
@@ -82,8 +83,80 @@ class TranslationsLoginUz {
 	/// uz: 'Telefon raqam'
 	String get phone => 'Telefon raqam';
 
+	/// uz: 'Parol'
+	String get password => 'Parol';
+
 	/// uz: 'Kirish'
 	String get button => 'Kirish';
+
+	/// uz: 'Hisobingiz yo'qmi?'
+	String get noAccount => 'Hisobingiz yo\'qmi?';
+
+	/// uz: 'Ro'yxatdan o'tish'
+	String get register => 'Ro\'yxatdan o\'tish';
+
+	/// uz: 'Google orqali kirish'
+	String get googleButton => 'Google orqali kirish';
+
+	/// uz: 'Telefon yoki parol noto'g'ri'
+	String get wrongPassword => 'Telefon yoki parol noto\'g\'ri';
+}
+
+// Path: register
+class TranslationsRegisterUz {
+	TranslationsRegisterUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Ro'yxatdan o'tish'
+	String get title => 'Ro\'yxatdan o\'tish';
+
+	/// uz: 'Yangi hisob yaratish'
+	String get subtitle => 'Yangi hisob yaratish';
+
+	/// uz: 'Ism va telefon'
+	String get stepName => 'Ism va telefon';
+
+	/// uz: 'Parol yarating'
+	String get stepPassword => 'Parol yarating';
+
+	/// uz: 'Ismingiz'
+	String get name => 'Ismingiz';
+
+	/// uz: 'Telefon raqam'
+	String get phone => 'Telefon raqam';
+
+	/// uz: 'Parol'
+	String get password => 'Parol';
+
+	/// uz: 'Parolni tasdiqlang'
+	String get confirmPassword => 'Parolni tasdiqlang';
+
+	/// uz: 'Ro'yxatdan o'tish'
+	String get button => 'Ro\'yxatdan o\'tish';
+
+	/// uz: 'Davom etish'
+	String get continueButton => 'Davom etish';
+
+	/// uz: 'Hisobingiz bormi?'
+	String get haveAccount => 'Hisobingiz bormi?';
+
+	/// uz: 'Kirish'
+	String get login => 'Kirish';
+
+	/// uz: 'Google orqali ro'yxatdan o'tish'
+	String get googleButton => 'Google orqali ro\'yxatdan o\'tish';
+
+	/// uz: 'Parollar mos kelmadi'
+	String get passwordsNotMatch => 'Parollar mos kelmadi';
+
+	/// uz: 'Parol kamida 4 belgidan iborat bo'lishi kerak'
+	String get passwordTooShort => 'Parol kamida 4 belgidan iborat bo\'lishi kerak';
+
+	/// uz: 'Barcha maydonlarni to'ldiring'
+	String get fillAllFields => 'Barcha maydonlarni to\'ldiring';
 }
 
 // Path: nav

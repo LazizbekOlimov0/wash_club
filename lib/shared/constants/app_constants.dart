@@ -23,6 +23,8 @@ class AppConstants {
   static const String kClientPhone   = 'client_phone';
   static const String kClientName    = 'client_name';
   static const String kClientCars    = 'client_cars';       // JSON list
+  static const String kClientPassword = 'client_password';
+  static const String kClientProfileImage = 'client_profile_image';
 
   // ── Order source ──────────────────────────────────────────
   static const String orderSourceClientApp = 'by_client_app';

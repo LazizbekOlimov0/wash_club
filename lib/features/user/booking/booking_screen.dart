@@ -295,6 +295,7 @@ class _BookingScreenState extends State<BookingScreen> {
             child: ElevatedButton(
               onPressed: () {
                 Navigator.pop(ctx);
+                _resetState();
                 context.go(UserRoutePath.orders);
               },
               style: ElevatedButton.styleFrom(
@@ -310,6 +311,21 @@ class _BookingScreenState extends State<BookingScreen> {
         ],
       ),
     );
+  }
+
+  void _resetState() {
+    setState(() {
+      _step = 0;
+      _selectedBranch = null;
+      _selectedService = null;
+      _selectedAddons.clear();
+      _selectedDate = DateTime.now();
+      _selectedTime = null;
+      _paymentMethod = AppConstants.paymentCard;
+      _timeSlots = [];
+      _bookedSlots = {};
+      _promoController.clear();
+    });
   }
 
   static const _stepTitles = ['Filial', 'Xizmat', 'Vaqt', "To'lov"];

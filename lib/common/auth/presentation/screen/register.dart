@@ -13,32 +13,40 @@ import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/orders_repository.dart';
 import '../../../../shared/services/client_session.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen>
+class _RegisterScreenState extends State<RegisterScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
-  late Animation<double> _scaleAnim;
 
+  int _step = 0;
   bool _loading = false;
 
+  final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
-  bool get _formValid =>
-      _phoneController.text.trim().length >= 9 &&
-      _passwordController.text.trim().isNotEmpty;
+  bool get _step1Valid =>
+      _nameController.text.trim().isNotEmpty &&
+      _phoneController.text.trim().length >= 9;
+
+  bool get _step2Valid =>
+      _passwordController.text.trim().length >= 4 &&
+      _confirmPasswordController.text.trim() ==
+          _passwordController.text.trim();
 
   @override
   void initState() {
@@ -56,22 +64,16 @@ class _LoginScreenState extends State<LoginScreen>
       end: Offset.zero,
     ).animate(
         CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
-    _scaleAnim = Tween<double>(begin: 0.92, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
-    );
     _animController.forward();
-
-    final session = ClientSession.instance;
-    if (session.phone != null) {
-      _phoneController.text = session.phone!;
-    }
   }
 
   @override
   void dispose() {
     _animController.dispose();
+    _nameController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -115,9 +117,7 @@ class _LoginScreenState extends State<LoginScreen>
         final name = displayName.isNotEmpty ? displayName : email;
         await session.saveProfile(
           name: name,
-          phone: _phoneController.text.trim().isNotEmpty
-              ? _phoneController.text.trim()
-              : 'google_${DateTime.now().millisecondsSinceEpoch}',
+          phone: 'google_${DateTime.now().millisecondsSinceEpoch}',
           password: 'google_auth',
         );
       }
@@ -128,42 +128,70 @@ class _LoginScreenState extends State<LoginScreen>
         context.go(UserRoutePath.home);
       }
     } catch (e) {
-      log(e.toString(), name: 'LoginScreen._signInWithGoogle');
+      log(e.toString(), name: 'RegisterScreen._signInWithGoogle');
       if (mounted) {
         setState(() => _loading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-              content: const Text('Google orqali kirishda xatolik'),
+              content: const Text('Google orqali ro\'yxatdan o\'tishda xatolik'),
               backgroundColor: _c.error),
         );
       }
     }
   }
 
-  Future<void> _onLogin() async {
-    if (!_formValid || _loading) return;
+  void _goToStep2() {
+    if (!_step1Valid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.t.register.fillAllFields),
+          backgroundColor: _c.error,
+        ),
+      );
+      return;
+    }
+    setState(() => _step = 1);
+  }
+
+  Future<void> _onRegister() async {
+    if (!_step2Valid || _loading) return;
+
+    final password = _passwordController.text.trim();
+    final confirm = _confirmPasswordController.text.trim();
+
+    if (password != confirm) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.t.register.passwordsNotMatch),
+          backgroundColor: _c.error,
+        ),
+      );
+      return;
+    }
+
+    if (password.length < 4) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(context.t.register.passwordTooShort),
+          backgroundColor: _c.error,
+        ),
+      );
+      return;
+    }
+
     setState(() => _loading = true);
 
     try {
-      final phone = _phoneController.text.trim();
-      final password = _passwordController.text.trim();
-
-      if (!ClientSession.instance.verifyPassword(phone, password)) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.t.login.wrongPassword),
-              backgroundColor: _c.error,
-            ),
-          );
-        }
-        return;
-      }
+      await ClientSession.instance.saveProfile(
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        password: password,
+      );
 
       OrdersRepository.instance.invalidate();
       if (mounted) context.go(UserRoutePath.home);
     } catch (e) {
-      log(e.toString(), name: 'LoginScreen._onLogin');
+      log(e.toString(), name: 'RegisterScreen._onRegister');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -194,7 +222,9 @@ class _LoginScreenState extends State<LoginScreen>
                   position: _slideAnim,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                    child: _buildForm(t, colors),
+                    child: _step == 0
+                        ? _buildStep1(t, colors)
+                        : _buildStep2(t, colors),
                   ),
                 ),
               ),
@@ -205,19 +235,45 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildForm(dynamic t, ApparenceKitColors colors) {
+  Widget _buildStep1(dynamic t, ApparenceKitColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel(t.login.phone, colors),
+        _sectionLabel(t.register.name, colors),
+        const SizedBox(height: 10),
+        AppTextField(
+          title: '',
+          hintText: 'Jon Doe',
+          controller: _nameController,
+          keyboardType: TextInputType.name,
+          textCapitalization: TextCapitalization.words,
+          onChanged: (_) => setState(() {}),
+        ),
+        const SizedBox(height: 20),
+        _sectionLabel(t.register.phone, colors),
         const SizedBox(height: 10),
         AppTextField.phone(
           title: '',
           controller: _phoneController,
           onChanged: (_) => setState(() {}),
         ),
+        const SizedBox(height: 36),
+        _buildContinueButton(colors),
+        const SizedBox(height: 24),
+        _buildDivider(colors),
         const SizedBox(height: 20),
-        _sectionLabel(t.login.password, colors),
+        _buildGoogleButton(colors),
+        const SizedBox(height: 24),
+        _buildLoginLink(colors),
+      ],
+    );
+  }
+
+  Widget _buildStep2(dynamic t, ApparenceKitColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _sectionLabel(t.register.password, colors),
         const SizedBox(height: 10),
         TextField(
           controller: _passwordController,
@@ -225,6 +281,8 @@ class _LoginScreenState extends State<LoginScreen>
           onChanged: (_) => setState(() {}),
           style: TextStyle(color: colors.onSurface, fontSize: 14),
           decoration: InputDecoration(
+            hintText: '••••••',
+            hintStyle: TextStyle(color: colors.grey3, fontSize: 14),
             filled: true,
             fillColor: colors.surface,
             contentPadding:
@@ -254,23 +312,60 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ),
         ),
-        const SizedBox(height: 36),
-        ScaleTransition(
-          scale: _scaleAnim,
-          child: _buildLoginButton(colors),
+        const SizedBox(height: 16),
+        _sectionLabel(t.register.confirmPassword, colors),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _confirmPasswordController,
+          obscureText: _obscureConfirm,
+          onChanged: (_) => setState(() {}),
+          style: TextStyle(color: colors.onSurface, fontSize: 14),
+          decoration: InputDecoration(
+            hintText: '••••••',
+            hintStyle: TextStyle(color: colors.grey3, fontSize: 14),
+            filled: true,
+            fillColor: colors.surface,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: colors.divider),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: colors.divider),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: colors.primary, width: 1.5),
+            ),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureConfirm
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                color: colors.grey2,
+                size: 20,
+              ),
+              onPressed: () =>
+                  setState(() => _obscureConfirm = !_obscureConfirm),
+            ),
+          ),
         ),
+        const SizedBox(height: 36),
+        _buildRegisterButton(colors),
         const SizedBox(height: 24),
         _buildDivider(colors),
         const SizedBox(height: 20),
         _buildGoogleButton(colors),
         const SizedBox(height: 24),
-        _buildRegisterLink(colors),
+        _buildLoginLink(colors),
       ],
     );
   }
 
-  Widget _buildLoginButton(ApparenceKitColors colors) {
-    final isActive = _formValid && !_loading;
+  Widget _buildContinueButton(ApparenceKitColors colors) {
+    final isActive = _step1Valid && !_loading;
     return SizedBox(
       width: double.infinity,
       height: 56,
@@ -290,7 +385,74 @@ class _LoginScreenState extends State<LoginScreen>
               : null,
         ),
         child: ElevatedButton(
-          onPressed: isActive ? _onLogin : null,
+          onPressed: isActive ? _goToStep2 : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            foregroundColor: colors.onPrimary,
+            disabledBackgroundColor: Colors.transparent,
+            disabledForegroundColor: colors.grey3,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16)),
+            elevation: 0,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Davom etish',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: isActive ? colors.onPrimary : colors.grey3,
+                  letterSpacing: 0.3,
+                ),
+              ),
+              const SizedBox(width: 10),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? colors.onPrimary.withValues(alpha: 0.2)
+                      : colors.grey1,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 16,
+                  color: isActive ? colors.onPrimary : colors.grey3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegisterButton(ApparenceKitColors colors) {
+    final isActive = _step2Valid && !_loading;
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: isActive ? colors.primary : colors.surface,
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: colors.primary.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : null,
+        ),
+        child: ElevatedButton(
+          onPressed: isActive ? _onRegister : null,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             shadowColor: Colors.transparent,
@@ -314,7 +476,7 @@ class _LoginScreenState extends State<LoginScreen>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Kirish',
+                      "Ro'yxatdan o'tish",
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -362,7 +524,7 @@ class _LoginScreenState extends State<LoginScreen>
               )
             : Icon(Icons.login_rounded, color: colors.grey2, size: 20),
         label: Text(
-          'Google orqali kirish',
+          "Google orqali ro'yxatdan o'tish",
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -379,21 +541,21 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildRegisterLink(ApparenceKitColors colors) {
+  Widget _buildLoginLink(ApparenceKitColors colors) {
     final t = context.t;
     return Center(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            t.login.noAccount,
+            t.register.haveAccount,
             style: TextStyle(color: colors.grey2, fontSize: 14),
           ),
           const SizedBox(width: 4),
           GestureDetector(
-            onTap: () => context.push(UserRoutePath.register),
+            onTap: () => context.pop(),
             child: Text(
-              t.login.register,
+              t.register.login,
               style: TextStyle(
                 color: colors.info,
                 fontSize: 14,
@@ -419,6 +581,30 @@ class _LoginScreenState extends State<LoginScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              GestureDetector(
+                onTap: _step > 0 ? () => setState(() => _step = 0) : null,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _step > 0 ? colors.surface : Colors.transparent,
+                    shape: BoxShape.circle,
+                    border: _step > 0
+                        ? Border.all(color: colors.divider)
+                        : null,
+                  ),
+                  child: _step > 0
+                      ? Icon(Icons.arrow_back,
+                          color: colors.onSurface, size: 18)
+                      : null,
+                ),
+              ),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 12),
           Container(
             width: 58,
             height: 58,
@@ -447,7 +633,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            t.login.subtitle,
+            _step == 0 ? t.register.subtitle : t.register.stepPassword,
             style: TextStyle(
               color: colors.grey3,
               fontSize: 14,

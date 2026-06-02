@@ -16,9 +16,13 @@ class ClientSession {
   String? _userId;   // local UUID (anon identifier)
   String? _name;
   String? _phone;
+  String? _password;
+  String? _profileImage; // base64 encoded
   List<SavedCar> _cars = [];
 
-  bool get isOnboarded => _name != null && _phone != null;
+  bool get isOnboarded => _name != null && _phone != null && _password != null;
+  String? get profileImage => _profileImage;
+  bool get isRegistered => _phone != null && _password != null;
 
   String get userId {
     assert(_userId != null, 'Session not initialised');
@@ -42,8 +46,10 @@ class ClientSession {
       await prefs.setString(AppConstants.kClientUserId, _userId!);
     }
 
-    _name  = prefs.getString(AppConstants.kClientName);
-    _phone = prefs.getString(AppConstants.kClientPhone);
+    _name     = prefs.getString(AppConstants.kClientName);
+    _phone    = prefs.getString(AppConstants.kClientPhone);
+    _password     = prefs.getString(AppConstants.kClientPassword);
+    _profileImage = prefs.getString(AppConstants.kClientProfileImage);
 
     final carsJson = prefs.getString(AppConstants.kClientCars);
     if (carsJson != null) {
@@ -52,16 +58,37 @@ class ClientSession {
     }
   }
 
-  // ── Save profile ──────────────────────────────────────────
+  // ── Save profile (register) ──────────────────────────────
   Future<void> saveProfile({
     required String name,
     required String phone,
+    String? password,
   }) async {
     _name  = name;
     _phone = phone;
+    if (password != null) _password = password;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.kClientName,  name);
-    await prefs.setString(AppConstants.kClientPhone, phone);
+    await prefs.setString(AppConstants.kClientName,     name);
+    await prefs.setString(AppConstants.kClientPhone,    phone);
+    if (password != null) {
+      await prefs.setString(AppConstants.kClientPassword, password);
+    }
+  }
+
+  bool verifyPassword(String phone, String password) {
+    return _phone == phone && _password == password;
+  }
+
+  Future<void> saveProfileImage(String base64Image) async {
+    _profileImage = base64Image;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.kClientProfileImage, base64Image);
+  }
+
+  Future<void> removeProfileImage() async {
+    _profileImage = null;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(AppConstants.kClientProfileImage);
   }
 
   // ── Cars ──────────────────────────────────────────────────
@@ -87,12 +114,16 @@ class ClientSession {
 
   // ── Logout ────────────────────────────────────────────────
   Future<void> clear() async {
-    _name  = null;
-    _phone = null;
-    _cars  = [];
+    _name     = null;
+    _phone    = null;
+    _password     = null;
+    _profileImage = null;
+    _cars         = [];
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.kClientName);
     await prefs.remove(AppConstants.kClientPhone);
+    await prefs.remove(AppConstants.kClientPassword);
+    await prefs.remove(AppConstants.kClientProfileImage);
     await prefs.remove(AppConstants.kClientCars);
     // userId ni saqlaymiz — bu device identifier
   }

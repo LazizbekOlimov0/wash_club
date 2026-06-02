@@ -8,7 +8,30 @@
     "subtitle": "Kirish uchun ma'lumotlaringizni kiriting",
     "name": "Ismingiz",
     "phone": "Telefon raqam",
-    "button": "Kirish"
+    "password": "Parol",
+    "button": "Kirish",
+    "noAccount": "Hisobingiz yo'qmi?",
+    "register": "Ro'yxatdan o'tish",
+    "googleButton": "Google orqali kirish",
+    "wrongPassword": "Telefon yoki parol noto'g'ri"
+  },
+  "register": {
+    "title": "Ro'yxatdan o'tish",
+    "subtitle": "Yangi hisob yaratish",
+    "stepName": "Ism va telefon",
+    "stepPassword": "Parol yarating",
+    "name": "Ismingiz",
+    "phone": "Telefon raqam",
+    "password": "Parol",
+    "confirmPassword": "Parolni tasdiqlang",
+    "button": "Ro'yxatdan o'tish",
+    "continueButton": "Davom etish",
+    "haveAccount": "Hisobingiz bormi?",
+    "login": "Kirish",
+    "googleButton": "Google orqali ro'yxatdan o'tish",
+    "passwordsNotMatch": "Parollar mos kelmadi",
+    "passwordTooShort": "Parol kamida 4 belgidan iborat bo'lishi kerak",
+    "fillAllFields": "Barcha maydonlarni to'ldiring"
   },
   "nav": {
     "home": "Bosh sahifa",

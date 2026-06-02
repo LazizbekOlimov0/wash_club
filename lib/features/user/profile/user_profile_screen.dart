@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
@@ -62,10 +64,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         color: colors.info,
         child: ListView(
         padding: EdgeInsets.zero,
-        physics: const ClampingScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         children: [
           _buildHeader(colors, name, phone),
-          const SizedBox(height: 16),
+          _buildHeaderDivider(colors),
+          const SizedBox(height: 20),
           _buildStatsRow(colors),
           const SizedBox(height: 12),
           _buildSubscriptionBanner(colors),
@@ -124,26 +127,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildHeader(
       ApparenceKitColors colors, String name, String phone) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: Row(
         children: [
-          // Avatar
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: colors.primary,
-              shape: BoxShape.circle,
-            ),
-            child: Center(
-              child: Text(
-                name.isNotEmpty ? name[0].toUpperCase() : 'M',
-                style: TextStyle(
-                  color: colors.onPrimary,
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
+          GestureDetector(
+            onTap: () => context.push(UserRoutePath.editProfile),
+            child: Container(
+              width: 88,
+              height: 88,
+              decoration: BoxDecoration(
+                color: colors.primary,
+                shape: BoxShape.circle,
+                image: _session.profileImage != null
+                    ? DecorationImage(
+                        image: MemoryImage(
+                            base64Decode(_session.profileImage!)),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
               ),
+              child: _session.profileImage == null
+                  ? Center(
+                      child: Text(
+                        name.isNotEmpty ? name[0].toUpperCase() : 'M',
+                        style: TextStyle(
+                          color: colors.onPrimary,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    )
+                  : null,
             ),
           ),
           const SizedBox(width: 16),
@@ -165,9 +179,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
-          // Edit button
           GestureDetector(
-            onTap: () => _showEditProfile(context, colors),
+            onTap: () => context.push(UserRoutePath.editProfile),
             child: Container(
               width: 36,
               height: 36,
@@ -182,6 +195,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildHeaderDivider(ApparenceKitColors colors) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Divider(color: colors.divider, height: 1, thickness: 1),
     );
   }
 
@@ -442,100 +462,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Text("O'chirish", style: TextStyle(color: colors.error)),
           ),
         ],
-      ),
-    );
-  }
-
-  void _showEditProfile(BuildContext context, ApparenceKitColors colors) {
-    final nameCtrl  = TextEditingController(text: _session.name);
-    final phoneCtrl = TextEditingController(text: _session.phone);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(
-          20, 20, 20,
-          MediaQuery.of(ctx).viewInsets.bottom + 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: colors.grey1,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('Profilni tahrirlash',
-                style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700)),
-            const SizedBox(height: 20),
-            TextField(
-              controller: nameCtrl,
-              style: TextStyle(color: colors.onSurface),
-              decoration: InputDecoration(
-                labelText: 'Ism',
-                labelStyle: TextStyle(color: colors.grey2),
-                filled: true,
-                fillColor: colors.onPrimaryContainer,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: phoneCtrl,
-              keyboardType: TextInputType.phone,
-              style: TextStyle(color: colors.onSurface),
-              decoration: InputDecoration(
-                labelText: 'Telefon',
-                labelStyle: TextStyle(color: colors.grey2),
-                filled: true,
-                fillColor: colors.onPrimaryContainer,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await _session.saveProfile(
-                    name:  nameCtrl.text.trim(),
-                    phone: phoneCtrl.text.trim(),
-                  );
-                  Navigator.pop(ctx);
-                  if (mounted) setState(() {});
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.info,
-                  foregroundColor: colors.onPrimary,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-                child: const Text('Saqlash',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

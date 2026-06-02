@@ -6,11 +6,13 @@ import 'package:wash_club/features/user/home/presentation/screen/user_home_scree
 import 'package:wash_club/features/user/home/presentation/screen/add_car/add_car_screen.dart';
 
 import '../../common/auth/presentation/screen/login.dart';
+import '../../common/auth/presentation/screen/register.dart';
 import '../../features/user/booking/booking_screen.dart';
 import '../../features/user/home/presentation/screen/main_screen.dart';
 import '../../features/user/home/presentation/screen/notification/notification_screen.dart';
 import '../../features/user/orders/orders_screen.dart';
 import '../../features/user/profile/settings_screen.dart';
+import '../../features/user/profile/edit_profile_screen.dart';
 import '../../features/user/profile/user_profile_screen.dart';
 import '../../features/user/map/map_screen.dart';
 
@@ -38,6 +40,10 @@ final GoRouter generateRouter = GoRouter(
       builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
+      path: UserRoutePath.register,
+      builder: (context, state) => const RegisterScreen(),
+    ),
+    GoRoute(
       path: UserRoutePath.addCar,
       builder: (context, state) {
         final onCarAdded = state.extra as VoidCallback?;
@@ -51,6 +57,10 @@ final GoRouter generateRouter = GoRouter(
     GoRoute(
       path: UserRoutePath.settings,
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: UserRoutePath.editProfile,
+      builder: (context, state) => const EditProfileScreen(),
     ),
     GoRoute(
       path: UserRoutePath.map,
@@ -106,6 +116,7 @@ class UserRoutePath {
   static const splash = '/splash';
   static const language = '/language';
   static const login = '/login';
+  static const register = '/register';
   static const home = '/home';
   static const booking = '/booking';
   static const orders = '/orders';
@@ -113,5 +124,6 @@ class UserRoutePath {
   static const addCar = '/add-car';
   static const notifications = '/notifications';
   static const settings = '/settings';
+  static const editProfile = '/edit-profile';
   static const map = '/map';
 }
