@@ -58,11 +58,11 @@ flutter_gen:
     flutter_svg: true
 
 flutter_launcher_icons:
-  image_path: "assets/image/icon_source.jpg"
+  image_path: "assets/image/wash_club.png"
   android: true
   ios: true
   remove_alpha_ios: true
   adaptive_icon_background: "#0F1B35"
-  adaptive_icon_foreground: "assets/image/icon_source.jpg"
+  adaptive_icon_foreground: "assets/image/wash_club.png"
 
 
