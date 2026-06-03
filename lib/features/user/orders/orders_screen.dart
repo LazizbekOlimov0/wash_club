@@ -27,7 +27,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() => setState(() {}));
 
     // Realtime stream
@@ -54,9 +54,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     }
   }
 
-  List<OrderModel> get _active    => _all.where((o) => o.isActive).toList();
-  List<OrderModel> get _history   => _all.where((o) => o.isCompleted).toList();
-  List<OrderModel> get _cancelled => _all.where((o) => o.isCancelled).toList();
+  List<OrderModel> get _active  => _all.where((o) => o.isActive).toList();
+  List<OrderModel> get _history => _all.where((o) => o.isCompleted || o.isCancelled).toList();
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -94,7 +93,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_active.length} faol · ${_all.length} jami',
+                    '${_active.length} faol · ${_history.length} tarix',
                     style: TextStyle(color: colors.grey2, fontSize: 13),
                   ),
                 ],
@@ -146,7 +145,6 @@ class _OrdersScreenState extends State<OrdersScreen>
                   tabs: const [
                     Tab(text: 'Faol',     height: 34),
                     Tab(text: 'Tarix',    height: 34),
-                    Tab(text: 'Bekor',    height: 34),
                   ],
                 ),
               ),
@@ -171,11 +169,8 @@ class _OrdersScreenState extends State<OrdersScreen>
                                   emptyLabel: 'Faol buyurtmalar yo\'q',
                                   colors: colors),
                               _buildList(_history,
-                                  emptyLabel: 'Bajarilgan buyurtmalar yo\'q',
+                                  emptyLabel: 'Tarix bo\'sh',
                                   showBookButton: true,
-                                  colors: colors),
-                              _buildList(_cancelled,
-                                  emptyLabel: 'Bekor qilingan buyurtmalar yo\'q',
                                   colors: colors),
                             ],
                           ),
