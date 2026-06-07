@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
 import '../../../../core/theme/colors.dart';
@@ -160,15 +159,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               iconColor: colors.error,
               showArrow: false,
               onTap: () => _showLogoutDialog(context, t, colors),
-              colors: colors,
-            ),
-            _navItem(
-              icon: Icons.delete_outline,
-              label: t.settings.deleteAccount,
-              labelColor: colors.error,
-              iconColor: colors.error,
-              showArrow: false,
-              onTap: () => _showDeleteAccountDialog(context, t, colors),
               colors: colors,
             ),
           ], colors),
@@ -556,19 +546,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Chiqish: session + cache tozalash
   Future<void> _logout() async {
-    // 1) Supabase auth signout (agar Google bilan kirgan bo'lsa)
-    try {
-      await Supabase.instance.client.auth.signOut();
-    } catch (_) {}
-
-    // 2) Session tozalash
+    // 1) Session tozalash
     await ClientSession.instance.clear();
 
-    // 3) Cache tozalash
+    // 2) Cache tozalash
     OrdersRepository.instance.invalidate();
     BranchesRepository.instance.invalidate();
 
-    if (mounted) context.go(UserRoutePath.login);
+    if (mounted) context.go(UserRoutePath.otpLogin);
   }
 
   void _showEditProfile(
@@ -695,39 +680,5 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  void _showDeleteAccountDialog(
-      BuildContext context, dynamic t, ApparenceKitColors colors) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: colors.onPrimaryContainer,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
-        title: Text(t.settings.deleteTitle as String,
-            style: TextStyle(color: colors.onBackground, fontSize: 17)),
-        content: Text(t.settings.deleteBody as String,
-            style: TextStyle(color: colors.grey2, fontSize: 14)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(t.settings.cancel as String,
-                style: TextStyle(color: colors.info)),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              // Hamma ma'lumotni tozalab, login'ga yuborish
-              await ClientSession.instance.clear();
-              OrdersRepository.instance.invalidate();
-              BranchesRepository.instance.invalidate();
-              if (mounted) context.go(UserRoutePath.login);
-            },
-            child: Text(t.settings.delete as String,
-                style: TextStyle(color: colors.error)),
-          ),
-        ],
-      ),
-    );
-  }
 }
+

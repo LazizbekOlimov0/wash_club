@@ -15,10 +15,11 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
+  final _mapController = MapController();
   final _repo = BranchesRepository.instance;
   List<BranchModel> _branches = [];
   bool _loading = true;
-  bool _locating = true;
+  bool _locating = false;
   LatLng? _userPosition;
 
   static const _defaultCenter = LatLng(41.2995, 69.2401); // Toshkent
@@ -26,47 +27,129 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    await Future.wait([_getLocation(), _getBranches()]);
+    _getBranches();
   }
 
   Future<void> _getLocation() async {
+    if (mounted) setState(() => _locating = true);
     try {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
-        if (mounted) setState(() => _locating = false);
+        if (mounted) {
+          setState(() => _locating = false);
+          _showLocationServiceDialog();
+        }
         return;
       }
+
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          if (mounted) setState(() => _locating = false);
+          if (mounted) {
+            setState(() => _locating = false);
+            _showSnackBar('Joylashuv ruxsati rad etildi');
+          }
           return;
         }
       }
+
       if (permission == LocationPermission.deniedForever) {
-        if (mounted) setState(() => _locating = false);
+        if (mounted) {
+          setState(() => _locating = false);
+          _showPermissionDeniedForeverDialog();
+        }
         return;
       }
-      final pos = await Geolocator.getCurrentPosition();
+
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
       if (mounted) {
+        final userLatLng = LatLng(pos.latitude, pos.longitude);
+        _mapController.move(userLatLng, _mapController.camera.zoom);
         setState(() {
-          _userPosition = LatLng(pos.latitude, pos.longitude);
+          _userPosition = userLatLng;
           _locating = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _locating = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _locating = false);
+        _showSnackBar('Joylashuvni aniqlab bo\'lmadi: $e');
+      }
     }
+  }
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  void _showLocationServiceDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Joylashuv xizmati o\'chirilgan'),
+        content: const Text('Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Yopish'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Geolocator.openLocationSettings();
+            },
+            child: const Text('Sozlamalar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPermissionDeniedForeverDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Joylashuv ruxsati bloklangan'),
+        content: const Text(
+          'Joylashuv ruxsati butunlay rad etilgan. Iltimos, qurilmangiz sozlamalaridan '
+          'ushbu ilova uchun joylashuv ruxsatini qayta yoqing.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Yopish'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Geolocator.openAppSettings();
+            },
+            child: const Text('Sozlamalar'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _getBranches() async {
     try {
       _branches = await _repo.getBranches();
+      final withCoords = _branches.where((b) => b.latitude != null && b.longitude != null).length;
+      debugPrint('[MAP] Jami filial: ${_branches.length}, koordinatali: $withCoords');
+      for (final b in _branches) {
+        debugPrint('[MAP] ${b.name} — lat: ${b.latitude}, lng: ${b.longitude}');
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -87,6 +170,7 @@ class _MapScreenState extends State<MapScreen> {
       body: Stack(
         children: [
           FlutterMap(
+            mapController: _mapController,
             options: MapOptions(
               initialCenter: _mapCenter,
               initialZoom: _mapZoom,
@@ -238,7 +322,7 @@ class _MapScreenState extends State<MapScreen> {
             ),
           ),
 
-          // Loading / Error overlay
+          // Loading overlay
           if (_loading || _locating)
             Positioned(
               bottom: 40,

@@ -60,6 +60,10 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Eng yaqin filialni topish va xaritada joylashuvingizni ko'rsatish uchun</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Filiallar ro'yxatini joylashuvingizga qarab saralash uchun</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil rasmingizni tanlash uchun rasm kutubxonasiga kirish kerak</string>
 	<key>UILaunchStoryboardName</key>

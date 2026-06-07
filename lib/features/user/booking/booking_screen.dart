@@ -53,12 +53,9 @@ class _BookingScreenState extends State<BookingScreen> {
   Set<String> _bookedSlots = {};
   bool _loadingSlots = false;
 
-  // Default time slots (09:00 - 20:00 har soat)
-  static const _defaultTimeSlots = [
-    '09:00','10:00','11:00','12:00',
-    '13:00','14:00','15:00','16:00',
-    '17:00','18:00','19:00','20:00',
-  ];
+  // Default time slots (00:00 - 23:00 har soat)
+  static List<String> get _defaultTimeSlots =>
+      List.generate(24, (h) => '${h.toString().padLeft(2, '0')}:00');
 
   @override
   void initState() {
@@ -213,7 +210,7 @@ class _BookingScreenState extends State<BookingScreen> {
     }
 
     if (!_session.isOnboarded) {
-      await context.push(UserRoutePath.login);
+      await context.push(UserRoutePath.otpLogin);
       return;
     }
 
@@ -981,23 +978,32 @@ class _TimeStep extends StatelessWidget {
             itemCount: timeSlots.length,
             itemBuilder: (context, i) {
               final t = timeSlots[i];
+              final tHour = int.parse(t.split(':')[0]);
+              final now = DateTime.now();
+              final isToday = selectedDate.year == now.year &&
+                  selectedDate.month == now.month &&
+                  selectedDate.day == now.day;
+              final slotTime = DateTime(
+                  selectedDate.year, selectedDate.month, selectedDate.day, tHour);
+              final isPast = isToday && slotTime.isBefore(now);
               final isSelected = t == selectedTime;
               final isBooked = bookedSlots.contains(t);
+              final isDisabled = isBooked || isPast;
               return GestureDetector(
-                onTap: isBooked ? null : () => onTimeSelect(t),
+                onTap: isDisabled ? null : () => onTimeSelect(t),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? colors.primary
-                        : isBooked
+                        : isDisabled
                             ? colors.disabled
                             : cardBg,
                     borderRadius: BorderRadius.circular(12),
                     border: isSelected
                         ? null
                         : Border.all(
-                            color: isBooked
+                            color: isDisabled
                                 ? colors.disabledContent.withValues(alpha: 0.3)
                                 : colors.divider,
                             width: 1),
@@ -1007,7 +1013,7 @@ class _TimeStep extends StatelessWidget {
                         style: TextStyle(
                             color: isSelected
                                 ? colors.onPrimary
-                                : isBooked
+                                : isDisabled
                                     ? colors.disabledContent
                                     : colors.onSurface,
                             fontSize: 14,

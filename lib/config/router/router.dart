@@ -5,8 +5,7 @@ import 'package:wash_club/common/auth/presentation/screen/language_screen.dart';
 import 'package:wash_club/features/user/home/presentation/screen/user_home_screen.dart';
 import 'package:wash_club/features/user/home/presentation/screen/add_car/add_car_screen.dart';
 
-import '../../common/auth/presentation/screen/login.dart';
-import '../../common/auth/presentation/screen/register.dart';
+import '../../common/auth/presentation/screen/otp_login_screen.dart';
 import '../../features/user/booking/booking_screen.dart';
 import '../../features/user/home/presentation/screen/main_screen.dart';
 import '../../features/user/home/presentation/screen/notification/notification_screen.dart';
@@ -36,12 +35,8 @@ final GoRouter generateRouter = GoRouter(
       builder: (context, state) => const LanguageScreen(),
     ),
     GoRoute(
-      path: UserRoutePath.login,
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: UserRoutePath.register,
-      builder: (context, state) => const RegisterScreen(),
+      path: UserRoutePath.otpLogin,
+      builder: (context, state) => const OtpLoginScreen(),
     ),
     GoRoute(
       path: UserRoutePath.addCar,
@@ -116,7 +111,7 @@ class UserRoutePath {
   static const splash = '/splash';
   static const language = '/language';
   static const login = '/login';
-  static const register = '/register';
+  static const otpLogin = '/otp-login';
   static const home = '/home';
   static const booking = '/booking';
   static const orders = '/orders';

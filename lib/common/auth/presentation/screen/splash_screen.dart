@@ -1,8 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
@@ -20,9 +17,6 @@ class _SplashScreenState extends State<SplashScreen>
   late Animation<double> _fadeAnim;
   late Animation<double> _slideAnim;
   late Animation<double> _scaleAnim;
-
-  StreamSubscription? _authSub;
-
   @override
   void initState() {
     super.initState();
@@ -57,21 +51,6 @@ class _SplashScreenState extends State<SplashScreen>
     // ClientSession'ni init qilish
     await ClientSession.instance.init();
 
-    // Supabase session'ni tiklashni kutish (autoRefreshToken)
-    final completer = Completer<void>();
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen((event) {
-      if (!completer.isCompleted && event.session != null) {
-        completer.complete();
-      }
-    });
-
-    try {
-      await completer.future.timeout(const Duration(seconds: 2));
-    } on TimeoutException {
-      // Session tiklanmadi — bu normal, foydalanuvchi birinchi marta kiryapti
-    }
-
-    _authSub?.cancel();
     if (!mounted) return;
 
     // Routing logic:
@@ -88,7 +67,6 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _authSub?.cancel();
     _controller.dispose();
     super.dispose();
   }

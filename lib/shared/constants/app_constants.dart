@@ -20,6 +20,7 @@ class AppConstants {
   static const String kLocale        = 'locale';
   static const String kOnboardingDone = 'onboarding_done';
   static const String kClientUserId  = 'client_user_id';   // local UUID for anon user
+  static const String kClientCustomerId = 'client_customer_id'; // server-side customer UUID
   static const String kClientPhone   = 'client_phone';
   static const String kClientName    = 'client_name';
   static const String kClientCars    = 'client_cars';       // JSON list

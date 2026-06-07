@@ -22,6 +22,7 @@ class _OrdersScreenState extends State<OrdersScreen>
 
   List<OrderModel> _all = [];
   bool _loading = true;
+  bool _cancelling = false;
   String? _error;
 
   @override
@@ -286,11 +287,36 @@ class _OrdersScreenState extends State<OrdersScreen>
             child: Text("Yo'q", style: TextStyle(color: _c.info)),
           ),
           TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              await _repo.cancelOrder(order.id);
-            },
-            child: Text('Ha', style: TextStyle(color: _c.error)),
+            onPressed: _cancelling
+                ? null
+                : () async {
+                    Navigator.pop(ctx);
+                    setState(() => _cancelling = true);
+                    try {
+                      await _repo.cancelOrder(order.id);
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Bekor qilishda xatolik: $e'),
+                            backgroundColor: _c.error,
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) setState(() => _cancelling = false);
+                    }
+                  },
+            child: _cancelling
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(_c.error),
+                    ),
+                  )
+                : Text('Ha', style: TextStyle(color: _c.error)),
           ),
         ],
       ),

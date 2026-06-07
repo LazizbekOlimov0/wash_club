@@ -53,7 +53,7 @@ class _LanguageScreenState extends State<LanguageScreen>
 
   void _onContinue() {
     LocaleSettings.setLocaleRaw(_selectedLang);
-    context.go(UserRoutePath.login);
+    context.go(UserRoutePath.otpLogin);
   }
 
   String get _continueLabel {

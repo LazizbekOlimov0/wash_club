@@ -20,14 +20,7 @@ class SupabaseService {
   Future<List<BranchModel>> getBranches() async {
     final response = await _client
         .from('branches')
-        .select('''
-          id, name, address, is_active, created_at,
-          latitude, longitude,
-          services (
-            id, name, description, is_active, is_addon, icon, sort_order,
-            service_prices ( vehicle_category, price )
-          )
-        ''')
+        .select('id,name,address,is_active,created_at,latitude,longitude,services(id,name,description,is_active,is_addon,icon,sort_order,service_prices(vehicle_category,price))')
         .eq('is_active', true)
         .order('name');
 
@@ -205,14 +198,23 @@ class SupabaseService {
         .toList();
   }
 
-  /// Buyurtmani bekor qilish — status'ni 'cancelled' ga o'zgartiradi
-  Future<void> cancelOrder(String orderId) async {
-    await _client
-        .from('orders')
-        .update({'status': AppConstants.statusCancelled})
-        .eq('id', orderId)
-        .eq('source', AppConstants.orderSourceClientApp)
-        .inFilter('status', [AppConstants.statusPending]);
+  /// Buyurtmani bekor qilish — RPC orqali (SECURITY DEFINER).
+  Future<OrderModel> cancelOrder(String orderId) async {
+    final response = await _client.rpc(
+      'cancel_order',
+      params: {'p_order_id': orderId},
+    );
+
+    if (response == null) {
+      throw Exception('Buyurtma topilmadi yoki allaqachon bajarilgan');
+    }
+
+    final data = response as Map<String, dynamic>;
+    if (data['error'] != null) {
+      throw Exception(data['error'] as String);
+    }
+
+    return OrderModel.fromJson(data);
   }
 
   /// Bitta buyurtma holati

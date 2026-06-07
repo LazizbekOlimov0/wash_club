@@ -14,15 +14,18 @@ class ClientSession {
 
   // in-memory cache
   String? _userId;   // local UUID (anon identifier)
+  String? _customerId; // server-side customer UUID (OTP login)
   String? _name;
   String? _phone;
   String? _password;
   String? _profileImage; // base64 encoded
   List<SavedCar> _cars = [];
 
-  bool get isOnboarded => _name != null && _phone != null && _password != null;
+  bool get isOnboarded =>
+      _name != null && _phone != null && (_password != null || _customerId != null);
   String? get profileImage => _profileImage;
-  bool get isRegistered => _phone != null && _password != null;
+  bool get isRegistered => _phone != null && (_password != null || _customerId != null);
+  String? get customerId => _customerId;
 
   String get userId {
     assert(_userId != null, 'Session not initialised');
@@ -46,6 +49,7 @@ class ClientSession {
       await prefs.setString(AppConstants.kClientUserId, _userId!);
     }
 
+    _customerId = prefs.getString(AppConstants.kClientCustomerId);
     _name     = prefs.getString(AppConstants.kClientName);
     _phone    = prefs.getString(AppConstants.kClientPhone);
     _password     = prefs.getString(AppConstants.kClientPassword);
@@ -56,6 +60,21 @@ class ClientSession {
       final list = jsonDecode(carsJson) as List<dynamic>;
       _cars = list.map((e) => SavedCar.fromJson(e as Map<String, dynamic>)).toList();
     }
+  }
+
+  // ── Save profile from OTP (Telegram login) ────────────
+  Future<void> saveFromOtp({
+    required String customerId,
+    required String phone,
+    required String name,
+  }) async {
+    _customerId = customerId;
+    _name  = name;
+    _phone = phone;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.kClientCustomerId, customerId);
+    await prefs.setString(AppConstants.kClientName,       name);
+    await prefs.setString(AppConstants.kClientPhone,      phone);
   }
 
   // ── Save profile (register) ──────────────────────────────
@@ -114,12 +133,14 @@ class ClientSession {
 
   // ── Logout ────────────────────────────────────────────────
   Future<void> clear() async {
+    _customerId = null;
     _name     = null;
     _phone    = null;
     _password     = null;
     _profileImage = null;
     _cars         = [];
     final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(AppConstants.kClientCustomerId);
     await prefs.remove(AppConstants.kClientName);
     await prefs.remove(AppConstants.kClientPhone);
     await prefs.remove(AppConstants.kClientPassword);

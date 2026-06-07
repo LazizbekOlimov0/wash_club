@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/client_session.dart';
-import '../constants/app_constants.dart';
 
 /// Notifikatsiya turi
 enum NotifType { booking, promo, system }
@@ -127,12 +126,8 @@ class OrdersRepository {
       addonServiceIds: addonServiceIds,
     );
 
-    // 3) Cache update
-    _orders.insert(0, order);
-    _controller.add(_orders);
-
-    // 4) Realtime kuzatish
-    _subscribeToOrder(order.id);
+    // 3) API'dan qayta yuklash (local cache'ga qo'lda qo'shmaymiz)
+    await loadOrders();
 
     return order;
   }
@@ -141,29 +136,8 @@ class OrdersRepository {
   Future<void> cancelOrder(String orderId) async {
     await _api.cancelOrder(orderId);
     _unsubscribeFromOrder(orderId);
-    // Status'ni cancelled ga o'zgartiramiz (o'chirmaymiz)
-    final idx = _orders.indexWhere((o) => o.id == orderId);
-    if (idx >= 0) {
-      _orders[idx] = OrderModel(
-        id: _orders[idx].id,
-        status: AppConstants.statusCancelled,
-        carNumber: _orders[idx].carNumber,
-        carModel: _orders[idx].carModel,
-        totalAmount: _orders[idx].totalAmount,
-        paymentMethod: _orders[idx].paymentMethod,
-        paymentStatus: _orders[idx].paymentStatus,
-        source: _orders[idx].source,
-        scheduledAt: _orders[idx].scheduledAt,
-        createdAt: _orders[idx].createdAt,
-        completedAt: _orders[idx].completedAt,
-        branchId: _orders[idx].branchId,
-        branchName: _orders[idx].branchName,
-        branchAddress: _orders[idx].branchAddress,
-        serviceId: _orders[idx].serviceId,
-        serviceName: _orders[idx].serviceName,
-      );
-    }
-    _controller.add(_orders);
+    // API'dan qayta yuklash — local cache'ga qo'lda yozmaymiz
+    await loadOrders();
   }
 
   // ── Realtime ──────────────────────────────────────────────
