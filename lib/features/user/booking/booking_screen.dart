@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:wash_club/config/router/router.dart';
+import 'package:wash_club/core/theme/colors.dart';
 import '../../../core/theme/extensions/theme_extension.dart';
 import '../../../../../shared/services/client_session.dart';
 import '../../../../../shared/services/supabase_service.dart';
@@ -614,26 +615,19 @@ class _BranchStep extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // Placeholder image
+                // Branch image
                 Stack(
                   children: [
-                    Container(
-                      height: 140,
-                      decoration: BoxDecoration(
-                        borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(14)),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            colors.primary.withValues(alpha: 0.18),
-                            colors.primary.withValues(alpha: 0.04),
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(Icons.local_car_wash,
-                            color: colors.primary, size: 56),
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(14)),
+                      child: Image.asset(
+                        AppConstants.branchImages[i % AppConstants.branchImages.length],
+                        height: 140,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) =>
+                            _buildPlaceholder(colors),
                       ),
                     ),
                     Positioned(
@@ -688,6 +682,26 @@ class _BranchStep extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  static Widget _buildPlaceholder(ApparenceKitColors colors) {
+    return Container(
+      height: 140,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            colors.primary.withValues(alpha: 0.18),
+            colors.primary.withValues(alpha: 0.04),
+          ],
+        ),
+      ),
+      child: Center(
+        child:
+            Icon(Icons.local_car_wash, color: colors.primary, size: 56),
+      ),
     );
   }
 }

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/supabase_service.dart';
+import '../../../../shared/constants/app_constants.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -445,6 +446,16 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  Widget _branchPlaceholderIcon(ApparenceKitColors colors) {
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.primary.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(Icons.local_car_wash, color: colors.primary, size: 22),
+    );
+  }
+
   void _showBranchInfo(
       BuildContext context, BranchModel branch, ApparenceKitColors colors) {
     showModalBottomSheet(
@@ -473,15 +484,17 @@ class _MapScreenState extends State<MapScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: colors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: SizedBox(
+                      width: 44,
+                      height: 44,
+                      child: Image.asset(
+                        AppConstants.branchImages[_branches.indexOf(branch) % AppConstants.branchImages.length],
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _branchPlaceholderIcon(colors),
+                      ),
                     ),
-                    child: Icon(Icons.local_car_wash,
-                        color: colors.primary, size: 22),
                   ),
                   const SizedBox(width: 12),
                   Expanded(

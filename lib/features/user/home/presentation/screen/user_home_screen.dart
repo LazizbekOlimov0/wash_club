@@ -8,6 +8,7 @@ import '../../../../../shared/services/client_session.dart';
 import '../../../../../shared/services/branches_repository.dart';
 import '../../../../../shared/services/orders_repository.dart';
 import '../../../../../shared/services/supabase_service.dart';
+import '../../../../../shared/constants/app_constants.dart';
 
 class UserHomeScreen extends StatefulWidget {
   const UserHomeScreen({super.key});
@@ -91,6 +92,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Border? _cardBorder(ApparenceKitColors colors) =>
       _isLight ? Border.all(color: colors.divider, width: 1) : null;
+
+  Widget _branchPlaceholder(ApparenceKitColors colors) => Container(
+        height: 110,
+        decoration: BoxDecoration(
+          color: _isLight
+              ? colors.primary.withValues(alpha: 0.06)
+              : colors.grey1,
+        ),
+        child: Center(
+          child: Icon(Icons.local_car_wash, color: colors.info, size: 40),
+        ),
+      );
 
   String _greeting(BuildContext context) {
     final t = context.t;
@@ -448,13 +461,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final t = context.t;
     final actions = [
       {'icon': Icons.calendar_today_outlined, 'label': t.home.book,
-        'route': UserRoutePath.booking},
+        'route': UserRoutePath.booking, 'push': false},
       {'icon': Icons.history_outlined, 'label': t.home.history,
-        'route': UserRoutePath.orders},
+        'route': UserRoutePath.orders, 'push': false},
       {'icon': Icons.person_outline, 'label': t.profile.title,
-        'route': UserRoutePath.profile},
-      {'icon': Icons.help_outline, 'label': t.home.help,
-        'route': null},
+        'route': UserRoutePath.profile, 'push': false},
+      {'icon': Icons.map_outlined, 'label': t.home.map,
+        'route': UserRoutePath.map, 'push': true},
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -464,7 +477,12 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           return GestureDetector(
             onTap: () {
               final route = a['route'] as String?;
-              if (route != null) context.go(route);
+              if (route == null) return;
+              if (a['push'] == true) {
+                context.push(route);
+              } else {
+                context.go(route);
+              }
             },
             child: Column(
               children: [
@@ -581,20 +599,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 110,
-                        decoration: BoxDecoration(
-                          color: _isLight
-                              ? colors.primary.withValues(alpha: 0.06)
-                              : colors.grey1,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(16),
-                            topRight: Radius.circular(16),
-                          ),
+                      ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
                         ),
-                        child: Center(
-                          child: Icon(Icons.local_car_wash,
-                              color: colors.info, size: 40),
+                        child: Image.asset(
+                          AppConstants.branchImages[i % AppConstants.branchImages.length],
+                          height: 110,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              _branchPlaceholder(colors),
                         ),
                       ),
                       Padding(

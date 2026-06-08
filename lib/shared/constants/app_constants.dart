@@ -48,4 +48,11 @@ class AppConstants {
   static const String vehicleSedan   = 'sedan';
   static const String vehicleSuv     = 'suv';
   static const String vehicleMinivan = 'minivan';
+
+  // ── Branch assets ─────────────────────────────────────────
+  static const List<String> branchImages = [
+    'assets/image/branches/branch-1.jpg',
+    'assets/image/branches/branch-2.jpg',
+    'assets/image/branches/branch-3.jpg',
+  ];
 }

@@ -350,7 +350,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           decoration: InputDecoration(
             filled: true,
             fillColor: colors.surface,
-            hintText: '+998 90 123 45 67',
+            hintText: '90 123 45 67',
             hintStyle: TextStyle(color: colors.grey2, fontSize: 15),
             prefixText: '+998 ',
             prefixStyle: TextStyle(

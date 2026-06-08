@@ -49,6 +49,7 @@ flutter:
 
   assets:
     - assets/image/
+    - assets/image/branches/
 
 flutter_gen:
   output: lib/core/assets/
