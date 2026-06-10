@@ -130,6 +130,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           physics: const ClampingScrollPhysics(),
           children: [
             _buildHeader(context, colors),
+            const SizedBox(height: 16),
+            _buildPromoCards(context, colors),
             if (_activeOrders.isNotEmpty) ...[
               const SizedBox(height: 16),
               _buildActiveOrdersSection(context, colors),
@@ -880,4 +882,270 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ),
     );
   }
+}
+
+// user_home_screen.dart ichiga qo'shiladi
+
+// ── Promo Cards ──────────────────────────────────────────────────
+Widget _buildPromoCards(BuildContext context, ApparenceKitColors colors) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Column(
+      children: [
+        _buildMembershipCard(context, colors),
+        const SizedBox(height: 12),
+        _buildBookingPromoCard(context, colors),
+      ],
+    ),
+  );
+}
+
+Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [Color(0xFFFF6B1A), Color(0xFFFF4500)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Stack(
+      children: [
+        // "СПЕЦ. ЦЕНА" banner — top right
+        Positioned(
+          top: -20,
+          right: -20,
+          child: Transform.rotate(
+            angle: 0.785, // 45 deg
+            child: Container(
+              width: 100,
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              color: const Color(0xFFCC0000),
+              child: const Text(
+                'СПЕЦ. ЦЕНА',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Badge
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.25),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Icon(Icons.workspace_premium, color: Colors.white, size: 14),
+                  SizedBox(width: 6),
+                  Text(
+                    'WASHCLUB MEMBERSHIP',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            // Price
+            RichText(
+              text: const TextSpan(
+                children: [
+                  TextSpan(
+                    text: '499 000 ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  TextSpan(
+                    text: 'сум / мес',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '🔥  Спецпредложение — мойка каждый день по Ташкенту',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Button
+            Container(
+              width: double.infinity,
+              height: 48,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: TextButton(
+                onPressed: () {
+                  // TODO: membership sahifasiga o'tish
+                },
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text(
+                      'Подписаться',
+                      style: TextStyle(
+                        color: Color(0xFFFF4500),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(width: 6),
+                    Icon(Icons.chevron_right, color: Color(0xFFFF4500), size: 20),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
+  return GestureDetector(
+    onTap: () => context.go(UserRoutePath.booking),
+    child: Container(
+      width: double.infinity,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1A1A2E), Color(0xFF2D1B69)],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Background image
+            Image.asset(
+              AppConstants.branchImages[0], // yoki alohida promo rasm
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF1A1A2E), Color(0xFF4A2080)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: const Center(
+                  child: Icon(Icons.local_car_wash, color: Colors.white54, size: 60),
+                ),
+              ),
+            ),
+            // Dark overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.6),
+                    Colors.transparent,
+                  ],
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                ),
+              ),
+            ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    'TEZROQ',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.7),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Birinchi bronni qiling',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Bir necha qadamda yuvishni rejalashtiring',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 18, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Text(
+                          'Bron qilish',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(width: 6),
+                        Icon(Icons.arrow_forward, color: Colors.black, size: 16),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
 }

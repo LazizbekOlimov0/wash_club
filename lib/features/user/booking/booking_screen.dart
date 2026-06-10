@@ -508,6 +508,11 @@ class _BookingScreenState extends State<BookingScreen> {
                 ? _selectedAddons.remove(id)
                 : _selectedAddons.add(id);
           }),
+          selectedBranch: _selectedBranch,       // ← yangi
+          onChangeBranch: () => setState(() {    // ← yangi
+            _step = 0;
+            _selectedBranch = null;
+          }),
         );
       case 2:
         return _loadingSlots
@@ -768,6 +773,8 @@ class _BranchStep extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────
 // STEP 2 — SERVICE
 // ─────────────────────────────────────────────────────────────
+// booking_screen.dart ichidagi _ServiceStep klasini to'liq almashtiring
+
 class _ServiceStep extends StatelessWidget {
   final List<ServiceModel> mainServices;
   final List<ServiceModel> addonServices;
@@ -777,6 +784,8 @@ class _ServiceStep extends StatelessWidget {
   final bool hasRawServices;
   final ValueChanged<ServiceModel> onSelectService;
   final ValueChanged<String> onToggleAddon;
+  final BranchModel? selectedBranch;
+  final VoidCallback? onChangeBranch;
 
   const _ServiceStep({
     required this.mainServices,
@@ -787,13 +796,28 @@ class _ServiceStep extends StatelessWidget {
     required this.hasRawServices,
     required this.onSelectService,
     required this.onToggleAddon,
+    this.selectedBranch,
+    this.onChangeBranch,
   });
+
+  // Membership narxi — barcha xizmatlar shu narxga tushadi
+  static const int _membershipPrice = 120000;
+
+  /// Xizmat uchun chegirma bormi (membership narxidan qimmat bo'lsa)
+  bool _hasDiscount(ServiceModel s) {
+    final price = s.priceFor(vehicleCategory);
+    return price > _membershipPrice;
+  }
+
+  int _discountAmount(ServiceModel s) {
+    final price = s.priceFor(vehicleCategory);
+    return _hasDiscount(s) ? price - _membershipPrice : 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isLight = Theme.of(context).brightness == Brightness.light;
-    final cardBg = isLight ? colors.surface : colors.onPrimaryContainer;
 
     if (mainServices.isEmpty) {
       return Center(
@@ -808,69 +832,161 @@ class _ServiceStep extends StatelessWidget {
     }
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _label('ASOSIY XIZMAT', colors),
-          const SizedBox(height: 10),
-          ...mainServices.map((s) {
-            final isSelected = selectedService?.id == s.id;
-            final price = s.priceFor(vehicleCategory);
-            return GestureDetector(
-              onTap: () => onSelectService(s),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150),
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? colors.primary.withValues(alpha: isLight ? 0.08 : 0.15)
-                      : cardBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isSelected ? colors.primary : colors.divider,
-                    width: isSelected ? 2 : 1,
+          // ── Filial header ──────────────────────────────────
+          if (selectedBranch != null) ...[
+            Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 14),
+              decoration: BoxDecoration(
+                color: isLight
+                    ? colors.surface
+                    : colors.onPrimaryContainer,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: colors.divider),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'FILIAL',
+                          style: TextStyle(
+                            color: colors.grey2,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          selectedBranch!.name,
+                          style: TextStyle(
+                            color: colors.onBackground,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                child: Row(
-                  children: [
-                    Text(s.icon, style: const TextStyle(fontSize: 24)),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(s.name,
-                              style: TextStyle(
-                                  color: colors.onSurface,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600)),
-                          if (s.description.isNotEmpty)
-                            Text(s.description,
-                                style: TextStyle(
-                                    color: colors.grey2, fontSize: 12)),
-                        ],
+                  if (onChangeBranch != null)
+                    GestureDetector(
+                      onTap: onChangeBranch,
+                      child: Text(
+                        "O'zgartirish",
+                        style: TextStyle(
+                          color: colors.info,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ),
-                    Text(_formatPrice(price),
-                        style: TextStyle(
-                          color: isSelected ? colors.primary : colors.onSurface,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        )),
-                  ],
-                ),
+                ],
               ),
-            );
-          }),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // ── Promo banner ───────────────────────────────────
+          Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF8C00).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFFFF8C00).withValues(alpha: 0.35),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('✨',
+                    style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text:
+                          "Istalgan xizmat — atigi 120 000 so'mga",
+                          style: TextStyle(
+                            color: const Color(0xFFFF8C00),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        TextSpan(
+                          text:
+                          " bron qiling, narxidan qat'i nazar.",
+                          style: TextStyle(
+                            color: colors.onBackground
+                                .withValues(alpha: 0.7),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Main services — 2 column grid ──────────────────
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.85,
+            ),
+            itemCount: mainServices.length,
+            itemBuilder: (context, i) {
+              final s = mainServices[i];
+              return _ServiceCard(
+                service: s,
+                isSelected: selectedService?.id == s.id,
+                vehicleCategory: vehicleCategory,
+                membershipPrice: _membershipPrice,
+                hasDiscount: _hasDiscount(s),
+                discountAmount: _discountAmount(s),
+                isLight: isLight,
+                onTap: () => onSelectService(s),
+              );
+            },
+          ),
+
+          // ── Addons ─────────────────────────────────────────
           if (addonServices.isNotEmpty) ...[
-            const SizedBox(height: 20),
-            _label("QO'SHIMCHA", colors),
+            const SizedBox(height: 24),
+            Text(
+              "QO'SHIMCHA XIZMATLAR",
+              style: TextStyle(
+                color: colors.grey2,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.8,
+              ),
+            ),
             const SizedBox(height: 10),
             ...addonServices.map((a) {
               final isSelected = selectedAddons.contains(a.id);
+              final cardBg = isLight
+                  ? colors.surface
+                  : colors.onPrimaryContainer;
               return GestureDetector(
                 onTap: () => onToggleAddon(a.id),
                 child: AnimatedContainer(
@@ -880,11 +996,14 @@ class _ServiceStep extends StatelessWidget {
                       horizontal: 16, vertical: 14),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? colors.primary.withValues(alpha: isLight ? 0.06 : 0.12)
+                        ? colors.primary.withValues(
+                        alpha: isLight ? 0.06 : 0.12)
                         : cardBg,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
-                      color: isSelected ? colors.primary : colors.divider,
+                      color: isSelected
+                          ? colors.primary
+                          : colors.divider,
                       width: isSelected ? 2 : 1,
                     ),
                   ),
@@ -897,10 +1016,14 @@ class _ServiceStep extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: isSelected ? colors.primary : colors.grey2,
+                            color: isSelected
+                                ? colors.primary
+                                : colors.grey2,
                             width: 2,
                           ),
-                          color: isSelected ? colors.primary : Colors.transparent,
+                          color: isSelected
+                              ? colors.primary
+                              : Colors.transparent,
                         ),
                         child: isSelected
                             ? Icon(Icons.check,
@@ -914,19 +1037,25 @@ class _ServiceStep extends StatelessWidget {
                             Text(a.icon,
                                 style: const TextStyle(fontSize: 20)),
                             const SizedBox(width: 8),
-                            Text(a.name,
-                                style: TextStyle(
-                                    color: colors.onSurface,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500)),
+                            Text(
+                              a.name,
+                              style: TextStyle(
+                                color: colors.onSurface,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      Text('+${_formatPrice(a.priceFor(vehicleCategory))}',
-                          style: TextStyle(
-                              color: colors.info,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600)),
+                      Text(
+                        '+${_formatPrice(a.priceFor(vehicleCategory))}',
+                        style: TextStyle(
+                          color: colors.info,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -937,15 +1066,232 @@ class _ServiceStep extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _label(String text, dynamic colors) {
-    return Text(text,
-        style: TextStyle(
-            color: colors.grey2,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.8));
+// ── Service card widget ────────────────────────────────────────────
+class _ServiceCard extends StatelessWidget {
+  final ServiceModel service;
+  final bool isSelected;
+  final String vehicleCategory;
+  final int membershipPrice;
+  final bool hasDiscount;
+  final int discountAmount;
+  final bool isLight;
+  final VoidCallback onTap;
+
+  const _ServiceCard({
+    required this.service,
+    required this.isSelected,
+    required this.vehicleCategory,
+    required this.membershipPrice,
+    required this.hasDiscount,
+    required this.discountAmount,
+    required this.isLight,
+    required this.onTap,
+  });
+
+  // Icon background rangi — xizmat turiga qarab
+  Color _iconBg(BuildContext context) {
+    final colors = context.colors;
+    // Emoji icon'ga qarab rang tanlash
+    final icon = service.icon;
+    if (icon.contains('⚡') || icon.contains('🔥') || icon.contains('⚡️')) {
+      return const Color(0xFFFF8C00).withValues(alpha: 0.18);
+    }
+    if (icon.contains('💧') || icon.contains('🌊') || icon.contains('✨')) {
+      return colors.info.withValues(alpha: 0.15);
+    }
+    if (icon.contains('💎') || icon.contains('👑')) {
+      return const Color(0xFF22C55E).withValues(alpha: 0.18);
+    }
+    return colors.primary.withValues(alpha: 0.15);
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final originalPrice = service.priceFor(vehicleCategory);
+    final cardBg =
+    isLight ? colors.surface : colors.onPrimaryContainer;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? colors.primary.withValues(alpha: isLight ? 0.08 : 0.15)
+              : cardBg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: isSelected ? colors.primary : colors.divider,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Icon container
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: _iconBg(context),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      service.icon,
+                      style: const TextStyle(fontSize: 26),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                // Service name
+                Text(
+                  service.name,
+                  style: TextStyle(
+                    color: colors.onBackground,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (service.description.isNotEmpty) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    service.description,
+                    style:
+                    TextStyle(color: colors.grey2, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 8),
+                // Price row
+                if (hasDiscount) ...[
+                  // Eski narx — strikethrough
+                  Text(
+                    _formatPrice(originalPrice),
+                    style: TextStyle(
+                      color: colors.grey2,
+                      fontSize: 12,
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: colors.grey2,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        _formatPrice(membershipPrice),
+                        style: const TextStyle(
+                          color: Color(0xFFFF8C00),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    "Siz ${_formatPrice(discountAmount)} tejaysiz",
+                    style: const TextStyle(
+                      color: Color(0xFFFF8C00),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ] else ...[
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        _formatPrice(originalPrice),
+                        style: TextStyle(
+                          color: colors.onBackground,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                // Vaqt (duration) — agar service'da bo'lsa
+                if (service.durationMinutes != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.access_time,
+                          color: colors.grey2, size: 12),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${service.durationMinutes} daq',
+                        style: TextStyle(
+                          color: colors.grey2,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+
+            // Discount badge — top right
+            if (hasDiscount)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF8C00),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🔥',
+                          style: TextStyle(fontSize: 10)),
+                      const SizedBox(width: 2),
+                      Text(
+                        '-${_formatShortPrice(discountAmount)}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Price formatters ───────────────────────────────────────────────
+String _formatShortPrice(int sum) {
+  // "10 000 so'm" o'rniga "-10 000 so'm" badge uchun
+  final s = sum.toString();
+  final buf = StringBuffer();
+  for (int i = 0; i < s.length; i++) {
+    if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
+    buf.write(s[i]);
+  }
+  return "${buf.toString()} so'm";
 }
 
 // ─────────────────────────────────────────────────────────────

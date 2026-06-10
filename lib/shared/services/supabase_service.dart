@@ -21,7 +21,7 @@ class SupabaseService {
   Future<List<BranchModel>> getBranches() async {
     final response = await _client
         .from('branches')
-        .select('id,name,address,is_active,created_at,latitude,longitude,services(id,name,description,is_active,is_addon,icon,sort_order,service_prices(vehicle_category,price))')
+        .select('id,name,address,is_active,created_at,latitude,longitude,services(id,name,description,is_active,is_addon,icon,sort_order,duration_minutes,service_prices(vehicle_category,price))')
         .eq('is_active', true)
         .order('name');
 
@@ -37,7 +37,7 @@ class SupabaseService {
         .select('''
           id, name, address, is_active,
           services (
-            id, name, description, is_active, is_addon, icon, sort_order,
+            id, name, description, is_active, is_addon, icon, sort_order, duration_minutes,
             service_prices ( vehicle_category, price )
           )
         ''')
@@ -56,7 +56,7 @@ class SupabaseService {
   Future<List<ServiceModel>> getServices(String branchId) async {
     final response = await _client
         .from('services')
-        .select('id, name, description, is_active, is_addon, icon, sort_order, service_prices ( vehicle_category, price )')
+        .select('id, name, description, is_active, is_addon, icon, sort_order, duration_minutes, service_prices ( vehicle_category, price )')
         .eq('branch_id', branchId)
         .eq('is_active', true)
         .order('sort_order');
@@ -505,6 +505,7 @@ class ServiceModel {
   final bool isAddon;
   final String icon;
   final int sortOrder;
+  final int? durationMinutes;
   final Map<String, int> prices; // vehicle_category → price
 
   const ServiceModel({
@@ -515,6 +516,7 @@ class ServiceModel {
     required this.icon,
     required this.sortOrder,
     required this.prices,
+    this.durationMinutes,
   });
 
   int priceFor(String vehicleCategory) =>
@@ -538,6 +540,7 @@ class ServiceModel {
       icon:        j['icon'] as String? ?? '✨',
       sortOrder:   j['sort_order'] as int? ?? 0,
       prices:      prices,
+      durationMinutes: j['duration_minutes'] as int?,
     );
   }
 }

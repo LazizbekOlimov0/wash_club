@@ -22,6 +22,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _api = SupabaseService.instance;
 
   SubscriptionModel? _subscription;
+  List<TariffPlanModel> _tariffPlans = [];
   bool _subLoading = true;
 
   ApparenceKitColors get _c =>
@@ -51,9 +52,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
     try {
-      _subscription = await _api.getActiveSubscription(customerId);
+      final results = await Future.wait([
+        _api.getActiveSubscription(customerId),
+        _api.getTariffPlans(),
+      ]);
+      _subscription = results[0] as SubscriptionModel?;
+      _tariffPlans = results[1] as List<TariffPlanModel>;
     } catch (_) {
       _subscription = null;
+      _tariffPlans = [];
     } finally {
       _subLoading = false;
     }
@@ -370,49 +377,86 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: colors.onPrimaryContainer,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: colors.grey1, width: 1),
-        ),
-        child: Row(
-          children: [
-            const SizedBox(
-              width: 40,
-              height: 40,
-              child: Center(
-                child: Text('👑', style: TextStyle(fontSize: 22)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: GestureDetector(
+            onTap: () {
+              // TODO: membership sahifasiga
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 18, vertical: 16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF7B5EEA), Color(0xFF9B7BF5)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Text(
-                    'Obuna faol emas',
-                    style: TextStyle(
-                      color: colors.onBackground,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Wash Club bilan 70% tejang',
-                    style: TextStyle(color: colors.grey2, fontSize: 12),
+                  Icon(Icons.workspace_premium,
+                      color: Colors.white.withValues(alpha: 0.9),
+                      size: 24),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Premium obuna',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Faol emas · 70% gacha tejang',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            Icon(Icons.chevron_right, color: colors.grey2, size: 20),
-          ],
+          ),
         ),
-      ),
+        if (_tariffPlans.isNotEmpty) ...[
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Obuna rasmiylashtirish',
+              style: TextStyle(
+                color: colors.onBackground,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                for (int i = 0; i < _tariffPlans.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 10),
+                  _buildTariffCard(colors: colors, plan: _tariffPlans[i]),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -433,6 +477,135 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   String _formatDate(DateTime d) =>
       '${d.day}.${d.month.toString().padLeft(2, '0')}.${d.year}';
+
+  Widget _buildTariffCard({
+    required ApparenceKitColors colors,
+    required TariffPlanModel plan,
+  }) {
+    final bool isLight = Theme.of(context).brightness == Brightness.light;
+    final isBest = plan.isPopular;
+
+    return GestureDetector(
+      onTap: () {
+        // TODO: shu tarif bilan obuna qilish
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: BoxDecoration(
+          color: isBest
+              ? const Color(0xFFFFA500)
+              : (isLight ? colors.surface : colors.onPrimaryContainer),
+          borderRadius: BorderRadius.circular(16),
+          border: isBest
+              ? null
+              : Border.all(color: colors.divider, width: 1),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: isBest
+                    ? Colors.white.withValues(alpha: 0.25)
+                    : (isLight
+                    ? colors.primary.withValues(alpha: 0.08)
+                    : colors.grey1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child:
+                Text(plan.emoji, style: const TextStyle(fontSize: 22)),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        '${plan.durationMonths} oy',
+                        style: TextStyle(
+                          color: isBest
+                              ? Colors.white
+                              : colors.onBackground,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (isBest) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'Eng yaxshi narx',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'Limitless yuvish · ${_formatPriceShort(plan.perMonthPrice)} / oy',
+                    style: TextStyle(
+                      color: isBest
+                          ? Colors.white.withValues(alpha: 0.8)
+                          : colors.grey2,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  _formatPriceShort(plan.price),
+                  style: TextStyle(
+                    color: isBest ? Colors.white : colors.onBackground,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                Text(
+                  'jami',
+                  style: TextStyle(
+                    color: isBest
+                        ? Colors.white.withValues(alpha: 0.7)
+                        : colors.grey2,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatPriceShort(int sum) {
+    final s = sum.toString();
+    final buf = StringBuffer();
+    for (int i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
+      buf.write(s[i]);
+    }
+    return "${buf.toString()} so'm";
+  }
 
   Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
     final cars = _session.cars;
