@@ -83,6 +83,7 @@
     "title": "Notifications",
     "empty": "No notifications",
     "emptySubtitle": "New notifications will appear here",
+    "emptyHint": "Place an order and watch for status updates —\nnotifications will appear here",
     "markAllRead": "Mark all as read",
     "booking": "Booking",
     "promo": "Promo",

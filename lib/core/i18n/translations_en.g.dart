@@ -184,6 +184,7 @@ class TranslationsNotificationEn extends TranslationsNotificationUz {
 	@override String get title => 'Notifications';
 	@override String get empty => 'No notifications';
 	@override String get emptySubtitle => 'New notifications will appear here';
+	@override String get emptyHint => 'Place an order and watch for status updates —\nnotifications will appear here';
 	@override String get markAllRead => 'Mark all as read';
 	@override String get booking => 'Booking';
 	@override String get promo => 'Promo';

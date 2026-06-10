@@ -119,7 +119,7 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   Future<void> _loadServices(String branchId) async {
-    setState(() { _loadingServices = true; });
+    setState(() { _loadingServices = true; _selectedService = null; });
     try {
       _services = await _branchRepo.getServices(branchId);
     } finally {
@@ -189,15 +189,11 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   int get _totalPrice {
-    int total = _selectedService?.priceFor(
-      _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan,
-    ) ??
-        0;
+    int total = _selectedService?.priceFor(_vehicleCategory) ?? 0;
     for (final id in _selectedAddons) {
       final addon = _services.where((s) => s.id == id && s.isAddon).firstOrNull;
       if (addon != null) {
-        total += addon.priceFor(
-            _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan);
+        total += addon.priceFor(_vehicleCategory);
       }
     }
     if (_promoResult != null && _promoResult!.ok) {
@@ -227,25 +223,24 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   int get _basePrice {
-    int total = _selectedService?.priceFor(
-      _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan,
-    ) ??
-        0;
+    int total = _selectedService?.priceFor(_vehicleCategory) ?? 0;
     for (final id in _selectedAddons) {
       final addon = _services.where((s) => s.id == id && s.isAddon).firstOrNull;
       if (addon != null) {
-        total += addon.priceFor(
-            _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan);
+        total += addon.priceFor(_vehicleCategory);
       }
     }
     return total;
   }
 
+  String get _vehicleCategory =>
+      _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan;
+
   List<ServiceModel> get _mainServices =>
-      _services.where((s) => !s.isAddon).toList();
+      _services.where((s) => !s.isAddon && s.priceFor(_vehicleCategory) > 0).toList();
 
   List<ServiceModel> get _addonServices =>
-      _services.where((s) => s.isAddon).toList();
+      _services.where((s) => s.isAddon && s.priceFor(_vehicleCategory) > 0).toList();
 
   // ── Submit order ──────────────────────────────────────────
   Future<void> _submitOrder() async {
@@ -505,8 +500,8 @@ class _BookingScreenState extends State<BookingScreen> {
           addonServices:    _addonServices,
           selectedService:  _selectedService,
           selectedAddons:   _selectedAddons,
-          vehicleCategory:  _selectedCar?.vehicleCategory ??
-              AppConstants.vehicleSedan,
+          vehicleCategory:  _vehicleCategory,
+          hasRawServices:   _services.isNotEmpty,
           onSelectService:  (s) => setState(() => _selectedService = s),
           onToggleAddon:    (id) => setState(() {
             _selectedAddons.contains(id)
@@ -779,6 +774,7 @@ class _ServiceStep extends StatelessWidget {
   final ServiceModel? selectedService;
   final Set<String> selectedAddons;
   final String vehicleCategory;
+  final bool hasRawServices;
   final ValueChanged<ServiceModel> onSelectService;
   final ValueChanged<String> onToggleAddon;
 
@@ -788,6 +784,7 @@ class _ServiceStep extends StatelessWidget {
     required this.selectedService,
     required this.selectedAddons,
     required this.vehicleCategory,
+    required this.hasRawServices,
     required this.onSelectService,
     required this.onToggleAddon,
   });
@@ -800,8 +797,13 @@ class _ServiceStep extends StatelessWidget {
 
     if (mainServices.isEmpty) {
       return Center(
-        child: Text('Xizmatlar topilmadi',
-            style: TextStyle(color: colors.grey2)),
+        child: Text(
+          hasRawServices
+              ? 'Bu filialda pullik xizmatlar mavjud emas'
+              : 'Xizmatlar topilmadi',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: colors.grey2),
+        ),
       );
     }
 

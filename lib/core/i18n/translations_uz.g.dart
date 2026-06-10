@@ -398,6 +398,9 @@ class TranslationsNotificationUz {
 	/// uz: 'Yangi bildirishnomalar bu yerda ko'rsatiladi'
 	String get emptySubtitle => 'Yangi bildirishnomalar bu yerda ko\'rsatiladi';
 
+	/// uz: 'Buyurtma berib, status o'zgarishlarini kuting — bildirishnomalar shu yerda ko'rinadi'
+	String get emptyHint => 'Buyurtma berib, status o\'zgarishlarini kuting —\nbildirishnomalar shu yerda ko\'rinadi';
+
 	/// uz: 'Hammasini o'qildi deb belgilash'
 	String get markAllRead => 'Hammasini o\'qildi deb belgilash';
 

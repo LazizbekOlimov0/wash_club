@@ -84,50 +84,53 @@ class _NotificationScreenState extends State<NotificationScreen> {
             size: 18,
           ),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              t.notification.title,
-              style: TextStyle(
-                color: colors.onSurface,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.2,
-              ),
-            ),
-            if (_hasUnread) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: colors.error,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+        title: Flexible(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
                 child: Text(
-                  '${_items.where((n) => !n.isRead).length}',
+                  t.notification.title,
                   style: TextStyle(
-                    color: colors.onPrimary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
+                    color: colors.onSurface,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (_hasUnread) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: colors.error,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${_items.where((n) => !n.isRead).length}',
+                    style: TextStyle(
+                      color: colors.onPrimary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
-          ],
+          ),
         ),
         actions: [
           if (_hasUnread)
-            TextButton(
+            IconButton(
               onPressed: _markAllRead,
-              child: Text(
-                t.notification.markAllRead,
-                style: TextStyle(
-                  color: colors.primary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
+              tooltip: t.notification.markAllRead,
+              icon: Icon(
+                Icons.done_all_rounded,
+                color: colors.primary,
+                size: 22,
               ),
             ),
         ],
@@ -203,7 +206,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Buyurtma berib, status o\'zgarishlarini kuting —\nbildirishnomalar shu yerda ko\'rinadi',
+              t.notification.emptyHint,
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: colors.grey3.withValues(alpha: 0.7),
@@ -296,20 +299,24 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 children: [
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: iconColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          typeLabel,
-                          style: TextStyle(
-                            color: iconColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.2,
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: iconColor.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            typeLabel,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: iconColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: 0.2,
+                            ),
                           ),
                         ),
                       ),

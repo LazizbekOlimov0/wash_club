@@ -184,6 +184,7 @@ class TranslationsNotificationRu extends TranslationsNotificationUz {
 	@override String get title => 'Уведомления';
 	@override String get empty => 'Нет уведомлений';
 	@override String get emptySubtitle => 'Новые уведомления появятся здесь';
+	@override String get emptyHint => 'Оформите заказ и следите за статусом —\nуведомления появятся здесь';
 	@override String get markAllRead => 'Отметить все как прочитанные';
 	@override String get booking => 'Бронь';
 	@override String get promo => 'Акция';

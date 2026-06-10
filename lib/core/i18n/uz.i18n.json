@@ -106,6 +106,7 @@
     "title": "Bildirishnomalar",
     "empty": "Bildirishnomalar yo'q",
     "emptySubtitle": "Yangi bildirishnomalar bu yerda ko'rsatiladi",
+    "emptyHint": "Buyurtma berib, status o'zgarishlarini kuting —\nbildirishnomalar shu yerda ko'rinadi",
     "markAllRead": "Hammasini o'qildi deb belgilash",
     "booking": "Bron",
     "promo": "Aksiya",
