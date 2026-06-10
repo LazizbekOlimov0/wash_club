@@ -132,11 +132,10 @@ class OrdersRepository {
     return order;
   }
 
-  // ── Cancel order ──────────────────────────────────────────
+  // ── Cancel order (client-side) ────────────────────────────
   Future<void> cancelOrder(String orderId) async {
-    await _api.cancelOrder(orderId);
+    await _api.cancelMyOrder(orderId);
     _unsubscribeFromOrder(orderId);
-    // API'dan qayta yuklash — local cache'ga qo'lda yozmaymiz
     await loadOrders();
   }
 
@@ -189,6 +188,8 @@ class OrdersRepository {
   String _statusToTitle(String status) {
     switch (status) {
       case 'pending':   return 'Buyurtma qabul qilindi';
+      case 'pending_payment': return 'To\'lov kutilmoqda';
+      case 'queue':    return 'Navbatda';
       case 'washing':   return 'Yuvish boshlandi';
       case 'ready':     return 'Mashinangiz tayyor';
       case 'completed': return 'Buyurtma yakunlandi';

@@ -33,6 +33,8 @@ class AppConstants {
 
   // ── Order statuses ────────────────────────────────────────
   static const String statusPending   = 'pending';
+  static const String statusPendingPayment = 'pending_payment';
+  static const String statusQueued    = 'queue';
   static const String statusWashing   = 'washing';
   static const String statusReady     = 'ready';
   static const String statusCompleted = 'completed';

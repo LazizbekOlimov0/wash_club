@@ -6,7 +6,7 @@ import 'package:wash_club/core/i18n/translations.g.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../core/theme/providers/theme_provider.dart';
 import '../../../../shared/services/client_session.dart';
-import '../../../data/repositories/branches_repository.dart';
+import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/orders_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -67,13 +67,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _navItem(
               icon: Icons.person_outline,
               label: t.settings.editProfile,
-              onTap: () => _showEditProfile(context, t, colors),
+              onTap: () => context.push(UserRoutePath.editProfile),
               colors: colors,
             ),
             _navItem(
               icon: Icons.phone_outlined,
               label: t.settings.changePhone,
-              onTap: () => _showEditProfile(context, t, colors),
+              onTap: () => _showChangePhone(context, colors),
               colors: colors,
             ),
           ], colors),
@@ -556,10 +556,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) context.go(UserRoutePath.otpLogin);
   }
 
-  void _showEditProfile(
-      BuildContext context, dynamic t, ApparenceKitColors colors) {
+  void _showChangePhone(
+      BuildContext context, ApparenceKitColors colors) {
     final session = ClientSession.instance;
-    final nameCtrl  = TextEditingController(text: session.name);
     final phoneCtrl = TextEditingController(text: session.phone);
 
     showModalBottomSheet(
@@ -585,26 +584,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(t.settings.editProfile,
+            Text('Telefon raqamni o\'zgartirish',
                 style: TextStyle(
                     color: colors.onBackground,
                     fontSize: 17,
                     fontWeight: FontWeight.w700)),
             const SizedBox(height: 20),
-            TextField(
-              controller: nameCtrl,
-              style: TextStyle(color: colors.onSurface),
-              decoration: InputDecoration(
-                labelText: 'Ism',
-                labelStyle: TextStyle(color: colors.grey2),
-                filled: true,
-                fillColor: colors.onPrimaryContainer,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 12),
             TextField(
               controller: phoneCtrl,
               keyboardType: TextInputType.phone,
@@ -625,9 +610,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
               height: 52,
               child: ElevatedButton(
                 onPressed: () async {
+                  final newPhone = phoneCtrl.text.trim();
+                  if (newPhone.length < 9) return;
                   await session.saveProfile(
-                    name:  nameCtrl.text.trim(),
-                    phone: phoneCtrl.text.trim(),
+                    name: session.name ?? '',
+                    phone: newPhone,
                   );
                   Navigator.pop(ctx);
                   if (mounted) setState(() {});

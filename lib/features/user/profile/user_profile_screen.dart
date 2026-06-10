@@ -6,6 +6,7 @@ import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
+import '../../../../shared/services/supabase_service.dart';
 import '../../../../shared/services/orders_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,6 +19,10 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _session = ClientSession.instance;
   final _ordersRepo = OrdersRepository.instance;
+  final _api = SupabaseService.instance;
+
+  SubscriptionModel? _subscription;
+  bool _subLoading = true;
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -25,9 +30,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int get _completedCount =>
       _ordersRepo.cachedOrders.where((o) => o.isCompleted).length;
 
+  @override
+  void initState() {
+    super.initState();
+    _refresh();
+  }
+
   Future<void> _refresh() async {
-    await _ordersRepo.loadOrders();
+    await Future.wait([
+      _ordersRepo.loadOrders(),
+      _loadSubscription(),
+    ]);
     if (mounted) setState(() {});
+  }
+
+  Future<void> _loadSubscription() async {
+    final customerId = _session.customerId;
+    if (customerId == null) {
+      _subLoading = false;
+      return;
+    }
+    try {
+      _subscription = await _api.getActiveSubscription(customerId);
+    } catch (_) {
+      _subscription = null;
+    } finally {
+      _subLoading = false;
+    }
   }
 
   @override
@@ -260,6 +289,87 @@ class _ProfileScreenState extends State<ProfileScreen> {
       Container(width: 1, height: 32, color: colors.grey1);
 
   Widget _buildSubscriptionBanner(ApparenceKitColors colors) {
+    final sub = _subscription;
+    if (_subLoading) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: SizedBox(
+          height: 64,
+          child: Center(
+            child: CircularProgressIndicator(strokeWidth: 2, color: colors.info),
+          ),
+        ),
+      );
+    }
+
+    if (sub != null && sub.isValid) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colors.info, colors.primary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('👑', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          sub.name,
+                          style: TextStyle(
+                            color: colors.onPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        Text(
+                          '${sub.washesRemaining} ta yuvish qoldi',
+                          style: TextStyle(
+                            color: colors.onPrimary.withValues(alpha: 0.8),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: sub.progress,
+                  backgroundColor: colors.onPrimary.withValues(alpha: 0.3),
+                  valueColor: AlwaysStoppedAnimation(colors.onPrimary),
+                  minHeight: 4,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Amal qiladi: ${_formatDate(sub.expiresAt)}',
+                style: TextStyle(
+                  color: colors.onPrimary.withValues(alpha: 0.7),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
@@ -320,6 +430,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+
+  String _formatDate(DateTime d) =>
+      '${d.day}.${d.month.toString().padLeft(2, '0')}.${d.year}';
 
   Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
     final cars = _session.cars;

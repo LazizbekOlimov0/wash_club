@@ -6,8 +6,9 @@ import 'package:wash_club/core/theme/colors.dart';
 import '../../../core/theme/extensions/theme_extension.dart';
 import '../../../../../shared/services/client_session.dart';
 import '../../../../../shared/services/supabase_service.dart';
+import '../../../../../shared/services/promo_service.dart';
 import '../../../../../shared/constants/app_constants.dart';
-import '../../../data/repositories/branches_repository.dart';
+import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/orders_repository.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -48,15 +49,23 @@ class _BookingScreenState extends State<BookingScreen> {
   SavedCar? _selectedCar;
 
   final TextEditingController _promoController = TextEditingController();
+  PromoResult? _promoResult;
 
   // Time slots — API dan keladi
   List<String> _timeSlots = [];
   Set<String> _bookedSlots = {};
   bool _loadingSlots = false;
 
-  // Default time slots (00:00 - 23:00 har soat)
-  static List<String> get _defaultTimeSlots =>
-      List.generate(24, (h) => '${h.toString().padLeft(2, '0')}:00');
+  // Default time slots (09:00 - 23:00 har 30 daqiqa)
+  static List<String> get _defaultTimeSlots {
+    final slots = <String>[];
+    for (var h = 9; h < 23; h++) {
+      slots.add('${h.toString().padLeft(2, '0')}:00');
+      slots.add('${h.toString().padLeft(2, '0')}:30');
+    }
+    slots.add('23:00');
+    return slots;
+  }
 
   @override
   void initState() {
@@ -128,13 +137,18 @@ class _BookingScreenState extends State<BookingScreen> {
     });
 
     try {
-      final booked = await SupabaseService.instance.getBookedTimeSlots(
+      final counts = await SupabaseService.instance.getSlotCounts(
         branchId: _selectedBranch!.id,
         date: _selectedDate,
       );
       if (mounted) {
+        // Bitta slotda faqat 1 ta band bo'lsa to'liq band deb belgilaymiz
+        final booked = <String>{};
+        for (final entry in counts.entries) {
+          if (entry.value > 0) booked.add(entry.key);
+        }
         setState(() {
-          _bookedSlots = booked.toSet();
+          _bookedSlots = booked;
           _timeSlots = _defaultTimeSlots;
           _loadingSlots = false;
         });
@@ -175,6 +189,44 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   int get _totalPrice {
+    int total = _selectedService?.priceFor(
+      _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan,
+    ) ??
+        0;
+    for (final id in _selectedAddons) {
+      final addon = _services.where((s) => s.id == id && s.isAddon).firstOrNull;
+      if (addon != null) {
+        total += addon.priceFor(
+            _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan);
+      }
+    }
+    if (_promoResult != null && _promoResult!.ok) {
+      total = _promoResult!.total;
+    }
+    return total;
+  }
+
+  void _applyPromo() async {
+    final code = _promoController.text.trim();
+    if (code.isEmpty) {
+      setState(() => _promoResult = null);
+      return;
+    }
+    final result = await SupabaseService.instance.validatePromo(code, _basePrice);
+    if (mounted) {
+      setState(() => _promoResult = result);
+      if (!result.ok) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Promokod noto‘g‘ri: $code'),
+            backgroundColor: context.colors.error,
+          ),
+        );
+      }
+    }
+  }
+
+  int get _basePrice {
     int total = _selectedService?.priceFor(
       _selectedCar?.vehicleCategory ?? AppConstants.vehicleSedan,
     ) ??
@@ -229,11 +281,19 @@ class _BookingScreenState extends State<BookingScreen> {
         int.parse(timeParts[1]),
       );
 
+      final carModel = car.displayName;
+      final promoCode = _promoResult?.ok == true
+          ? _promoController.text.trim().toUpperCase()
+          : null;
+      final carModelWithPromo = promoCode != null
+          ? '$carModel|promo:$promoCode'
+          : carModel;
+
       final order = await _ordersRepo.createOrder(
         branchId:        _selectedBranch!.id,
         serviceId:       _selectedService!.id,
         carNumber:       car.plate,
-        carModel:        car.displayName,
+        carModel:        carModelWithPromo,
         totalAmount:     _totalPrice,
         paymentMethod:   _paymentMethod,
         vehicleCategory: car.vehicleCategory,
@@ -322,6 +382,7 @@ class _BookingScreenState extends State<BookingScreen> {
       _paymentMethod = AppConstants.paymentCard;
       _timeSlots = [];
       _bookedSlots = {};
+      _promoResult = null;
       _promoController.clear();
     });
   }
@@ -475,7 +536,10 @@ class _BookingScreenState extends State<BookingScreen> {
           selectedTime:   _selectedTime,
           paymentMethod:  _paymentMethod,
           totalPrice:     _totalPrice,
+          basePrice:      _basePrice,
           promoController: _promoController,
+          promoResult:    _promoResult,
+          onApplyPromo:   _applyPromo,
           cars:           _session.cars,
           selectedCar:    _selectedCar,
           onPaymentMethodChange: (m) =>
@@ -1055,7 +1119,10 @@ class _PaymentStep extends StatelessWidget {
   final String? selectedTime;
   final String paymentMethod;
   final int totalPrice;
+  final int basePrice;
   final TextEditingController promoController;
+  final PromoResult? promoResult;
+  final VoidCallback onApplyPromo;
   final List<SavedCar> cars;
   final SavedCar? selectedCar;
   final ValueChanged<String> onPaymentMethodChange;
@@ -1068,7 +1135,10 @@ class _PaymentStep extends StatelessWidget {
     required this.selectedTime,
     required this.paymentMethod,
     required this.totalPrice,
+    required this.basePrice,
     required this.promoController,
+    required this.promoResult,
+    required this.onApplyPromo,
     required this.cars,
     required this.selectedCar,
     required this.onPaymentMethodChange,
@@ -1243,7 +1313,7 @@ class _PaymentStep extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               GestureDetector(
-                onTap: () {},
+                onTap: onApplyPromo,
                 child: Container(
                   height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -1285,8 +1355,17 @@ class _PaymentStep extends StatelessWidget {
                 if (service != null) ...[
                   const SizedBox(height: 10),
                   _summaryRow(service!.name,
-                      _formatPrice(service!.priceFor(AppConstants.vehicleSedan)),
+                      _formatPrice(basePrice),
                       colors),
+                ],
+                if (promoResult != null && promoResult!.ok) ...[
+                  const SizedBox(height: 10),
+                  _summaryRow(
+                    'Promokod (${promoResult!.label})',
+                    '-${_formatPrice(promoResult!.discount)}',
+                    colors,
+                    isDiscount: true,
+                  ),
                 ],
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1324,17 +1403,17 @@ class _PaymentStep extends StatelessWidget {
             letterSpacing: 0.8));
   }
 
-  Widget _summaryRow(String label, String value, dynamic colors) {
+  Widget _summaryRow(String label, String value, dynamic colors, {bool isDiscount = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(color: colors.grey2, fontSize: 13)),
+        Text(label, style: TextStyle(color: isDiscount ? colors.success : colors.grey2, fontSize: 13)),
         Flexible(
           child: Text(value,
               style: TextStyle(
-                  color: colors.onSurface,
+                  color: isDiscount ? colors.success : colors.onSurface,
                   fontSize: 13,
-                  fontWeight: FontWeight.w500),
+                  fontWeight: isDiscount ? FontWeight.w600 : FontWeight.w500),
               textAlign: TextAlign.end),
         ),
       ],
