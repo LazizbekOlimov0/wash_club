@@ -19,6 +19,7 @@ class ClientSession {
   String? _phone;
   String? _password;
   String? _profileImage; // base64 encoded
+  String? _telegramChatId; // Telegram chat_id for QR notifications
   List<SavedCar> _cars = [];
 
   bool get isOnboarded =>
@@ -34,6 +35,7 @@ class ClientSession {
 
   String? get name  => _name;
   String? get phone => _phone;
+  String? get telegramChatId => _telegramChatId;
   List<SavedCar> get cars => List.unmodifiable(_cars);
 
   SavedCar? get primaryCar => _cars.isEmpty ? null : _cars.first;
@@ -54,6 +56,7 @@ class ClientSession {
     _phone    = prefs.getString(AppConstants.kClientPhone);
     _password     = prefs.getString(AppConstants.kClientPassword);
     _profileImage = prefs.getString(AppConstants.kClientProfileImage);
+    _telegramChatId = prefs.getString(AppConstants.kClientTelegramChatId);
 
     final carsJson = prefs.getString(AppConstants.kClientCars);
     if (carsJson != null) {
@@ -104,6 +107,12 @@ class ClientSession {
     await prefs.setString(AppConstants.kClientProfileImage, base64Image);
   }
 
+  Future<void> saveTelegramChatId(String chatId) async {
+    _telegramChatId = chatId;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.kClientTelegramChatId, chatId);
+  }
+
   Future<void> removeProfileImage() async {
     _profileImage = null;
     final prefs = await SharedPreferences.getInstance();
@@ -138,6 +147,7 @@ class ClientSession {
     _phone    = null;
     _password     = null;
     _profileImage = null;
+    _telegramChatId = null;
     _cars         = [];
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.kClientCustomerId);
@@ -145,6 +155,7 @@ class ClientSession {
     await prefs.remove(AppConstants.kClientPhone);
     await prefs.remove(AppConstants.kClientPassword);
     await prefs.remove(AppConstants.kClientProfileImage);
+    await prefs.remove(AppConstants.kClientTelegramChatId);
     await prefs.remove(AppConstants.kClientCars);
     // userId ni saqlaymiz — bu device identifier
   }

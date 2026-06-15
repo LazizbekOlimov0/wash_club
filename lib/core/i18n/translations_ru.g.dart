@@ -131,6 +131,16 @@ class TranslationsHomeRu extends TranslationsHomeUz {
 	@override String get help => 'Помощь';
 	@override String get noBookings => 'Нет броней';
 	@override String get standard => 'Стандарт';
+	@override String get newBooking => 'Новая бронь';
+	@override String get myOrders => 'Мои заказы';
+	@override String get qrSentToTelegram => 'QR также отправлен в Telegram';
+	@override String get membershipSpecialPrice => 'СПЕЦ. ЦЕНА';
+	@override String get membershipPrice => '499 000 сум / мес';
+	@override String get membershipOffer => '🔥  Спецпредложение — мойка каждый день по Ташкенту';
+	@override String get membershipSubscribe => 'Подписаться';
+	@override String get bookingPromoTitle => 'Сделайте первую бронь';
+	@override String get bookingPromoDesc => 'Запланируйте мойку в несколько шагов';
+	@override String get bookingPromoButton => 'Забронировать';
 }
 
 // Path: booking

@@ -57,7 +57,17 @@
     "history": "История",
     "help": "Помощь",
     "noBookings": "Нет броней",
-    "standard": "Стандарт"
+    "standard": "Стандарт",
+    "newBooking": "Новая бронь",
+    "myOrders": "Мои заказы",
+    "qrSentToTelegram": "QR также отправлен в Telegram",
+    "membershipSpecialPrice": "СПЕЦ. ЦЕНА",
+    "membershipPrice": "499 000 сум / мес",
+    "membershipOffer": "🔥  Спецпредложение — мойка каждый день по Ташкенту",
+    "membershipSubscribe": "Подписаться",
+    "bookingPromoTitle": "Сделайте первую бронь",
+    "bookingPromoDesc": "Запланируйте мойку в несколько шагов",
+    "bookingPromoButton": "Забронировать"
   },
   "booking": {
     "disabledTitle": "Бронирование временно остановлено",

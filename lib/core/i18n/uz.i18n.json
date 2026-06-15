@@ -80,7 +80,17 @@
     "history": "Tarix",
     "help": "Yordam",
     "noBookings": "Bronlar yo'q",
-    "standard": "Standart"
+    "standard": "Standart",
+    "newBooking": "Yangi bron",
+    "myOrders": "Buyurtmalarim",
+    "qrSentToTelegram": "QR Telegram botga ham yuborildi",
+    "membershipSpecialPrice": "SPETS. NARX",
+    "membershipPrice": "499 000 so'm / oy",
+    "membershipOffer": "🔥  Har kuni Toshkent bo'ylab bepul moyka",
+    "membershipSubscribe": "Obuna bo'lish",
+    "bookingPromoTitle": "Birinchi bronni qiling",
+    "bookingPromoDesc": "Bir necha qadamda yuvishni rejalashtiring",
+    "bookingPromoButton": "Bron qilish"
   },
   "booking": {
     "disabledTitle": "Bron qilish vaqtincha to'xtatilgan",

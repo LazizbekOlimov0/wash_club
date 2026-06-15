@@ -26,6 +26,7 @@ class AppConstants {
   static const String kClientCars    = 'client_cars';       // JSON list
   static const String kClientPassword = 'client_password';
   static const String kClientProfileImage = 'client_profile_image';
+  static const String kClientTelegramChatId = 'client_telegram_chat_id';
 
   // ── Order source ──────────────────────────────────────────
   static const String orderSourceClientApp = 'by_client_app';
@@ -34,8 +35,10 @@ class AppConstants {
   // ── Order statuses ────────────────────────────────────────
   static const String statusPending   = 'pending';
   static const String statusPendingPayment = 'pending_payment';
-  static const String statusQueued    = 'queue';
+  static const String statusQueued    = 'queued';
+  static const String statusConfirmed = 'confirmed';
   static const String statusWashing   = 'washing';
+  static const String statusDrying   = 'drying';
   static const String statusReady     = 'ready';
   static const String statusCompleted = 'completed';
   static const String statusCancelled = 'cancelled';
@@ -45,6 +48,8 @@ class AppConstants {
   static const String paymentCard  = 'card';
   static const String paymentClick = 'click';
   static const String paymentPayme = 'payme';
+  static const String paymentCardReceipt = 'card_receipt';
+  static const String paymentSubscription = 'subscription';
 
   // ── Vehicle categories ────────────────────────────────────
   static const String vehicleSedan   = 'sedan';
@@ -52,6 +57,9 @@ class AppConstants {
   static const String vehicleMinivan = 'minivan';
 
   // ── Branch assets ─────────────────────────────────────────
+  // ── Limits ───────────────────────────────────────────────
+  static const int dailyBookingLimit = 2;
+
   static const List<String> branchImages = [
     'assets/image/branches/branch-1.jpg',
     'assets/image/branches/branch-2.jpg',

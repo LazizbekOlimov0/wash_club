@@ -57,7 +57,17 @@
     "history": "History",
     "help": "Help",
     "noBookings": "No bookings",
-    "standard": "Standard"
+    "standard": "Standard",
+    "newBooking": "New booking",
+    "myOrders": "My orders",
+    "qrSentToTelegram": "QR also sent to Telegram",
+    "membershipSpecialPrice": "SPECIAL PRICE",
+    "membershipPrice": "499,000 UZS / month",
+    "membershipOffer": "🔥  Special offer — car wash every day in Tashkent",
+    "membershipSubscribe": "Subscribe",
+    "bookingPromoTitle": "Make your first booking",
+    "bookingPromoDesc": "Schedule a wash in a few steps",
+    "bookingPromoButton": "Book now"
   },
   "booking": {
     "disabledTitle": "Booking temporarily unavailable",

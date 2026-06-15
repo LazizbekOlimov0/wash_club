@@ -901,6 +901,7 @@ Widget _buildPromoCards(BuildContext context, ApparenceKitColors colors) {
 }
 
 Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
+  final t = context.t;
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.all(20),
@@ -912,22 +913,23 @@ Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
       ),
       borderRadius: BorderRadius.circular(20),
     ),
+    clipBehavior: Clip.antiAlias,
     child: Stack(
       children: [
-        // "СПЕЦ. ЦЕНА" banner — top right
+        // Special price banner — top right, diagonal cut
         Positioned(
-          top: -20,
-          right: -20,
+          top: -6,
+          right: -6,
           child: Transform.rotate(
             angle: 0.785, // 45 deg
             child: Container(
-              width: 100,
+              width: 95,
               padding: const EdgeInsets.symmetric(vertical: 4),
               color: const Color(0xFFCC0000),
-              child: const Text(
-                'СПЕЦ. ЦЕНА',
+              child: Text(
+                t.home.membershipSpecialPrice,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 9,
                   fontWeight: FontWeight.w800,
@@ -966,32 +968,18 @@ Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
             ),
             const SizedBox(height: 14),
             // Price
-            RichText(
-              text: const TextSpan(
-                children: [
-                  TextSpan(
-                    text: '499 000 ',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  TextSpan(
-                    text: 'сум / мес',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+            Text(
+              t.home.membershipPrice,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '🔥  Спецпредложение — мойка каждый день по Ташкенту',
-              style: TextStyle(
+            Text(
+              t.home.membershipOffer,
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
@@ -1008,21 +996,22 @@ Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
               ),
               child: TextButton(
                 onPressed: () {
-                  // TODO: membership sahifasiga o'tish
+                  // Navigate to profile (tariff plans / subscriptions)
+                  context.go(UserRoutePath.profile);
                 },
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Text(
-                      'Подписаться',
-                      style: TextStyle(
+                      t.home.membershipSubscribe,
+                      style: const TextStyle(
                         color: Color(0xFFFF4500),
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    SizedBox(width: 6),
-                    Icon(Icons.chevron_right, color: Color(0xFFFF4500), size: 20),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.chevron_right, color: Color(0xFFFF4500), size: 20),
                   ],
                 ),
               ),
@@ -1035,6 +1024,7 @@ Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
 }
 
 Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
+  final t = context.t;
   return GestureDetector(
     onTap: () => context.go(UserRoutePath.booking),
     child: Container(
@@ -1055,7 +1045,7 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
           children: [
             // Background image
             Image.asset(
-              AppConstants.branchImages[0], // yoki alohida promo rasm
+              AppConstants.branchImages[0],
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Container(
                 decoration: const BoxDecoration(
@@ -1100,9 +1090,9 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Birinchi bronni qiling',
-                    style: TextStyle(
+                  Text(
+                    t.home.bookingPromoTitle,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -1110,7 +1100,7 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Bir necha qadamda yuvishni rejalashtiring',
+                    t.home.bookingPromoDesc,
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontSize: 13,
@@ -1126,17 +1116,17 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
+                      children: [
                         Text(
-                          'Bron qilish',
-                          style: TextStyle(
+                          t.home.bookingPromoButton,
+                          style: const TextStyle(
                             color: Colors.black,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Icon(Icons.arrow_forward, color: Colors.black, size: 16),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.arrow_forward, color: Colors.black, size: 16),
                       ],
                     ),
                   ),

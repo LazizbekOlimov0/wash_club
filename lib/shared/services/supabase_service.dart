@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:wash_club/shared/services/promo_service.dart';
 import '../constants/app_constants.dart';
@@ -123,6 +124,8 @@ class SupabaseService {
 
   /// Yangi buyurtma yaratish (client app).
   /// source = 'by_client_app' — RLS da ruxsat berilgan.
+  /// hasSubscription = true → status 'queued' (darhol faol)
+  /// hasSubscription = false → status 'pending_payment' (chek yuklash kerak)
   Future<OrderModel> createOrder({
     required String branchId,
     required String serviceId,
@@ -130,27 +133,29 @@ class SupabaseService {
     required String carModel,
     required int totalAmount,
     required String paymentMethod,
+    required bool hasSubscription,
     String? customerId,
     DateTime? scheduledAt,
     List<String> addonServiceIds = const [],
+    String? bookingPaymentId,
   }) async {
     final data = <String, dynamic>{
       'branch_id':      branchId,
       'service_id':     serviceId,
       'car_number':     carNumber,
       'car_model':      carModel,
-      'total_amount':   totalAmount,
+      'total_amount':   hasSubscription ? 0 : totalAmount,
       'payment_method': paymentMethod,
       'source':         AppConstants.orderSourceClientApp,
-      'status':         AppConstants.statusQueued,
-      'payment_status': AppConstants.statusPending,
+      'status':         hasSubscription ? AppConstants.statusQueued : AppConstants.statusPendingPayment,
+      'payment_status': hasSubscription ? 'paid' : 'unpaid',
     };
 
     if (customerId != null) data['customer_id'] = customerId;
     if (scheduledAt != null) data['scheduled_at'] = scheduledAt.toIso8601String();
+    if (bookingPaymentId != null) data['booking_payment_id'] = bookingPaymentId;
 
     // Addon services: note olish uchun carModel ga append qilamiz (orders jadvalida addons yo'q)
-    // Yoki notes columniga yozamiz agar bor bo'lsa
     if (addonServiceIds.isNotEmpty) {
       data['car_model'] = '$carModel|addons:${addonServiceIds.join(",")}';
     }
@@ -170,33 +175,73 @@ class SupabaseService {
     return OrderModel.fromJson(inserted as Map<String, dynamic>);
   }
 
-  /// Foydalanuvchining buyurtmalari (telefon va car_number bo'yicha)
+  /// Foydalanuvchining buyurtmalari (telefon bo'yicha).
+  /// Web bilan mos: bir xil telefon raqamli barcha customer'larni oladi.
   Future<List<OrderModel>> getMyOrders({
     required String phone,
     required List<String> carNumbers,
   }) async {
-    if (carNumbers.isEmpty) return [];
+    if (phone.isEmpty && carNumbers.isEmpty) return [];
 
-    // Car numbers bo'yicha qidirish
-    final response = await _client
-        .from('orders')
-        .select('''
-          id, status, car_number, car_model, total_amount,
-          payment_method, payment_status, source,
-          scheduled_at, created_at, completed_at,
-          branch_id,
-          service_id,
-          branches ( name, address ),
-          services ( name, description )
-        ''')
-        .eq('source', AppConstants.orderSourceClientApp)
-        .inFilter('car_number', carNumbers)
-        .order('created_at', ascending: false)
-        .limit(50);
+    // customer_id listni phone bo'yicha olish
+    List<String> customerIds = [];
+    if (phone.isNotEmpty) {
+      final custResponse = await _client
+          .from('customers')
+          .select('id')
+          .eq('phone', phone);
+      customerIds = (custResponse as List<dynamic>)
+          .map((e) => (e as Map<String, dynamic>)['id'] as String)
+          .toList();
+    }
 
-    return (response as List<dynamic>)
-        .map((e) => OrderModel.fromJson(e as Map<String, dynamic>))
-        .toList();
+    // customer_id orqali so'rov
+    if (customerIds.isNotEmpty) {
+      final response = await _client
+          .from('orders')
+          .select('''
+            id, status, car_number, car_model, total_amount,
+            payment_method, payment_status, source,
+            scheduled_at, created_at, completed_at,
+            branch_id,
+            service_id,
+            branches ( name, address ),
+            services ( name, description )
+          ''')
+          .eq('source', AppConstants.orderSourceClientApp)
+          .inFilter('customer_id', customerIds)
+          .order('created_at', ascending: false)
+          .limit(100);
+
+      return (response as List<dynamic>)
+          .map((e) => OrderModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    // Fallback: car numbers orqali
+    if (carNumbers.isNotEmpty) {
+      final response = await _client
+          .from('orders')
+          .select('''
+            id, status, car_number, car_model, total_amount,
+            payment_method, payment_status, source,
+            scheduled_at, created_at, completed_at,
+            branch_id,
+            service_id,
+            branches ( name, address ),
+            services ( name, description )
+          ''')
+          .eq('source', AppConstants.orderSourceClientApp)
+          .inFilter('car_number', carNumbers)
+          .order('created_at', ascending: false)
+          .limit(100);
+
+      return (response as List<dynamic>)
+          .map((e) => OrderModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+
+    return [];
   }
 
   /// Buyurtmani bekor qilish — RPC orqali (SECURITY DEFINER).
@@ -322,26 +367,31 @@ class SupabaseService {
         .toList();
   }
 
-  /// Obuna sotib olish so‘rovi yaratish (chek yuklash)
-  Future<void> createMembershipPayment({
+  /// Obuna sotib olish yoki bir martalik bron to'lov so'rovi yaratish.
+  /// Returns the payment ID.
+  Future<String> createMembershipPayment({
     required String customerId,
     required String planName,
     required int planPrice,
     required int totalWashes,
     required String receiptUrl,
+    required String paymentType,
     String? branchId,
     int durationMonths = 1,
   }) async {
-    await _client.from('membership_payments').insert({
+    final response = await _client.from('membership_payments').insert({
       'customer_id': customerId,
       'branch_id': branchId,
       'plan_name': planName,
       'plan_price': planPrice,
       'total_washes': totalWashes,
       'receipt_url': receiptUrl,
+      'payment_type': paymentType,
       'status': 'pending',
       'duration_months': durationMonths,
-    });
+    }).select('id').single();
+
+    return (response as Map<String, dynamic>)['id'] as String;
   }
 
   /// Promo kodni backend orqali tekshirish (validate_promo RPC)
@@ -420,6 +470,108 @@ class SupabaseService {
   }
 
   // ─────────────────────────────────────────────────────────
+  // DAILY BOOKING LIMIT
+  // ─────────────────────────────────────────────────────────
+
+  /// Kunlik bron limitini tekshirish.
+  /// customerId bo'yicha shu sanadagi aktiv bronlar sonini qaytaradi.
+  Future<int> getDailyBookingCount({
+    required String customerId,
+    required DateTime date,
+  }) async {
+    final dayStart = DateTime(date.year, date.month, date.day).toUtc().toIso8601String();
+    final dayEnd = DateTime(date.year, date.month, date.day, 23, 59, 59).toUtc().toIso8601String();
+
+    final response = await _client
+        .from('orders')
+        .select('id')
+        .eq('customer_id', customerId)
+        .neq('status', 'cancelled')
+        .gte('scheduled_at', dayStart)
+        .lte('scheduled_at', dayEnd);
+
+    return (response as List<dynamic>).length;
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // RECEIPT UPLOAD (one-time booking)
+  // ─────────────────────────────────────────────────────────
+
+  /// Chek suratini Supabase Storage'ga yuklash.
+  /// Returns public URL.
+  Future<String> uploadReceipt({
+    required String customerId,
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final ext = fileName.split('.').last;
+    final filePath = '$customerId/${DateTime.now().millisecondsSinceEpoch}_booking.$ext';
+
+    await _client.storage.from('receipts').uploadBinary(
+      filePath,
+      fileBytes,
+      fileOptions: const FileOptions(contentType: 'image/jpeg'),
+    );
+
+    return _client.storage.from('receipts').getPublicUrl(filePath);
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // TELEGRAM NOTIFICATION (edge function)
+  // ─────────────────────────────────────────────────────────
+
+  /// Telegram bot orqali bron QR yuborish (edge function).
+  Future<void> sendBookingQrToTelegram({
+    required String chatId,
+    required String carNumber,
+    required String orderId,
+    String? serviceName,
+    String? branchName,
+    String? branchAddress,
+    double? branchLatitude,
+    double? branchLongitude,
+    String? customerLanguage,
+  }) async {
+    try {
+      await _client.functions.invoke(
+        'notify-telegram',
+        body: {
+          'chat_id': chatId,
+          'car_number': carNumber,
+          'order_id': orderId,
+          'message_type': 'booking_qr',
+          'service_name': serviceName,
+          'branch_name': branchName,
+          'branch_address': branchAddress,
+          'branch_latitude': branchLatitude,
+          'branch_longitude': branchLongitude,
+          'customer_language': customerLanguage,
+        },
+      );
+    } catch (_) {
+      // Best-effort — agar Telegram yuborilmagan bo'lsa ham bron davom etadi
+    }
+  }
+
+  /// Branch operatoriga yangi bron haqida xabar (fire-and-forget).
+  Future<void> notifyBranchOperator({
+    required String branchId,
+    required String message,
+  }) async {
+    try {
+      await _client.functions.invoke(
+        'notify-telegram',
+        body: {
+          'branch_id': branchId,
+          'custom_message': message,
+        },
+      );
+    } catch (_) {
+      // Best-effort — web ham shunaqa silent fail qiladi
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────
   // CUSTOMER PROFILE UPDATE
   // ─────────────────────────────────────────────────────────
 
@@ -444,7 +596,7 @@ class SupabaseService {
   // ─────────────────────────────────────────────────────────
 
   /// Mijoz o'zi buyurtmani bekor qilishi.
-  /// Faqat 'pending_payment' yoki 'queue' statusidagi orderlar uchun.
+  /// Faqat 'pending_payment' yoki 'queued' statusidagi orderlar uchun.
   Future<void> cancelMyOrder(String orderId) async {
     await _client
         .from('orders')
@@ -453,7 +605,8 @@ class SupabaseService {
           'payment_status': 'cancelled',
         })
         .eq('id', orderId)
-        .eq('source', AppConstants.orderSourceClientApp);
+        .eq('source', AppConstants.orderSourceClientApp)
+        .inFilter('status', ['pending_payment', 'queued']);
   }
 }
 
@@ -611,19 +764,23 @@ class OrderModel {
 
   bool get isPending    => status == AppConstants.statusPending || status == AppConstants.statusPendingPayment;
   bool get isQueued     => status == AppConstants.statusQueued;
+  bool get isConfirmed  => status == AppConstants.statusConfirmed;
   bool get isWashing    => status == AppConstants.statusWashing;
+  bool get isDrying     => status == AppConstants.statusDrying;
   bool get isReady      => status == AppConstants.statusReady;
   bool get isCompleted  => status == AppConstants.statusCompleted;
   bool get isCancelled  => status == AppConstants.statusCancelled;
-  bool get isActive     => isPending || isQueued || isWashing || isReady;
-  bool get canCancel    => isPending || isQueued;
+  bool get isActive     => isPending || isQueued || isConfirmed || isWashing || isDrying || isReady;
+  bool get canCancel    => status == AppConstants.statusPendingPayment || status == AppConstants.statusQueued;
 
   String get statusLabel {
     switch (status) {
       case 'pending':   return 'Kutilmoqda';
       case 'pending_payment': return 'To\'lov kutilmoqda';
-      case 'queue':    return 'Navbatda';
+      case 'queued':    return 'Tasdiqlangan';
+      case 'confirmed': return 'QR skanerlangan';
       case 'washing':   return 'Yuvilmoqda';
+      case 'drying':    return 'Quritilmoqda';
       case 'ready':     return 'Tayyor';
       case 'completed': return 'Bajarildi';
       case 'cancelled': return 'Bekor qilindi';

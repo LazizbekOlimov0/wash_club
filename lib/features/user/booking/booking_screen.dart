@@ -1,8 +1,11 @@
 import 'dart:developer';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/theme/colors.dart';
+import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../core/theme/extensions/theme_extension.dart';
 import '../../../../../shared/services/client_session.dart';
 import '../../../../../shared/services/supabase_service.dart';
@@ -10,6 +13,7 @@ import '../../../../../shared/services/promo_service.dart';
 import '../../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/orders_repository.dart';
+import 'package:image_picker/image_picker.dart';
 
 // ─────────────────────────────────────────────────────────────
 // BOOKING SCREEN — 4 qadam, real Supabase data
@@ -50,6 +54,15 @@ class _BookingScreenState extends State<BookingScreen> {
 
   final TextEditingController _promoController = TextEditingController();
   PromoResult? _promoResult;
+
+  // Subscription detection
+  bool _checkingSubscription = false;
+  bool _hasSubscription = false;
+
+  // Receipt upload (one-time booking)
+  Uint8List? _receiptBytes;
+  String? _receiptFileName;
+  final ImagePicker _imagePicker = ImagePicker();
 
   // Time slots — API dan keladi
   List<String> _timeSlots = [];
@@ -183,7 +196,8 @@ class _BookingScreenState extends State<BookingScreen> {
       case 0: return _selectedBranch != null;
       case 1: return _selectedService != null;
       case 2: return _selectedTime != null;
-      case 3: return _selectedCar != null || _session.isOnboarded;
+      case 3: return (_selectedCar != null || _session.cars.isNotEmpty) &&
+                    (_hasSubscription || _receiptBytes != null);
       default: return false;
     }
   }
@@ -247,7 +261,7 @@ class _BookingScreenState extends State<BookingScreen> {
     if (_submitting) return;
     if (_selectedBranch == null || _selectedService == null || _selectedTime == null) return;
 
-    // Car check - agar mashina yo'q bo'lsa addCar'ga o'tish
+    // Car check
     if (_selectedCar == null && _session.cars.isEmpty) {
       await context.push(UserRoutePath.addCar);
       if (mounted) {
@@ -262,19 +276,88 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
+    if (!mounted) return;
     setState(() => _submitting = true);
 
     try {
       final car = _selectedCar ?? _session.cars.first;
 
       // scheduledAt hisoblash
-      final now = _selectedDate;
       final timeParts = _selectedTime!.split(':');
       final scheduledAt = DateTime(
-        now.year, now.month, now.day,
-        int.parse(timeParts[0]),
-        int.parse(timeParts[1]),
+        _selectedDate.year, _selectedDate.month, _selectedDate.day,
+        int.parse(timeParts[0]), int.parse(timeParts[1]),
       );
+
+      // Past-time validation
+      if (scheduledAt.isBefore(DateTime.now())) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text("O'tib ketgan vaqtni tanlash mumkin emas"),
+              backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
+            ),
+          );
+        }
+        setState(() => _submitting = false);
+        return;
+      }
+
+      // Check subscription
+      final customerId = _session.customerId;
+      if (customerId != null && !_checkingSubscription) {
+        setState(() => _checkingSubscription = true);
+        try {
+          final sub = await SupabaseService.instance.getActiveSubscription(customerId);
+          _hasSubscription = sub != null && sub.isValid;
+        } catch (_) {
+          _hasSubscription = false;
+        }
+        if (mounted) setState(() => _checkingSubscription = false);
+      }
+
+      // Daily limit check
+      if (customerId != null) {
+        final count = await SupabaseService.instance.getDailyBookingCount(
+          customerId: customerId,
+          date: scheduledAt,
+        );
+        if (count >= AppConstants.dailyBookingLimit) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Kunlik bron limitiga yetdingiz (${AppConstants.dailyBookingLimit} ta)'),
+                backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
+              ),
+            );
+          }
+          setState(() => _submitting = false);
+          return;
+        }
+      }
+
+      // Receipt upload for one-time booking
+      String? receiptUrl;
+      if (!_hasSubscription && _receiptBytes == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Iltimos, to\'lov cheki suratini yuklang'),
+              backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
+            ),
+          );
+        }
+        setState(() => _submitting = false);
+        return;
+      }
+
+      if (!_hasSubscription && _receiptBytes != null && customerId != null) {
+        receiptUrl = await SupabaseService.instance.uploadReceipt(
+          customerId: customerId,
+          fileBytes: _receiptBytes!,
+          fileName: _receiptFileName ?? 'receipt.jpg',
+        );
+      }
 
       final carModel = car.displayName;
       final promoCode = _promoResult?.ok == true
@@ -284,16 +367,23 @@ class _BookingScreenState extends State<BookingScreen> {
           ? '$carModel|promo:$promoCode'
           : carModel;
 
+      final branchName = _selectedBranch?.name;
+
       final order = await _ordersRepo.createOrder(
-        branchId:        _selectedBranch!.id,
-        serviceId:       _selectedService!.id,
-        carNumber:       car.plate,
-        carModel:        carModelWithPromo,
-        totalAmount:     _totalPrice,
-        paymentMethod:   _paymentMethod,
-        vehicleCategory: car.vehicleCategory,
-        scheduledAt:     scheduledAt,
-        addonServiceIds: _selectedAddons.toList(),
+        branchId:         _selectedBranch!.id,
+        serviceId:        _selectedService!.id,
+        carNumber:        car.plate,
+        carModel:         carModelWithPromo,
+        totalAmount:      _totalPrice,
+        paymentMethod:    _paymentMethod,
+        vehicleCategory:  car.vehicleCategory,
+        scheduledAt:      scheduledAt,
+        addonServiceIds:  _selectedAddons.toList(),
+        hasSubscription:  _hasSubscription,
+        receiptUrl:       receiptUrl,
+        promoCode:        promoCode,
+        branchName:       branchName,
+        serviceName:      _selectedService?.name,
       );
 
       if (mounted) {
@@ -305,7 +395,7 @@ class _BookingScreenState extends State<BookingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Xatolik: ${e.toString()}'),
-            backgroundColor: context.colors.error,
+            backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
           ),
         );
       }
@@ -314,51 +404,198 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  void _pickReceipt() async {
+    final picked = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+    if (picked != null) {
+      final bytes = await picked.readAsBytes();
+      if (bytes.length > 5 * 1024 * 1024) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Fayl 5MB dan kichik bo\'lishi kerak'),
+              backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
+            ),
+          );
+        }
+        return;
+      }
+      setState(() {
+        _receiptBytes = bytes;
+        _receiptFileName = picked.name;
+      });
+    }
+  }
+
   void _showSuccessDialog(OrderModel order) {
+    final isMember = _hasSubscription && order.id.isNotEmpty;
+    final colors = Theme.of(context).extension<ApparenceKitColors>()!;
+    final t = context.t; // i18n extension
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: context.colors.onPrimaryContainer,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('✅', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 16),
-            Text(
-              'Buyurtma tasdiqlandi!',
-              style: TextStyle(
-                color: context.colors.onBackground,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+          backgroundColor: colors.onPrimaryContainer,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Icon
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: isMember ? colors.success.withValues(alpha: 0.15) : colors.warning.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  isMember ? Icons.qr_code_2 : Icons.check_circle_outline,
+                  color: isMember ? colors.success : colors.warning,
+                  size: 34,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${order.branchName ?? _selectedBranch?.name ?? ''}\n$_selectedTime · ${_formatDate(_selectedDate)}',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: context.colors.grey2, fontSize: 14),
+              const SizedBox(height: 16),
+              Text(
+                isMember ? 'Bron qabul qilindi!' : 'Bron yuborildi!',
+                style: TextStyle(
+                  color: colors.onBackground,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                isMember
+                    ? "Moykaga kelganda ushbu QR kodni CRM'dagi QR Scan orqali skaner qildiring."
+                    : 'Chek tasdiqlangandan so\'ng broningiz faollashadi.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: colors.grey2, fontSize: 13),
+              ),
+
+              // QR Code (member only)
+              if (isMember) ...[
+                const SizedBox(height: 16),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: colors.divider),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: QrImageView(
+                    data: order.id,
+                    version: QrVersions.auto,
+                    size: 180,
+                    backgroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  t.home.qrSentToTelegram,
+                  style: TextStyle(
+                    color: colors.success,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 12),
+
+              // Booking details
+              Container(
+                decoration: BoxDecoration(
+                  color: colors.onPrimaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: colors.divider),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  children: [
+                    _detailRow(colors, 'Filial', _selectedBranch?.name ?? '—'),
+                    _detailRow(colors, 'Xizmat', _selectedService?.name ?? 'Yuvish'),
+                    _detailRow(colors, 'Mashina', _selectedCar?.plate ?? _session.cars.first.plate),
+                    _detailRow(colors, 'Vaqt', '$_selectedTime · ${_formatDate(_selectedDate)}'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _resetState();
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: colors.info,
+                        side: BorderSide(color: colors.info),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(t.home.newBooking, style: const TextStyle(fontSize: 13)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _resetState();
+                        context.go(UserRoutePath.orders);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.info,
+                        foregroundColor: colors.onPrimary,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(t.home.myOrders, style: const TextStyle(fontSize: 13)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
-        actions: [
+    );
+  }
+
+  Widget _detailRow(ApparenceKitColors colors, String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        children: [
           SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                _resetState();
-                context.go(UserRoutePath.orders);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.colors.info,
-                foregroundColor: context.colors.onPrimary,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+            width: 60,
+            child: Text(label,
+              style: TextStyle(color: colors.grey2, fontSize: 12)),
+          ),
+          Expanded(
+            child: Text(value,
+              style: TextStyle(
+                color: colors.onBackground,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
               ),
-              child: const Text('Buyurtmalarimga o\'tish'),
             ),
           ),
         ],
@@ -379,6 +616,9 @@ class _BookingScreenState extends State<BookingScreen> {
       _bookedSlots = {};
       _promoResult = null;
       _promoController.clear();
+      _receiptBytes = null;
+      _receiptFileName = null;
+      _hasSubscription = false;
     });
   }
 
@@ -545,6 +785,9 @@ class _BookingScreenState extends State<BookingScreen> {
           onPaymentMethodChange: (m) =>
               setState(() => _paymentMethod = m),
           onCarSelect:    (car) => setState(() => _selectedCar = car),
+          hasSubscription: _hasSubscription,
+          receiptBytes:   _receiptBytes,
+          onPickReceipt:  _pickReceipt,
         );
       default:
         return const SizedBox();
@@ -1475,6 +1718,9 @@ class _PaymentStep extends StatelessWidget {
   final SavedCar? selectedCar;
   final ValueChanged<String> onPaymentMethodChange;
   final ValueChanged<SavedCar> onCarSelect;
+  final bool hasSubscription;
+  final Uint8List? receiptBytes;
+  final VoidCallback onPickReceipt;
 
   const _PaymentStep({
     required this.branch,
@@ -1491,6 +1737,9 @@ class _PaymentStep extends StatelessWidget {
     required this.selectedCar,
     required this.onPaymentMethodChange,
     required this.onCarSelect,
+    this.hasSubscription = false,
+    this.receiptBytes,
+    required this.onPickReceipt,
   });
 
   @override
@@ -1518,6 +1767,75 @@ class _PaymentStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Subscription status
+          if (hasSubscription)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.success.withValues(alpha: isLight ? 0.08 : 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.success.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.verified, color: colors.success, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Obuna orqali — bepul',
+                    style: TextStyle(
+                      color: colors.success,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          if (hasSubscription) const SizedBox(height: 20),
+
+          // Receipt upload (one-time booking)
+          if (!hasSubscription) ...[
+            _sectionLabel("TO'LOV CHEKI", colors),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: onPickReceipt,
+              child: Container(
+                width: double.infinity,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: receiptBytes != null ? colors.success : colors.divider,
+                    width: receiptBytes != null ? 2 : 1,
+                  ),
+                ),
+                child: receiptBytes != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.memory(receiptBytes!, fit: BoxFit.cover),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.upload_file_outlined, color: colors.grey2, size: 32),
+                          const SizedBox(height: 8),
+                          Text(
+                            'To\'lov cheki suratini yuklang',
+                            style: TextStyle(color: colors.grey2, fontSize: 13),
+                          ),
+                          Text(
+                            'Max 5MB',
+                            style: TextStyle(color: colors.grey3, fontSize: 11),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
+
           // Car selection (agar session'da mashina bor bo'lsa)
           if (cars.isNotEmpty) ...[
             _sectionLabel("MASHINA", colors),

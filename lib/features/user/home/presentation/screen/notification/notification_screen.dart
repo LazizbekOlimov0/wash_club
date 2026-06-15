@@ -84,8 +84,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
             size: 18,
           ),
         ),
-        title: Flexible(
-          child: Row(
+        title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Flexible(
@@ -121,7 +120,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
               ],
             ],
           ),
-        ),
         actions: [
           if (_hasUnread)
             IconButton(

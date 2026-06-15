@@ -310,6 +310,36 @@ class TranslationsHomeUz {
 
 	/// uz: 'Standart'
 	String get standard => 'Standart';
+
+	/// uz: 'Yangi bron'
+	String get newBooking => 'Yangi bron';
+
+	/// uz: 'Buyurtmalarim'
+	String get myOrders => 'Buyurtmalarim';
+
+	/// uz: 'QR Telegram botga ham yuborildi'
+	String get qrSentToTelegram => 'QR Telegram botga ham yuborildi';
+
+	/// uz: 'SPETS. NARX'
+	String get membershipSpecialPrice => 'SPETS. NARX';
+
+	/// uz: '499 000 so'm / oy'
+	String get membershipPrice => '499 000 so\'m / oy';
+
+	/// uz: '🔥 Har kuni Toshkent bo'ylab bepul moyka'
+	String get membershipOffer => '🔥  Har kuni Toshkent bo\'ylab bepul moyka';
+
+	/// uz: 'Obuna bo'lish'
+	String get membershipSubscribe => 'Obuna bo\'lish';
+
+	/// uz: 'Birinchi bronni qiling'
+	String get bookingPromoTitle => 'Birinchi bronni qiling';
+
+	/// uz: 'Bir necha qadamda yuvishni rejalashtiring'
+	String get bookingPromoDesc => 'Bir necha qadamda yuvishni rejalashtiring';
+
+	/// uz: 'Bron qilish'
+	String get bookingPromoButton => 'Bron qilish';
 }
 
 // Path: booking

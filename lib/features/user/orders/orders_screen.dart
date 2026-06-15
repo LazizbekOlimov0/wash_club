@@ -615,7 +615,7 @@ class _OrderCard extends StatelessWidget {
   }
 
   void _showQrDialog(BuildContext context) {
-    final qrData = 'washclub:order:${order.id}';
+    final qrData = order.id;
     showDialog(
       context: context,
       builder: (ctx) {

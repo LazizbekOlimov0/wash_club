@@ -131,6 +131,16 @@ class TranslationsHomeEn extends TranslationsHomeUz {
 	@override String get help => 'Help';
 	@override String get noBookings => 'No bookings';
 	@override String get standard => 'Standard';
+	@override String get newBooking => 'New booking';
+	@override String get myOrders => 'My orders';
+	@override String get qrSentToTelegram => 'QR also sent to Telegram';
+	@override String get membershipSpecialPrice => 'SPECIAL PRICE';
+	@override String get membershipPrice => '499,000 UZS / month';
+	@override String get membershipOffer => '🔥  Special offer — car wash every day in Tashkent';
+	@override String get membershipSubscribe => 'Subscribe';
+	@override String get bookingPromoTitle => 'Make your first booking';
+	@override String get bookingPromoDesc => 'Schedule a wash in a few steps';
+	@override String get bookingPromoButton => 'Book now';
 }
 
 // Path: booking

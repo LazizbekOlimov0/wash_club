@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/client_session.dart';
+import '../constants/app_constants.dart';
 
 /// Notifikatsiya turi
 enum NotifType { booking, promo, system }
@@ -97,8 +98,13 @@ class OrdersRepository {
     required int totalAmount,
     required String paymentMethod,
     required String vehicleCategory,
+    required bool hasSubscription,
     DateTime? scheduledAt,
     List<String> addonServiceIds = const [],
+    String? receiptUrl,
+    String? promoCode,
+    String? branchName,
+    String? serviceName,
   }) async {
     // 1) Customer upsert
     CustomerModel? customer;
@@ -113,20 +119,59 @@ class OrdersRepository {
       );
     }
 
+    String? bookingPaymentId;
+    if (!hasSubscription && receiptUrl != null && customer != null) {
+      // One-time booking: create membership_payment first
+      final promoLabel = promoCode != null ? 'Bir martalik bron ($promoCode)' : 'Bir martalik bron';
+      bookingPaymentId = await _api.createMembershipPayment(
+        customerId: customer.id,
+        branchId: branchId,
+        planName: promoLabel,
+        planPrice: totalAmount,
+        receiptUrl: receiptUrl,
+        paymentType: 'one_time_booking',
+        totalWashes: 1,
+        durationMonths: 0,
+      );
+    }
+
     // 2) Order yaratish
     final order = await _api.createOrder(
-      branchId:       branchId,
-      serviceId:      serviceId,
-      carNumber:      carNumber,
-      carModel:       carModel,
-      totalAmount:    totalAmount,
-      paymentMethod:  paymentMethod,
-      customerId:     customer?.id,
-      scheduledAt:    scheduledAt,
-      addonServiceIds: addonServiceIds,
+      branchId:         branchId,
+      serviceId:        serviceId,
+      carNumber:        carNumber,
+      carModel:         carModel,
+      totalAmount:      totalAmount,
+      paymentMethod:    hasSubscription ? AppConstants.paymentSubscription : AppConstants.paymentCardReceipt,
+      hasSubscription:  hasSubscription,
+      customerId:       customer?.id,
+      scheduledAt:      scheduledAt,
+      addonServiceIds:  addonServiceIds,
+      bookingPaymentId: bookingPaymentId,
     );
 
-    // 3) API'dan qayta yuklash (local cache'ga qo'lda qo'shmaymiz)
+    // 3) Telegram QR yuborish (faqat member bron uchun)
+    if (hasSubscription && order.id.isNotEmpty) {
+      final telegramChatId = _session.telegramChatId;
+      if (telegramChatId != null && telegramChatId.isNotEmpty) {
+        _api.sendBookingQrToTelegram(
+          chatId: telegramChatId,
+          carNumber: carNumber,
+          orderId: order.id,
+          serviceName: serviceName,
+          branchName: branchName,
+        );
+      }
+    }
+
+    // 4) Branch operator notification (fire-and-forget)
+    _api.notifyBranchOperator(
+      branchId: branchId,
+      message: '📱 Yangi bron (Ilova)${hasSubscription ? ' · Obuna' : ' · 1 martalik chek'}\n'
+          '🚗 $carNumber${carModel.isNotEmpty ? ' · $carModel' : ''}',
+    );
+
+    // 5) API'dan qayta yuklash
     await loadOrders();
 
     return order;
@@ -189,8 +234,10 @@ class OrdersRepository {
     switch (status) {
       case 'pending':   return 'Buyurtma qabul qilindi';
       case 'pending_payment': return 'To\'lov kutilmoqda';
-      case 'queue':    return 'Navbatda';
+      case 'queued':    return 'Bron tasdiqlandi';
+      case 'confirmed': return 'QR skanerlangani';
       case 'washing':   return 'Yuvish boshlandi';
+      case 'drying':    return 'Quritish boshlandi';
       case 'ready':     return 'Mashinangiz tayyor';
       case 'completed': return 'Buyurtma yakunlandi';
       case 'cancelled': return 'Buyurtma bekor qilindi';
