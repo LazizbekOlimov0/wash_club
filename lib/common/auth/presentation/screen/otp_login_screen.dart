@@ -22,12 +22,10 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
   late Animation<Offset> _slideAnim;
 
   final _phoneController = TextEditingController();
-  final _codeController = TextEditingController();
-  final _nameController = TextEditingController();
 
   bool _loading = false;
-  bool _codeSent = false;
-  bool _needsName = false;
+  bool _botOpened = false;
+  bool _checkingRegistration = false;
   String _errorText = '';
 
   ApparenceKitColors get _c =>
@@ -63,13 +61,10 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
   void dispose() {
     _animController.dispose();
     _phoneController.dispose();
-    _codeController.dispose();
-    _nameController.dispose();
     super.dispose();
   }
 
-  Future<void> _requestOtp() async {
-    final phone = _phoneController.text.trim();
+  Future<void> _openBotAndRegister() async {
     if (!_phoneValid || _loading) return;
 
     setState(() {
@@ -78,152 +73,90 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     });
 
     try {
-      final result = await OtpService.instance.requestOtp(phone);
-
-      if (!mounted) return;
-
-      if (result.ok) {
-        setState(() {
-          _codeSent = true;
-          _loading = false;
-        });
-
-        final botUrl = OtpService.botVerifyUrl(phone);
-        try {
-          await launchUrl(Uri.parse(botUrl), mode: LaunchMode.externalApplication);
-        } catch (_) {
-          // URL ochib bo'lmadi — foydalanuvchi qo'lda @washclub_bot ga kirishi kerak
-        }
-      } else if (result.error == 'rate_limited') {
-        setState(() {
-          _loading = false;
-          _errorText = 'Juda tez-tez so\'rayapsiz. Biroz kuting.';
-        });
-      } else if (result.error == 'hourly_limit_exceeded') {
-        setState(() {
-          _loading = false;
-          _errorText = 'Soatlik limit oshib ketdi. Keyinroq urinib ko\'ring.';
-        });
-      } else {
-        setState(() {
-          _loading = false;
-          _errorText = result.error ?? 'Xatolik yuz berdi. Qayta urinib ko\'ring.';
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _errorText = 'Tarmoq xatosi. Internetingizni tekshiring.';
-        });
-      }
-    }
-  }
-
-  Future<void> _verifyOtp() async {
-    final code = _codeController.text.trim();
-    if (code.length != 6 || _loading) return;
-
-    setState(() {
-      _loading = true;
-      _errorText = '';
-    });
-
-    try {
-      final phone = _phoneController.text.trim();
-      final result = await OtpService.instance.verifyOtp(
-        phone: phone,
-        code: code,
+      final launched = await launchUrl(
+        Uri.parse(OtpService.botUrl),
+        mode: LaunchMode.externalApplication,
       );
 
       if (!mounted) return;
 
-      if (result.ok) {
-        if (result.fullName == 'Mehmon') {
-          setState(() {
-            _loading = false;
-            _needsName = true;
-          });
-        } else {
-          await _finishLogin(result.customerId!, result.phone!, result.fullName!);
-        }
+      if (launched) {
+        setState(() {
+          _botOpened = true;
+          _loading = false;
+        });
       } else {
         setState(() {
           _loading = false;
-          _errorText = result.message ?? result.error ?? 'Kod noto\'g\'ri';
+          _errorText =
+              'Telegram ilovasi ochilmadi. @washclub_bot ga qo\'lda kiring.';
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _loading = false;
-          _errorText = 'Tarmoq xatosi. Internetingizni tekshiring.';
+          _errorText =
+              'Telegram ochishda xatolik. @washclub_bot ga qo\'lda kiring.';
         });
       }
     }
   }
 
-  Future<void> _saveName() async {
-    final name = _nameController.text.trim();
-    if (name.isEmpty || _loading) return;
+  Future<void> _checkRegistration() async {
+    final rawPhone = _phoneController.text.trim();
+    if (_checkingRegistration) return;
+
+    final phone = rawPhone.startsWith('+')
+        ? rawPhone
+        : '+998$rawPhone';
 
     setState(() {
-      _loading = true;
+      _checkingRegistration = true;
       _errorText = '';
     });
 
     try {
-      final phone = _phoneController.text.trim();
-      final code = _codeController.text.trim();
-      final result = await OtpService.instance.verifyOtp(
-        phone: phone,
-        code: code,
-        name: name,
-      );
+      final result = await OtpService.instance.checkCustomer(phone);
 
       if (!mounted) return;
 
-      if (result.ok) {
-        await _finishLogin(result.customerId!, result.phone!, result.fullName!);
+      if (result.found) {
+        await ClientSession.instance.saveFromOtp(
+          customerId: result.customerId!,
+          phone: result.phone!,
+          name: result.fullName!,
+        );
+        if (result.telegramChatId != null) {
+          await ClientSession.instance
+              .saveTelegramChatId(result.telegramChatId!);
+        }
+        OrdersRepository.instance.invalidate();
+        if (mounted) {
+          context.go(UserRoutePath.home);
+        }
       } else {
         setState(() {
-          _loading = false;
-          _errorText = result.message ?? 'Xatolik yuz berdi';
+          _checkingRegistration = false;
+          _errorText = 'Ro\'yxatdan o\'tilmagan. Botda /start ni bosib, '
+              'telefon raqamingizni "📱 Telefon raqamni ulashish" tugmasi orqali yuboring.';
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _loading = false;
-          _errorText = 'Tarmoq xatosi';
+          _checkingRegistration = false;
+          _errorText = 'Tarmoq xatosi. Internetingizni tekshiring.';
         });
       }
-    }
-  }
-
-  Future<void> _finishLogin(
-      String customerId, String phone, String name) async {
-    await ClientSession.instance.saveFromOtp(
-      customerId: customerId,
-      phone: phone,
-      name: name,
-    );
-    OrdersRepository.instance.invalidate();
-    if (mounted) {
-      context.go(UserRoutePath.home);
     }
   }
 
   void _goBack() {
-    if (_needsName) {
-      setState(() => _needsName = false);
-    } else if (_codeSent) {
-      setState(() {
-        _codeSent = false;
-        _errorText = '';
-        _codeController.clear();
-      });
-    }
+    setState(() {
+      _botOpened = false;
+      _errorText = '';
+    });
   }
 
   @override
@@ -244,11 +177,9 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
                   position: _slideAnim,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                    child: _needsName
-                        ? _buildNameForm(colors)
-                        : _codeSent
-                            ? _buildOtpForm(colors)
-                            : _buildPhoneForm(colors),
+                    child: _botOpened
+                        ? _buildBotInstructions(colors)
+                        : _buildPhoneForm(colors),
                   ),
                 ),
               ),
@@ -298,39 +229,17 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
               height: 1.1,
             ),
           ),
-          if (!_codeSent && !_needsName) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Telegram bot orqali xavfsiz kirish',
-              style: TextStyle(
-                color: colors.grey3,
-                fontSize: 14,
-                height: 1.4,
-              ),
+          const SizedBox(height: 8),
+          Text(
+            _botOpened
+                ? 'Botda ro\'yxatdan o\'ting'
+                : 'Telegram bot orqali xavfsiz kirish',
+            style: TextStyle(
+              color: colors.grey3,
+              fontSize: 14,
+              height: 1.4,
             ),
-          ],
-          if (_codeSent && !_needsName) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Telegram\'ga yuborilgan 6 raqamli kodni kiriting',
-              style: TextStyle(
-                color: colors.grey3,
-                fontSize: 14,
-                height: 1.4,
-              ),
-            ),
-          ],
-          if (_needsName) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Ismingizni kiriting',
-              style: TextStyle(
-                color: colors.grey3,
-                fontSize: 14,
-                height: 1.4,
-              ),
-            ),
-          ],
+          ),
         ],
       ),
     );
@@ -391,7 +300,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
         const SizedBox(height: 36),
         _buildButton(
           colors: colors,
-          onPressed: _requestOtp,
+          onPressed: _openBotAndRegister,
           isActive: _phoneValid && !_loading,
           isLoading: _loading,
           label: 'Telegram orqali kirish',
@@ -403,9 +312,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     );
   }
 
-  Widget _buildOtpForm(ApparenceKitColors colors) {
-    final codeComplete = _codeController.text.trim().length == 6;
-
+  Widget _buildBotInstructions(ApparenceKitColors colors) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -437,150 +344,93 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           ],
         ),
         const SizedBox(height: 24),
-        _sectionLabel('Tasdiqlash kodi', colors),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _codeController,
-          keyboardType: TextInputType.number,
-          maxLength: 6,
-          onChanged: (_) => setState(() {}),
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: colors.onSurface,
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 12,
-          ),
-          decoration: InputDecoration(
-            counterText: '',
-            filled: true,
-            fillColor: colors.surface,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.divider),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.divider),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.primary, width: 1.5),
-            ),
-          ),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-          ],
-        ),
-        if (_errorText.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              _errorText,
-              style: TextStyle(color: colors.error, fontSize: 13),
-            ),
-          ),
-        ],
-        const SizedBox(height: 36),
-        _buildButton(
-          colors: colors,
-          onPressed: _verifyOtp,
-          isActive: codeComplete && !_loading,
-          isLoading: _loading,
-          label: 'Tasdiqlash',
-          icon: Icons.check_rounded,
-        ),
-        const SizedBox(height: 24),
-        _buildResendCode(colors),
-      ],
-    );
-  }
 
-  Widget _buildNameForm(ApparenceKitColors colors) {
-    final nameValid = _nameController.text.trim().isNotEmpty;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: _goBack,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: colors.divider),
+        // Instruction card
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: colors.info.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: colors.info.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            children: [
+              const Text('🤖', style: TextStyle(fontSize: 40)),
+              const SizedBox(height: 12),
+              Text(
+                'Telegram bot ochildi',
+                style: TextStyle(
+                  color: colors.onBackground,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                 ),
-                child: Icon(Icons.arrow_back_rounded,
-                    color: colors.grey2, size: 18),
               ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Ismingiz',
-              style: TextStyle(
-                color: colors.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
+              const SizedBox(height: 8),
+              Text(
+                '1. Botda /start tugmasini bosing\n'
+                '2. "📱 Telefon raqamni ulashish" tugmasini bosing\n'
+                '3. Ro\'yxatdan o\'tgach, pastdagi tugmani bosing',
+                style: TextStyle(
+                  color: colors.grey3,
+                  fontSize: 13,
+                  height: 1.6,
+                ),
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        _sectionLabel('Ism va familiya', colors),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _nameController,
-          textCapitalization: TextCapitalization.words,
-          autofocus: true,
-          onChanged: (_) => setState(() {}),
-          onSubmitted: nameValid ? (_) => _saveName() : null,
-          style: TextStyle(color: colors.onSurface, fontSize: 15),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: colors.surface,
-            hintText: 'Ism Familiya',
-            hintStyle: TextStyle(color: colors.grey2, fontSize: 15),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.divider),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.divider),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.primary, width: 1.5),
-            ),
+            ],
           ),
         ),
+
         if (_errorText.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              _errorText,
-              style: TextStyle(color: colors.error, fontSize: 13),
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: colors.error.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: colors.error.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, color: colors.error, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    _errorText,
+                    style: TextStyle(
+                        color: colors.error, fontSize: 12, height: 1.5),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
-        const SizedBox(height: 36),
+
+        const SizedBox(height: 24),
+
+        // Check registration button
         _buildButton(
           colors: colors,
-          onPressed: _saveName,
-          isActive: nameValid && !_loading,
-          isLoading: _loading,
-          label: 'Davom etish',
-          icon: Icons.arrow_forward_rounded,
+          onPressed: _checkRegistration,
+          isActive: !_checkingRegistration,
+          isLoading: _checkingRegistration,
+          label:
+              _checkingRegistration ? 'Tekshirilmoqda...' : 'Ro\'yxatdan o\'tdim',
+          icon: Icons.check_circle_outline,
+        ),
+
+        const SizedBox(height: 20),
+
+        // Open bot again
+        Center(
+          child: TextButton.icon(
+            onPressed: _openBotAndRegister,
+            icon: const Icon(Icons.open_in_new, size: 16),
+            label: const Text('Botni qayta ochish'),
+            style: TextButton.styleFrom(foregroundColor: colors.info),
+          ),
         ),
       ],
     );
@@ -597,137 +447,87 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     return SizedBox(
       width: double.infinity,
       height: 56,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          color: isActive ? colors.primary : colors.surface,
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: colors.primary.withValues(alpha: 0.35),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : null,
-        ),
-        child: ElevatedButton(
-          onPressed: isActive ? onPressed : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.transparent,
-            shadowColor: Colors.transparent,
-            foregroundColor: colors.onPrimary,
-            disabledBackgroundColor: Colors.transparent,
-            disabledForegroundColor: colors.grey3,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16)),
-            elevation: 0,
+      child: ElevatedButton(
+        onPressed: isActive ? onPressed : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              isActive ? colors.primary : colors.grey2.withValues(alpha: 0.3),
+          foregroundColor: colors.onPrimary,
+          disabledBackgroundColor: colors.grey2.withValues(alpha: 0.3),
+          disabledForegroundColor: colors.grey3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: isLoading
-              ? SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.5,
-                    valueColor: AlwaysStoppedAnimation(colors.onPrimary),
-                  ),
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(icon, size: 20),
-                    const SizedBox(width: 10),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: isActive ? colors.onPrimary : colors.grey3,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
+          elevation: 0,
         ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (isLoading)
+              Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: colors.onPrimary,
+                  ),
+                ),
+              )
+            else ...[
+              Icon(icon, size: 20),
+              const SizedBox(width: 10),
+            ],
+            Text(
+              isLoading ? '' : label,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(String text, ApparenceKitColors colors) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: colors.grey3,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
       ),
     );
   }
 
   Widget _buildTelegramInfo(ApparenceKitColors colors) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: colors.info.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: colors.info.withValues(alpha: 0.15),
-        ),
+        color: colors.info.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.info.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: colors.info.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(Icons.info_outline, color: colors.info, size: 18),
-          ),
-          const SizedBox(width: 12),
+          Icon(Icons.info_outline, size: 18, color: colors.info),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
-              '@washclub_bot Telegram botiga o\'tib, '
-              '"Share Phone Number" tugmasini bosasiz. '
-              'Bot sizga 6 raqamli kod yuboradi.',
+              'Davom etish uchun Telegram botga o\'tasiz. '
+              'Botda /start ni bosib, telefon raqamingizni ulashing.',
               style: TextStyle(
                 color: colors.grey3,
-                fontSize: 13,
+                fontSize: 12,
                 height: 1.4,
               ),
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildResendCode(ApparenceKitColors colors) {
-    return Center(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Kod kelmadimi? ',
-            style: TextStyle(color: colors.grey2, fontSize: 14),
-          ),
-          GestureDetector(
-            onTap: _loading ? null : _requestOtp,
-            child: Text(
-              'Qayta yuborish',
-              style: TextStyle(
-                color: _loading ? colors.grey3 : colors.info,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionLabel(String text, ApparenceKitColors colors) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: colors.grey3,
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }

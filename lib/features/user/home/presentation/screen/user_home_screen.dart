@@ -474,7 +474,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: actions.map((a) {
           return GestureDetector(
             onTap: () {
@@ -487,10 +487,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               }
             },
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: 56,
+                  height: 56,
                   decoration: BoxDecoration(
                     color: _cardBg(colors),
                     borderRadius: BorderRadius.circular(18),
@@ -498,14 +499,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     boxShadow: _cardShadow(colors),
                   ),
                   child: Icon(a['icon'] as IconData,
-                      color: colors.info, size: 26),
+                      color: colors.info, size: 24),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   a['label'] as String,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: colors.grey3,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -590,7 +592,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   extra: {'branchId': b.id},
                 ),
                 child: Container(
-                  width: 220,
+                  width: MediaQuery.of(context).size.width * 0.62,
                   margin: const EdgeInsets.only(right: 12),
                   decoration: BoxDecoration(
                     color: _cardBg(colors),
@@ -710,19 +712,26 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                t.home.myCars,
-                style: TextStyle(
-                  color: colors.onBackground,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+              Flexible(
+                child: Text(
+                  t.home.myCars,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: colors.onBackground,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               TextButton.icon(
                 onPressed: () => _goToAddCar(context),
                 icon: Icon(Icons.add, color: colors.info, size: 18),
-                label:
-                Text(t.home.manage, style: TextStyle(color: colors.info)),
+                label: Text(
+                    t.home.manage,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: colors.info),
+                  ),
               ),
             ],
           ),
@@ -793,6 +802,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       children: [
                         Text(
                           car.displayName,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                               color: colors.onBackground,
                               fontSize: 15,
@@ -883,7 +893,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 }
-
 // user_home_screen.dart ichiga qo'shiladi
 
 // ── Promo Cards ──────────────────────────────────────────────────
@@ -913,22 +922,24 @@ Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
       ),
       borderRadius: BorderRadius.circular(20),
     ),
-    clipBehavior: Clip.antiAlias,
+    clipBehavior: Clip.hardEdge,
     child: Stack(
       children: [
-        // Special price banner — top right, diagonal cut
+        // Special price banner — top right
         Positioned(
-          top: -6,
-          right: -6,
+          top: 0,
+          right: 0,
           child: Transform.rotate(
-            angle: 0.785, // 45 deg
+            angle: 0.785,
             child: Container(
-              width: 95,
+              width: 90,
               padding: const EdgeInsets.symmetric(vertical: 4),
               color: const Color(0xFFCC0000),
               child: Text(
                 t.home.membershipSpecialPrice,
                 textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 9,
@@ -1038,47 +1049,53 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
           end: Alignment.centerRight,
         ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Background image
-            Image.asset(
-              AppConstants.branchImages[0],
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF1A1A2E), Color(0xFF4A2080)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: const Center(
-                  child: Icon(Icons.local_car_wash, color: Colors.white54, size: 60),
-                ),
-              ),
-            ),
-            // Dark overlay
-            Container(
-              decoration: BoxDecoration(
+      child: Stack(
+      children: [
+        // Background image
+        ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Image.asset(
+            AppConstants.branchImages[0],
+            height: 200,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              height: 200,
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.6),
-                    Colors.transparent,
-                  ],
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
+                  colors: [Color(0xFF1A1A2E), Color(0xFF4A2080)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
+              child: const Center(
+                child: Icon(Icons.local_car_wash, color: Colors.white54, size: 60),
+              ),
             ),
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
+          ),
+        ),
+        // Dark overlay
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withValues(alpha: 0.6),
+                  Colors.transparent,
+                ],
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
+              ),
+            ),
+          ),
+        ),
+        // Content
+        Positioned.fill(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
                     'TEZROQ',
@@ -1092,13 +1109,15 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
                   const SizedBox(height: 4),
                   Text(
                     t.home.bookingPromoTitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       color: Colors.white,
-                      fontSize: 22,
+                      fontSize: 21,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     t.home.bookingPromoDesc,
                     style: TextStyle(
@@ -1106,10 +1125,10 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
                       fontSize: 13,
                     ),
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 10),
+                        horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(30),
@@ -1117,12 +1136,15 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          t.home.bookingPromoButton,
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                        Flexible(
+                          child: Text(
+                            t.home.bookingPromoButton,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 6),
@@ -1133,9 +1155,9 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
                 ],
               ),
             ),
+            ),
           ],
         ),
       ),
-    ),
-  );
-}
+    );
+  }

@@ -253,14 +253,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Row(
           children: [
-            _statItem(
-                '$_completedCount', "YUVILGAN", colors: colors),
+            Flexible(
+              child: _statItem(
+                  '$_completedCount', "YUVILGAN", colors: colors),
+            ),
             _statDivider(colors),
-            _statItem(
-                _session.cars.length.toString(), "MASHINA", colors: colors),
+            Flexible(
+              child: _statItem(
+                  _session.cars.length.toString(), "MASHINA", colors: colors),
+            ),
             _statDivider(colors),
-            _statItem('Bronze', "DARAJA",
-                colors: colors, valueColor: colors.info),
+            Flexible(
+              child: _statItem('Bronze', "DARAJA",
+                  colors: colors, valueColor: colors.info),
+            ),
           ],
         ),
       ),
@@ -273,22 +279,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     required ApparenceKitColors colors,
     Color? valueColor,
   }) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            value,
-            style: TextStyle(
-              color: valueColor ?? colors.onBackground,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(
+            color: valueColor ?? colors.onBackground,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 4),
-          Text(label,
-              style: TextStyle(color: colors.grey2, fontSize: 11)),
-        ],
-      ),
+        ),
+        const SizedBox(height: 4),
+        Text(label,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(color: colors.grey2, fontSize: 11)),
+      ],
     );
   }
 
@@ -503,8 +510,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: isBest
                     ? Colors.white.withValues(alpha: 0.25)
@@ -515,7 +522,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Center(
                 child:
-                Text(plan.emoji, style: const TextStyle(fontSize: 22)),
+                Text(plan.emoji, style: const TextStyle(fontSize: 20)),
               ),
             ),
             const SizedBox(width: 12),
@@ -523,60 +530,76 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Text(
-                        '${plan.durationMonths} oy',
+                  Text(
+                    '${plan.durationMonths} oy',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isBest
+                          ? Colors.white
+                          : colors.onBackground,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  if (isBest) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'Eng yaxshi narx',
                         style: TextStyle(
-                          color: isBest
-                              ? Colors.white
-                              : colors.onBackground,
-                          fontSize: 15,
+                          color: Colors.white,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      if (isBest) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Eng yaxshi narx',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    'Limitless yuvish · ${_formatPriceShort(plan.perMonthPrice)} / oy',
-                    style: TextStyle(
-                      color: isBest
-                          ? Colors.white.withValues(alpha: 0.8)
-                          : colors.grey2,
-                      fontSize: 12,
                     ),
-                  ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Limitless yuvish · ${_formatPriceShort(plan.perMonthPrice)} / oy',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ]
+                  else ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'Limitless yuvish · ${_formatPriceShort(plan.perMonthPrice)} / oy',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: isBest
+                            ? Colors.white.withValues(alpha: 0.8)
+                            : colors.grey2,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
+            const SizedBox(width: 8),
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   _formatPriceShort(plan.price),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: isBest ? Colors.white : colors.onBackground,
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -586,7 +609,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: isBest
                         ? Colors.white.withValues(alpha: 0.7)
                         : colors.grey2,
-                    fontSize: 11,
+                    fontSize: 10,
                   ),
                 ),
               ],

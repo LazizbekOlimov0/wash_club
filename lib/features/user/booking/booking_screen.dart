@@ -284,6 +284,15 @@ class _BookingScreenState extends State<BookingScreen> {
 
       // scheduledAt hisoblash
       final timeParts = _selectedTime!.split(':');
+      if (timeParts.length != 2) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Vaqt formati noto‘g‘ri')),
+          );
+        }
+        setState(() => _submitting = false);
+        return;
+      }
       final scheduledAt = DateTime(
         _selectedDate.year, _selectedDate.month, _selectedDate.day,
         int.parse(timeParts[0]), int.parse(timeParts[1]),
@@ -404,6 +413,17 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  Future<void> _goToAddCar() async {
+    await context.push(UserRoutePath.addCar);
+    if (mounted) {
+      setState(() {
+        if (_session.cars.isNotEmpty && _selectedCar == null) {
+          _selectedCar = _session.cars.first;
+        }
+      });
+    }
+  }
+
   void _pickReceipt() async {
     final picked = await _imagePicker.pickImage(
       source: ImageSource.gallery,
@@ -520,7 +540,7 @@ class _BookingScreenState extends State<BookingScreen> {
                   children: [
                     _detailRow(colors, 'Filial', _selectedBranch?.name ?? '—'),
                     _detailRow(colors, 'Xizmat', _selectedService?.name ?? 'Yuvish'),
-                    _detailRow(colors, 'Mashina', _selectedCar?.plate ?? _session.cars.first.plate),
+                    _detailRow(colors, 'Mashina', _selectedCar?.plate ?? (_session.cars.isNotEmpty ? _session.cars.first.plate : '—')),
                     _detailRow(colors, 'Vaqt', '$_selectedTime · ${_formatDate(_selectedDate)}'),
                   ],
                 ),
@@ -587,6 +607,7 @@ class _BookingScreenState extends State<BookingScreen> {
           SizedBox(
             width: 60,
             child: Text(label,
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(color: colors.grey2, fontSize: 12)),
           ),
           Expanded(
@@ -788,6 +809,7 @@ class _BookingScreenState extends State<BookingScreen> {
           hasSubscription: _hasSubscription,
           receiptBytes:   _receiptBytes,
           onPickReceipt:  _pickReceipt,
+          onAddCar:       _goToAddCar,
         );
       default:
         return const SizedBox();
@@ -1721,6 +1743,7 @@ class _PaymentStep extends StatelessWidget {
   final bool hasSubscription;
   final Uint8List? receiptBytes;
   final VoidCallback onPickReceipt;
+  final VoidCallback onAddCar;
 
   const _PaymentStep({
     required this.branch,
@@ -1740,6 +1763,7 @@ class _PaymentStep extends StatelessWidget {
     this.hasSubscription = false,
     this.receiptBytes,
     required this.onPickReceipt,
+    required this.onAddCar,
   });
 
   @override
@@ -1884,6 +1908,40 @@ class _PaymentStep extends StatelessWidget {
                 ),
               );
             }),
+            const SizedBox(height: 20),
+          ] else ...[
+            _sectionLabel("MASHINA", colors),
+            const SizedBox(height: 10),
+            GestureDetector(
+              onTap: onAddCar,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: colors.primary.withValues(alpha: isLight ? 0.05 : 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: colors.primary.withValues(alpha: 0.3),
+                    width: 1.5,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_circle_outline, color: colors.primary, size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Mashina qo\'shish',
+                      style: TextStyle(
+                        color: colors.primary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
           ],
 
