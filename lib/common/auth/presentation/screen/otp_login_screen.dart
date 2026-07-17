@@ -522,7 +522,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: List.generate(6, (i) {
             return SizedBox(
-              width: 48,
+              width: 50,
               height: 56,
               child: TextField(
                 controller: _otpControllers[i],
@@ -532,13 +532,15 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
                 maxLength: 1,
                 style: TextStyle(
                   color: colors.onSurface,
-                  fontSize: 22,
+                  fontSize: 24,
                   fontWeight: FontWeight.w700,
                 ),
                 decoration: InputDecoration(
                   counterText: '',
                   filled: true,
                   fillColor: colors.surface,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(color: colors.divider),
