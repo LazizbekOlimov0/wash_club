@@ -113,6 +113,7 @@ class OtpService {
         ok: data['ok'] == true,
         needsBotLink: data['needs_bot_link'] == true,
         botUrl: data['bot_url'] as String?,
+        testMode: data['test_mode'] == true,
       );
     }
 
@@ -167,12 +168,14 @@ class OtpRequestResult {
   final bool needsBotLink;
   final String? botUrl;
   final String? error;
+  final bool testMode;
 
   const OtpRequestResult({
     required this.ok,
     this.needsBotLink = false,
     this.botUrl,
     this.error,
+    this.testMode = false,
   });
 }
 

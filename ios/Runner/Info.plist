@@ -23,20 +23,26 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
-    	<array>
-    		<dict>
-    			<key>CFBundleTypeRole</key>
-    			<string>Editor</string>
-    			<key>CFBundleURLSchemes</key>
-    			<array>
-    				<string>com.googleusercontent.apps.565322626454-lhdd6lu93ufa430qqi33i23bjfj2ijv7</string>
-    			</array>
-    		</dict>
-    	</array>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.565322626454-lhdd6lu93ufa430qqi33i23bjfj2ijv7</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Filiallar ro'yxatini joylashuvingizga qarab saralash uchun</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Eng yaqin filialni topish va xaritada joylashuvingizni ko'rsatish uchun</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Profil rasmingizni tanlash uchun rasm kutubxonasiga kirish kerak</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -60,12 +66,6 @@
 	</dict>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Eng yaqin filialni topish va xaritada joylashuvingizni ko'rsatish uchun</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Filiallar ro'yxatini joylashuvingizga qarab saralash uchun</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Profil rasmingizni tanlash uchun rasm kutubxonasiga kirish kerak</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

@@ -28,6 +28,16 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
   bool _checkingRegistration = false;
   String _errorText = '';
 
+  // --- Test mode state ---
+  bool _testMode = false;
+  final List<TextEditingController> _otpControllers = List.generate(
+    6,
+    (_) => TextEditingController(),
+  );
+  final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
+  bool _verifyingOtp = false;
+  String _otpError = '';
+
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
@@ -61,11 +71,22 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
   void dispose() {
     _animController.dispose();
     _phoneController.dispose();
+    for (final c in _otpControllers) {
+      c.dispose();
+    }
+    for (final f in _otpFocusNodes) {
+      f.dispose();
+    }
     super.dispose();
   }
 
-  Future<void> _openBotAndRegister() async {
+  // --------------- Phone submit (branch: test mode vs Telegram) ---------------
+
+  Future<void> _handlePhoneSubmit() async {
     if (!_phoneValid || _loading) return;
+
+    final rawPhone = _phoneController.text.trim();
+    final phone = rawPhone.startsWith('+') ? rawPhone : '+998$rawPhone';
 
     setState(() {
       _loading = true;
@@ -73,43 +94,141 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     });
 
     try {
-      final launched = await launchUrl(
-        Uri.parse(OtpService.botUrl),
-        mode: LaunchMode.externalApplication,
-      );
+      final result = await OtpService.instance.requestOtp(phone);
 
       if (!mounted) return;
 
-      if (launched) {
+      if (!result.ok) {
         setState(() {
-          _botOpened = true;
           _loading = false;
+          _errorText = result.error ?? 'Xatolik yuz berdi';
+        });
+        return;
+      }
+
+      if (result.testMode) {
+        setState(() {
+          _loading = false;
+          _testMode = true;
         });
       } else {
+        final launched = await launchUrl(
+          Uri.parse(OtpService.botUrl),
+          mode: LaunchMode.externalApplication,
+        );
+
+        if (!mounted) return;
+
         setState(() {
           _loading = false;
-          _errorText =
-              'Telegram ilovasi ochilmadi. @washclub_bot ga qo\'lda kiring.';
+          if (launched) {
+            _botOpened = true;
+          } else {
+            _errorText =
+                'Telegram ilovasi ochilmadi. @washclub_bot ga qo\'lda kiring.';
+          }
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _loading = false;
-          _errorText =
-              'Telegram ochishda xatolik. @washclub_bot ga qo\'lda kiring.';
+          _errorText = 'Tarmoq xatosi. Internetingizni tekshiring.';
         });
       }
     }
   }
 
+  // --------------- Test mode OTP verify ---------------
+
+  String get _enteredOtp =>
+      _otpControllers.map((c) => c.text).join();
+
+  bool get _otpComplete => _enteredOtp.length == 6;
+
+  void _onOtpChanged(int index, String value) {
+    if (value.length > 1) {
+      // Handle paste
+      final pasted = value.replaceAll(RegExp(r'[^0-9]'), '');
+      if (pasted.length == 6) {
+        for (int i = 0; i < 6; i++) {
+          _otpControllers[i].text = pasted[i];
+        }
+        _otpFocusNodes.last.requestFocus();
+        setState(() {});
+        return;
+      }
+    }
+
+    if (value.length == 1 && index < 5) {
+      _otpFocusNodes[index + 1].requestFocus();
+    }
+    setState(() {});
+  }
+
+  void _onOtpBackspace(int index, String value) {
+    if (value.isEmpty && index > 0) {
+      _otpFocusNodes[index - 1].requestFocus();
+    }
+  }
+
+  Future<void> _verifyTestOtp() async {
+    if (!_otpComplete || _verifyingOtp) return;
+
+    final rawPhone = _phoneController.text.trim();
+    final phone = rawPhone.startsWith('+') ? rawPhone : '+998$rawPhone';
+
+    setState(() {
+      _verifyingOtp = true;
+      _otpError = '';
+    });
+
+    try {
+      final result = await OtpService.instance.verifyOtp(
+        phone: phone,
+        code: _enteredOtp,
+      );
+
+      if (!mounted) return;
+
+      if (result.ok) {
+        await ClientSession.instance.saveFromOtp(
+          customerId: result.customerId!,
+          phone: result.phone!,
+          name: result.fullName!,
+        );
+        OrdersRepository.instance.invalidate();
+        if (mounted) {
+          context.go(UserRoutePath.home);
+        }
+      } else {
+        setState(() {
+          _verifyingOtp = false;
+          _otpError = result.error ?? 'Noto\'g\'ri kod. Qayta urinib ko\'ring.';
+          for (final c in _otpControllers) {
+            c.clear();
+          }
+          _otpFocusNodes.first.requestFocus();
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _verifyingOtp = false;
+          _otpError = 'Tarmoq xatosi. Internetingizni tekshiring.';
+        });
+      }
+    }
+  }
+
+  // --------------- Telegram bot flow ---------------
+
   Future<void> _checkRegistration() async {
     final rawPhone = _phoneController.text.trim();
     if (_checkingRegistration) return;
 
-    final phone = rawPhone.startsWith('+')
-        ? rawPhone
-        : '+998$rawPhone';
+    final phone =
+        rawPhone.startsWith('+') ? rawPhone : '+998$rawPhone';
 
     setState(() {
       _checkingRegistration = true;
@@ -154,14 +273,30 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
 
   void _goBack() {
     setState(() {
+      _testMode = false;
       _botOpened = false;
       _errorText = '';
+      _otpError = '';
+      for (final c in _otpControllers) {
+        c.clear();
+      }
     });
   }
+
+  // --------------- Build ---------------
 
   @override
   Widget build(BuildContext context) {
     final colors = _c;
+
+    String? subtitleText;
+    if (_testMode) {
+      subtitleText = 'Test rejimi: kodni kiriting';
+    } else if (_botOpened) {
+      subtitleText = 'Botda ro\'yxatdan o\'ting';
+    } else {
+      subtitleText = 'Telegram bot orqali xavfsiz kirish';
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -171,15 +306,17 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           opacity: _fadeAnim,
           child: Column(
             children: [
-              _buildHero(colors),
+              _buildHero(colors, subtitleText),
               Expanded(
                 child: SlideTransition(
                   position: _slideAnim,
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                    child: _botOpened
-                        ? _buildBotInstructions(colors)
-                        : _buildPhoneForm(colors),
+                    child: _testMode
+                        ? _buildTestOtpForm(colors)
+                        : _botOpened
+                            ? _buildBotInstructions(colors)
+                            : _buildPhoneForm(colors),
                   ),
                 ),
               ),
@@ -190,7 +327,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     );
   }
 
-  Widget _buildHero(ApparenceKitColors colors) {
+  Widget _buildHero(ApparenceKitColors colors, String? subtitle) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -229,21 +366,23 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
               height: 1.1,
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            _botOpened
-                ? 'Botda ro\'yxatdan o\'ting'
-                : 'Telegram bot orqali xavfsiz kirish',
-            style: TextStyle(
-              color: colors.grey3,
-              fontSize: 14,
-              height: 1.4,
+          if (subtitle != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(
+                color: colors.grey3,
+                fontSize: 14,
+                height: 1.4,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );
   }
+
+  // --------------- Phone form ---------------
 
   Widget _buildPhoneForm(ApparenceKitColors colors) {
     return Column(
@@ -300,7 +439,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
         const SizedBox(height: 36),
         _buildButton(
           colors: colors,
-          onPressed: _openBotAndRegister,
+          onPressed: _handlePhoneSubmit,
           isActive: _phoneValid && !_loading,
           isLoading: _loading,
           label: 'Telegram orqali kirish',
@@ -311,6 +450,153 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       ],
     );
   }
+
+  // --------------- Test mode OTP form ---------------
+
+  Widget _buildTestOtpForm(ApparenceKitColors colors) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            GestureDetector(
+              onTap: _goBack,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: colors.divider),
+                ),
+                child: Icon(Icons.arrow_back_rounded,
+                    color: colors.grey2, size: 18),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '+998 ${_phoneController.text.trim()}',
+              style: TextStyle(
+                color: colors.onSurface,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Test mode info banner
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: colors.info.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colors.info.withValues(alpha: 0.2)),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.bug_report, size: 18, color: colors.info),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Test rejimi: kod 123456',
+                  style: TextStyle(
+                    color: colors.grey3,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        _sectionLabel('Tasdiqlash kodini kiriting', colors),
+        const SizedBox(height: 12),
+
+        // OTP input row
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(6, (i) {
+            return SizedBox(
+              width: 48,
+              height: 56,
+              child: TextField(
+                controller: _otpControllers[i],
+                focusNode: _otpFocusNodes[i],
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                maxLength: 1,
+                style: TextStyle(
+                  color: colors.onSurface,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+                decoration: InputDecoration(
+                  counterText: '',
+                  filled: true,
+                  fillColor: colors.surface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: colors.divider),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: colors.divider),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: colors.primary, width: 1.5),
+                  ),
+                  errorBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide:
+                        BorderSide(color: colors.error, width: 1.5),
+                  ),
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                onChanged: (value) {
+                  _onOtpChanged(i, value);
+                  if (value.isEmpty) {
+                    _onOtpBackspace(i, value);
+                  }
+                },
+              ),
+            );
+          }),
+        ),
+        if (_otpError.isNotEmpty) ...[
+          const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(
+              _otpError,
+              style: TextStyle(color: colors.error, fontSize: 13),
+            ),
+          ),
+        ],
+        const SizedBox(height: 28),
+
+        _buildButton(
+          colors: colors,
+          onPressed: _verifyTestOtp,
+          isActive: _otpComplete && !_verifyingOtp,
+          isLoading: _verifyingOtp,
+          label: _verifyingOtp ? 'Tekshirilmoqda...' : 'Tasdiqlash',
+          icon: Icons.check_circle_outline,
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  // --------------- Bot instructions ---------------
 
   Widget _buildBotInstructions(ApparenceKitColors colors) {
     return Column(
@@ -345,7 +631,6 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
         ),
         const SizedBox(height: 24),
 
-        // Instruction card
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
@@ -389,18 +674,22 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
             decoration: BoxDecoration(
               color: colors.error.withValues(alpha: 0.08),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: colors.error.withValues(alpha: 0.2)),
+              border:
+                  Border.all(color: colors.error.withValues(alpha: 0.2)),
             ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.info_outline, color: colors.error, size: 18),
+                Icon(Icons.info_outline,
+                    color: colors.error, size: 18),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     _errorText,
                     style: TextStyle(
-                        color: colors.error, fontSize: 12, height: 1.5),
+                        color: colors.error,
+                        fontSize: 12,
+                        height: 1.5),
                   ),
                 ),
               ],
@@ -410,23 +699,27 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
 
         const SizedBox(height: 24),
 
-        // Check registration button
         _buildButton(
           colors: colors,
           onPressed: _checkRegistration,
           isActive: !_checkingRegistration,
           isLoading: _checkingRegistration,
-          label:
-              _checkingRegistration ? 'Tekshirilmoqda...' : 'Ro\'yxatdan o\'tdim',
+          label: _checkingRegistration
+              ? 'Tekshirilmoqda...'
+              : 'Ro\'yxatdan o\'tdim',
           icon: Icons.check_circle_outline,
         ),
 
         const SizedBox(height: 20),
 
-        // Open bot again
         Center(
           child: TextButton.icon(
-            onPressed: _openBotAndRegister,
+            onPressed: () async {
+              await launchUrl(
+                Uri.parse(OtpService.botUrl),
+                mode: LaunchMode.externalApplication,
+              );
+            },
             icon: const Icon(Icons.open_in_new, size: 16),
             label: const Text('Botni qayta ochish'),
             style: TextButton.styleFrom(foregroundColor: colors.info),
@@ -435,6 +728,8 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       ],
     );
   }
+
+  // --------------- Shared widgets ---------------
 
   Widget _buildButton({
     required ApparenceKitColors colors,
