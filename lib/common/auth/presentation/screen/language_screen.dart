@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
-
 import '../../../../core/theme/colors.dart';
 
 class LanguageScreen extends StatefulWidget {
@@ -51,21 +51,18 @@ class _LanguageScreenState extends State<LanguageScreen>
     super.dispose();
   }
 
-  void _onContinue() {
-    LocaleSettings.setLocaleRaw(_selectedLang);
-    context.go(UserRoutePath.otpLogin);
+  Future<void> _onContinue() async {
+    await LocaleSettings.setLocaleRaw(_selectedLang);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('locale', _selectedLang);
+    if (mounted) {
+      context.go(UserRoutePath.otpLogin);
+    }
   }
-
-  String get _continueLabel {
-    if (_selectedLang == 'uz') return 'Davom etish';
-    if (_selectedLang == 'ru') return 'Продолжить';
-    return 'Continue';
-  }
-
-  // initState, dispose, _onContinue, _continueLabel — o'zgarishsiz
 
   @override
   Widget build(BuildContext context) {
+    final t = Translations.of(context);
     final colors = Theme.of(context).extension<ApparenceKitColors>()!;
 
     return Scaffold(
@@ -76,7 +73,6 @@ class _LanguageScreenState extends State<LanguageScreen>
         color: colors.background,
         child: Stack(
           children: [
-            // Decorative circles
             Positioned(top: -80, right: -80, child: Container(
               width: 260, height: 260,
               decoration: BoxDecoration(shape: BoxShape.circle,
@@ -92,8 +88,6 @@ class _LanguageScreenState extends State<LanguageScreen>
               decoration: BoxDecoration(shape: BoxShape.circle,
                   color: colors.info.withValues(alpha: 0.05)),
             )),
-
-            // Main content
             AnimatedBuilder(
               animation: _controller,
               builder: (context, child) => Opacity(
@@ -105,7 +99,6 @@ class _LanguageScreenState extends State<LanguageScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 32, 24, 0),
                       child: Column(
@@ -133,24 +126,20 @@ class _LanguageScreenState extends State<LanguageScreen>
                           )),
                           const SizedBox(height: 6),
                           Text(
-                            'Tilni tanlang / Выберите язык / Choose language',
+                            t.settings.languageSelect,
                             style: TextStyle(color: colors.grey3, fontSize: 13),
                           ),
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 36),
-
                     Padding(
                       padding: const EdgeInsets.only(left: 24, bottom: 12),
-                      child: Text('Tilni tanlang', style: TextStyle(
+                      child: Text(t.settings.appLanguage, style: TextStyle(
                         color: colors.grey3, fontSize: 11,
                         fontWeight: FontWeight.w600, letterSpacing: 0.8,
                       )),
                     ),
-
-                    // Language list
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -199,38 +188,15 @@ class _LanguageScreenState extends State<LanguageScreen>
                                             )),
                                             const SizedBox(height: 2),
                                             Text(lang.native, style: TextStyle(
-                                              color: isSelected
-                                                  ? colors.info.withValues(alpha: 0.7)
-                                                  : colors.grey3,
-                                              fontSize: 13,
+                                              color: isSelected ? colors.info.withValues(alpha: 0.7) : colors.grey3,
+                                              fontSize: 12,
                                             )),
                                           ],
                                         ),
                                       ),
-                                      // Radio circle
-                                      AnimatedSwitcher(
-                                        duration: const Duration(milliseconds: 200),
-                                        child: isSelected
-                                            ? Container(
-                                          key: ValueKey(lang.code),
-                                          width: 24, height: 24,
-                                          decoration: BoxDecoration(
-                                            color: colors.info,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(Icons.check,
-                                              color: Colors.white, size: 14),
-                                        )
-                                            : Container(
-                                          key: ValueKey('empty_${lang.code}'),
-                                          width: 24, height: 24,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                                color: colors.grey1, width: 1.5),
-                                          ),
-                                        ),
-                                      ),
+                                      if (isSelected)
+                                        Icon(Icons.check_circle,
+                                            color: colors.info, size: 24),
                                     ],
                                   ),
                                 ),
@@ -240,32 +206,23 @@ class _LanguageScreenState extends State<LanguageScreen>
                         ),
                       ),
                     ),
-
-                    // Continue button
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 36),
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
                       child: SizedBox(
-                        width: double.infinity, height: 56,
+                        width: double.infinity,
+                        height: 56,
                         child: ElevatedButton(
                           onPressed: _onContinue,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: colors.info,
-                            foregroundColor: colors.onPrimary,
-                            elevation: 0,
+                            foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(16)),
+                            elevation: 0,
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(_continueLabel, style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w600,
-                                letterSpacing: 0.2,
-                              )),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.arrow_forward_ios, size: 16),
-                            ],
-                          ),
+                          child: Text(t.register.continueButton,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.w700)),
                         ),
                       ),
                     ),
@@ -285,7 +242,6 @@ class _LangItem {
   final String flag;
   final String name;
   final String native;
-
   const _LangItem({
     required this.code,
     required this.flag,

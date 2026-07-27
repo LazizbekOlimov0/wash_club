@@ -173,7 +173,7 @@ class _AddCarScreenState extends State<AddCarScreen>
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
                         child: Text(
-                          'Masalan: 01A123BC · 01502GDA · T025004',
+                          t.addCar.plateExample,
                           style: TextStyle(
                             color: colors.grey2.withValues(alpha: 0.7),
                             fontSize: 12,
@@ -187,11 +187,11 @@ class _AddCarScreenState extends State<AddCarScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _sectionLabel('Marka', colors: colors),
+                                _sectionLabel(t.addCar.brand, colors: colors),
                                 const SizedBox(height: 10),
                                 _buildField(
                                     controller: _brandController,
-                                    hint: 'Chevrolet',
+                                    hint: t.addCar.brandHint,
                                     icon: Icons.directions_car_outlined,
                                     colors: colors),
                               ],
@@ -202,11 +202,11 @@ class _AddCarScreenState extends State<AddCarScreen>
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                _sectionLabel('Model', colors: colors),
+                                _sectionLabel(t.addCar.model, colors: colors),
                                 const SizedBox(height: 10),
                                 _buildField(
                                     controller: _modelController,
-                                    hint: 'Cobalt 2024',
+                                    hint: t.addCar.modelHint,
                                     icon: Icons.calendar_today_outlined,
                                     colors: colors),
                               ],
@@ -215,11 +215,11 @@ class _AddCarScreenState extends State<AddCarScreen>
                         ],
                       ),
                       const SizedBox(height: 22),
-                      _sectionLabel('Rang', colors: colors),
+                      _sectionLabel(t.addCar.color, colors: colors),
                       const SizedBox(height: 10),
                       _buildField(
                           controller: _colorController,
-                          hint: 'Qora, Oq, Kumush...',
+                          hint: t.addCar.colorHint,
                           icon: Icons.color_lens_outlined,
                           colors: colors),
                       const SizedBox(height: 26),
@@ -304,7 +304,7 @@ class _AddCarScreenState extends State<AddCarScreen>
                           color: colors.primary, size: 13),
                       const SizedBox(width: 5),
                       Text(
-                        'Xavfsiz saqlash',
+                        t.addCar.secureSaving,
                         style: TextStyle(
                             color: colors.primary,
                             fontSize: 12,

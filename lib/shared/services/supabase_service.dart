@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:wash_club/shared/services/promo_service.dart';
 import '../constants/app_constants.dart';
 
 /// Supabase bilan barcha muloqot shu yerda.
@@ -775,16 +774,16 @@ class OrderModel {
 
   String get statusLabel {
     switch (status) {
-      case 'pending':   return 'Kutilmoqda';
-      case 'pending_payment': return 'To\'lov kutilmoqda';
-      case 'queued':    return 'Tasdiqlangan';
-      case 'confirmed': return 'QR skanerlangan';
-      case 'washing':   return 'Yuvilmoqda';
-      case 'drying':    return 'Quritilmoqda';
-      case 'ready':     return 'Tayyor';
-      case 'completed': return 'Bajarildi';
-      case 'cancelled': return 'Bekor qilindi';
-      default:          return status;
+      case AppConstants.statusPending:        return 'pending';
+      case AppConstants.statusPendingPayment: return 'pending_payment';
+      case AppConstants.statusQueued:         return 'queued';
+      case AppConstants.statusConfirmed:      return 'confirmed';
+      case AppConstants.statusWashing:        return 'washing';
+      case AppConstants.statusDrying:         return 'drying';
+      case AppConstants.statusReady:          return 'ready';
+      case AppConstants.statusCompleted:      return 'completed';
+      case AppConstants.statusCancelled:      return 'cancelled';
+      default:                                return status;
     }
   }
 
@@ -890,4 +889,24 @@ class TariffPlanModel {
       isPopular:      j['is_popular'] as bool? ?? false,
     );
   }
+}
+
+class PromoResult {
+  final bool ok;
+  final int discount;
+  final int total;
+  final String label;
+
+  const PromoResult({
+    required this.ok,
+    required this.discount,
+    required this.total,
+    required this.label,
+  });
+
+  const PromoResult.invalid()
+      : ok = false,
+        discount = 0,
+        total = 0,
+        label = '';
 }

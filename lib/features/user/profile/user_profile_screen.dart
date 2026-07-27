@@ -70,7 +70,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     final t = context.t;
     final colors = _c;
-    final name  = _session.name  ?? 'Mehmon';
+    final name  = _session.name  ?? context.t.profile.guest;
     final phone = _session.phone ?? '—';
 
     return Scaffold(
@@ -79,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: colors.background,
         elevation: 0,
         title: Text(
-          t.profile.title,
+          context.t.profile.title,
           style: TextStyle(
             color: colors.onBackground,
             fontSize: 17,
@@ -109,7 +109,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 12),
           _buildSubscriptionBanner(colors),
           const SizedBox(height: 24),
-          _buildSectionLabel('MENING MASHINALARIM', colors),
+          _buildSectionLabel(context.t.profile.myCarsLabel, colors),
           _buildMyCars(context, colors),
           const SizedBox(height: 24),
           Padding(
@@ -131,7 +131,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Sozlamalar',
+                        context.t.settings.title,
                         style: TextStyle(
                           color: colors.onBackground,
                           fontSize: 14,
@@ -245,26 +245,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
           color: colors.onPrimaryContainer,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: colors.grey1, width: 1),
         ),
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Flexible(
               child: _statItem(
-                  '$_completedCount', "YUVILGAN", colors: colors),
+                  '$_completedCount', context.t.profile.washed, colors: colors),
             ),
-            _statDivider(colors),
             Flexible(
               child: _statItem(
-                  _session.cars.length.toString(), "MASHINA", colors: colors),
+                  _session.cars.length.toString(), context.t.profile.carStat, colors: colors),
             ),
-            _statDivider(colors),
             Flexible(
-              child: _statItem('Bronze', "DARAJA",
+              child: _statItem('Bronze', context.t.profile.rank,
                   colors: colors, valueColor: colors.info),
             ),
           ],
@@ -349,7 +348,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         Text(
-                          '${sub.washesRemaining} ta yuvish qoldi',
+                          context.t.profile.remainsLabel.replaceAll('{count}', '${sub.washesRemaining}'),
                           style: TextStyle(
                             color: colors.onPrimary.withValues(alpha: 0.8),
                             fontSize: 12,
@@ -372,7 +371,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Amal qiladi: ${_formatDate(sub.expiresAt)}',
+                '${context.t.profile.expiresLabel.replaceAll('{date}', _formatDate(sub.expiresAt))}',
                 style: TextStyle(
                   color: colors.onPrimary.withValues(alpha: 0.7),
                   fontSize: 11,
@@ -414,8 +413,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Premium obuna',
+                      Text(
+                        context.t.profile.premiumOffer,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -424,7 +423,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Faol emas · 70% gacha tejang',
+                        context.t.profile.inactiveSubtitle,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 13,
@@ -442,7 +441,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
-              'Obuna rasmiylashtirish',
+              context.t.profile.subscribeNow,
               style: TextStyle(
                 color: colors.onBackground,
                 fontSize: 17,
@@ -531,7 +530,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${plan.durationMonths} oy',
+                    context.t.profile.monthsDuration.replaceAll('{months}', '${plan.durationMonths}'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -551,8 +550,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.white.withValues(alpha: 0.3),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Text(
-                        'Eng yaxshi narx',
+                      child: Text(
+                        context.t.profile.bestPrice,
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
@@ -604,7 +603,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 Text(
-                  'jami',
+                  context.t.profile.totalLabel,
                   style: TextStyle(
                     color: isBest
                         ? Colors.white.withValues(alpha: 0.7)
@@ -627,7 +626,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
       buf.write(s[i]);
     }
-    return "${buf.toString()} so'm";
+    return "${buf.toString()} UZS";
   }
 
   Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
@@ -646,7 +645,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Icon(Icons.add, color: colors.info, size: 16),
                     const SizedBox(width: 4),
                     Text(
-                      "Qo'shish",
+                      context.t.profile.addCar,
                       style: TextStyle(
                           color: colors.info,
                           fontSize: 13,
@@ -675,7 +674,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: colors.info, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      "Mashina qo'shing",
+                      context.t.profile.addCarButton,
                       style: TextStyle(
                           color: colors.info,
                           fontSize: 14,

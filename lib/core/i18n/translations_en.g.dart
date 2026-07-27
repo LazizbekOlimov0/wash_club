@@ -36,6 +36,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsSplashEn splash = TranslationsSplashEn._(_root);
 	@override late final TranslationsLoginEn login = TranslationsLoginEn._(_root);
 	@override late final TranslationsNavEn nav = TranslationsNavEn._(_root);
+	@override late final TranslationsMapEn map = TranslationsMapEn._(_root);
 	@override late final TranslationsHomeEn home = TranslationsHomeEn._(_root);
 	@override late final TranslationsBookingEn booking = TranslationsBookingEn._(_root);
 	@override late final TranslationsOrdersEn orders = TranslationsOrdersEn._(_root);
@@ -43,6 +44,8 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsNotificationEn notification = TranslationsNotificationEn._(_root);
 	@override late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
 	@override late final TranslationsSettingsEn settings = TranslationsSettingsEn._(_root);
+	@override late final TranslationsOrderStatusEn orderStatus = TranslationsOrderStatusEn._(_root);
+	@override late final TranslationsTimeEn time = TranslationsTimeEn._(_root);
 }
 
 // Path: splash
@@ -68,6 +71,22 @@ class TranslationsLoginEn extends TranslationsLoginUz {
 	@override String get name => 'Your name';
 	@override String get phone => 'Phone number';
 	@override String get button => 'Sign in';
+	@override String get telegramLogin => 'Login via Telegram';
+	@override String get telegramSecure => 'Secure login via Telegram bot';
+	@override String get telegramNotOpened => 'Telegram not opened. Go to @washclub_bot manually.';
+	@override String get networkError => 'Network error. Check your internet.';
+	@override String get errorOccurred => 'An error occurred';
+	@override String get notRegistered => 'Not registered. Press /start in bot and share your phone.';
+	@override String get wrongCode => 'Wrong code. Try again.';
+	@override String get testMode => 'Test mode: enter code';
+	@override String get botRegister => 'Register via bot';
+	@override String get verifyCode => 'Confirm';
+	@override String get verifying => 'Verifying...';
+	@override String get telegramOpened => 'Telegram bot opened';
+	@override String get stepInstruction => '3. After registering, press the button below';
+	@override String get testCode => 'Test mode: code 123456';
+	@override String get iRegistered => 'I have registered';
+	@override String get reopenBot => 'Reopen bot';
 }
 
 // Path: nav
@@ -81,6 +100,22 @@ class TranslationsNavEn extends TranslationsNavUz {
 	@override String get booking => 'Booking';
 	@override String get orders => 'Orders';
 	@override String get profile => 'Profile';
+	@override String get map => 'Map';
+}
+
+// Path: map
+class TranslationsMapEn extends TranslationsMapUz {
+	TranslationsMapEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get loadingLocation => 'Detecting location...';
+	@override String get loadingBranches => 'Loading branches...';
+	@override String get bookButton => 'Book now';
+	@override String get locationError => 'Could not detect location';
+	@override String get locationServiceOff => 'Location service is off';
+	@override String get locationServiceOffDesc => 'Please enable location services in your device settings.';
 }
 
 // Path: home
@@ -125,6 +160,7 @@ class TranslationsHomeEn extends TranslationsHomeUz {
 	@override String get cancel => 'Cancel';
 	@override String get open => 'Open';
 	@override String get closed => 'Closed';
+	@override String get searchBranch => 'Search branches...';
 	@override String get quickActions => 'Quick actions';
 	@override String get book => 'Book';
 	@override String get history => 'History';
@@ -152,6 +188,67 @@ class TranslationsBookingEn extends TranslationsBookingUz {
 	// Translations
 	@override String get disabledTitle => 'Booking temporarily unavailable';
 	@override String get disabledSubtitle => 'Booking is not available at the moment. It will be back soon!';
+	@override String get stepBranch => 'Branch';
+	@override String get stepService => 'Service';
+	@override String get stepTime => 'Time';
+	@override String get stepPayment => 'Payment';
+	@override String get stepLabel => 'Step {step}/{total}';
+	@override String get next => 'Next';
+	@override String get pay => 'Pay · {price}';
+	@override String get noBranches => 'No branches found';
+	@override String get open => 'Open';
+	@override String get closed => 'Closed';
+	@override String get noServices => 'No services found';
+	@override String get noPaidServices => 'No paid services at this branch';
+	@override String get branchLabel => 'BRANCH';
+	@override String get change => 'Change';
+	@override String get anyServicePromo => 'Any service — only 120,000 UZS';
+	@override String get anyServicePromo2 => ' book now, regardless of price.';
+	@override String get additionalServices => 'ADDITIONAL SERVICES';
+	@override String get sana => 'DATE';
+	@override String get today => 'TODAY';
+	@override String get timeLabel => 'TIME';
+	@override String get summary => 'Summary';
+	@override String get summaryDateTime => 'Date & time';
+	@override String get paymentMethod => 'Payment method';
+	@override String get click => 'Click';
+	@override String get payme => 'Payme';
+	@override String get card => 'Card';
+	@override String get cash => 'Cash';
+	@override String get membershipFree => 'Free with membership';
+	@override String get uploadReceipt => 'Upload payment receipt';
+	@override String get maxSize => 'Max 5MB';
+	@override String get addCar => 'Add car';
+	@override String get promoCode => 'Promo code';
+	@override String get apply => 'Apply';
+	@override String get promoInvalid => 'Invalid promo code';
+	@override String get timeFormatError => 'Invalid time format';
+	@override String get pastTimeError => 'Cannot select past time';
+	@override String get dailyLimitError => 'Daily booking limit reached';
+	@override String get fileSizeError => 'File must be under 5MB';
+	@override String get bookingSubmitted => 'Booking submitted!';
+	@override String get bookingAccepted => 'Booking accepted!';
+	@override String get bookingReceiptMsg => 'Your booking will be activated after receipt verification.';
+	@override String get bookingQrMsg => 'Scan this QR code at the car wash using the CRM QR Scanner.';
+	@override String get errorText => 'Error';
+	@override String get dayMon => 'Mo';
+	@override String get dayTue => 'Tu';
+	@override String get dayWed => 'We';
+	@override String get dayThu => 'Th';
+	@override String get dayFri => 'Fr';
+	@override String get daySat => 'Sa';
+	@override String get daySun => 'Su';
+	@override String get car => 'Car';
+	@override String get service => 'Service';
+	@override String get branch => 'Branch';
+	@override String get time => 'Time';
+	@override String get servicePremium => 'Premium wash';
+	@override String get paymentReceipt => 'PAYMENT RECEIPT';
+	@override String get carLabel => 'VEHICLE';
+	@override String get paymentLabel => 'PAYMENT METHOD';
+	@override String get summaryLabel => 'SUMMARY';
+	@override String get savedAmount => 'You save {amount}';
+	@override String get minutes => '{minutes} min';
 }
 
 // Path: orders
@@ -164,6 +261,22 @@ class TranslationsOrdersEn extends TranslationsOrdersUz {
 	@override String get title => 'My orders';
 	@override String get empty => 'No orders';
 	@override String get emptySubtitle => 'You have no booked orders';
+	@override String get active => 'Active';
+	@override String get history => 'History';
+	@override String get searchHint => 'Search by plate number';
+	@override String get summary => '{active} active · {history} history';
+	@override String get emptyActive => 'No active orders';
+	@override String get emptyHistory => 'History empty';
+	@override String get bookNow => 'Book now';
+	@override String get error => 'An error occurred';
+	@override String get retry => 'Retry';
+	@override String get cancelTitle => 'Cancel';
+	@override String get cancelConfirm => 'Cancel this order?';
+	@override String get cancelError => 'Cancel error';
+	@override String get qrCode => 'Show QR code';
+	@override String get cancelOrder => 'Cancel order';
+	@override String get cancelNo => 'No';
+	@override String get cancelYes => 'Yes';
 }
 
 // Path: addCar
@@ -182,6 +295,11 @@ class TranslationsAddCarEn extends TranslationsAddCarUz {
 	@override String get model => 'Model';
 	@override String get bodyType => 'Body type';
 	@override String get continueButton => 'Continue';
+	@override String get color => 'Color';
+	@override String get colorHint => 'Black, White, Silver...';
+	@override String get brandHint => 'Chevrolet';
+	@override String get modelHint => 'Cobalt 2024';
+	@override String get secureSaving => 'Secure storage';
 }
 
 // Path: notification
@@ -220,6 +338,30 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	@override String get bestPrice => 'Best price';
 	@override String get months3 => '3 months';
 	@override String get months6 => '6 months';
+	@override String get guest => 'Guest';
+	@override String get myCarsLabel => 'MY CARS';
+	@override String get washed => 'WASHED';
+	@override String get carStat => 'CAR';
+	@override String get rank => 'RANK';
+	@override String get remainsLabel => '{count} washes left';
+	@override String get expiresLabel => 'Expires: {date}';
+	@override String get premiumOffer => 'Premium subscription';
+	@override String get inactiveSubtitle => 'Inactive · Save up to 70%';
+	@override String get subscribeNow => 'Subscribe now';
+	@override String get monthsDuration => '{months} months';
+	@override String get unlimitedDesc => 'Unlimited washes · {price} / month';
+	@override String get totalLabel => 'total';
+	@override String get addCarButton => 'Add car';
+	@override String get deleteCarTitle => 'Delete car';
+	@override String get deleteCarConfirm => 'Delete {name} ({plate})?';
+	@override String get cancelButton => 'Cancel';
+	@override String get deleteButton => 'Delete';
+	@override String get editProfile => 'Edit profile';
+	@override String get name => 'Name';
+	@override String get imagePickError => 'Image pick error';
+	@override String get languageUz => 'Uzbek';
+	@override String get languageRu => 'Russian';
+	@override String get languageEn => 'English';
 }
 
 // Path: settings
@@ -245,6 +387,17 @@ class TranslationsSettingsEn extends TranslationsSettingsUz {
 	@override String get promoSubtitle => 'Deals and special offers';
 	@override String get language => 'LANGUAGE';
 	@override String get appLanguage => 'App language';
+	@override String get languageSelect => 'Choose language';
+	@override String get mapPermissionDenied => 'Location permission denied';
+	@override String get mapBlocked => 'Location permission blocked';
+	@override String get mapBlockedDesc => 'Location permission has been permanently denied. Please re-enable it in your device settings for this app.';
+	@override String get mapClose => 'Close';
+	@override String get mapOpenSettings => 'Settings';
+	@override String get bookingUploadReceipt => 'Please upload a payment receipt image';
+	@override String get phoneChange => 'Change phone number';
+	@override String get phoneLabel => 'Phone';
+	@override String get save => 'Save';
+	@override String get otpTelegram => 'You will be redirected to our Telegram bot to continue. Press /start in the bot and share your phone number.';
 	@override String get history => 'HISTORY';
 	@override String get visitHistory => 'Visit history';
 	@override String get paymentHistory => 'Payment history';
@@ -265,4 +418,35 @@ class TranslationsSettingsEn extends TranslationsSettingsUz {
 	@override String get confirm => 'Log out';
 	@override String get delete => 'Delete';
 	@override String get version => 'Wash Club · v1.0.0';
+}
+
+// Path: orderStatus
+class TranslationsOrderStatusEn extends TranslationsOrderStatusUz {
+	TranslationsOrderStatusEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get pending => 'Pending';
+	@override String get pendingPayment => 'Payment pending';
+	@override String get queued => 'Confirmed';
+	@override String get confirmed => 'QR scanned';
+	@override String get washing => 'Washing';
+	@override String get drying => 'Drying';
+	@override String get ready => 'Ready';
+	@override String get completed => 'Completed';
+	@override String get cancelled => 'Cancelled';
+}
+
+// Path: time
+class TranslationsTimeEn extends TranslationsTimeUz {
+	TranslationsTimeEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get now => 'now';
+	@override String get minutes => 'min';
+	@override String get hours => 'h';
+	@override String get days => 'd';
 }

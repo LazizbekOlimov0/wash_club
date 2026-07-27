@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
+import 'package:wash_club/core/i18n/translations.g.dart' hide BuildContextTranslationsExtension;
 import '../../../../../../core/theme/colors.dart';
 import '../../../../../../shared/services/orders_repository.dart';
 
@@ -59,6 +60,37 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   bool get _hasUnread => _items.any((n) => !n.isRead);
+
+  String _translateKey(Translations t, String key) {
+    final parts = key.split('.');
+    if (parts.length == 3 && parts[0] == 'orderStatus') {
+      final statusKey = parts[1];
+      switch (statusKey) {
+        case 'pending':          return t.orderStatus.pending;
+        case 'pending_payment':  return t.orderStatus.pendingPayment;
+        case 'queued':           return t.orderStatus.queued;
+        case 'confirmed':        return t.orderStatus.confirmed;
+        case 'washing':          return t.orderStatus.washing;
+        case 'drying':           return t.orderStatus.drying;
+        case 'ready':            return t.orderStatus.ready;
+        case 'completed':        return t.orderStatus.completed;
+        case 'cancelled':        return t.orderStatus.cancelled;
+        default:                 return key;
+      }
+    }
+    if (key == 'time.now') return t.time.now;
+    if (parts.length == 3 && parts[0] == 'time') {
+      final unit = parts[1];
+      final amount = parts[2];
+      switch (unit) {
+        case 'minutes': return '$amount ${t.time.minutes}';
+        case 'hours':   return '$amount ${t.time.hours}';
+        case 'days':    return '$amount ${t.time.days}';
+        default:        return key;
+      }
+    }
+    return key;
+  }
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -320,7 +352,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        n.relativeTime,
+                        n.relativeTime.startsWith('time.') ? _translateKey(t, n.relativeTime) : n.relativeTime,
                         style: TextStyle(
                           color: colors.grey3,
                           fontSize: 11,
@@ -331,7 +363,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    n.title,
+                    _translateKey(t, n.title),
                     style: TextStyle(
                       color: colors.onSurface,
                       fontSize: 14,

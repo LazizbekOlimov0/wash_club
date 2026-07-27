@@ -6,10 +6,10 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/theme/colors.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
+import 'package:wash_club/core/i18n/translations.g.dart' show Translations;
 import '../../../core/theme/extensions/theme_extension.dart';
 import '../../../../../shared/services/client_session.dart';
 import '../../../../../shared/services/supabase_service.dart';
-import '../../../../../shared/services/promo_service.dart';
 import '../../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/orders_repository.dart';
@@ -228,7 +228,7 @@ class _BookingScreenState extends State<BookingScreen> {
       if (!result.ok) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Promokod noto‘g‘ri: $code'),
+            content: Text('${context.t.booking.promoInvalid}: $code'),
             backgroundColor: context.colors.error,
           ),
         );
@@ -287,7 +287,7 @@ class _BookingScreenState extends State<BookingScreen> {
       if (timeParts.length != 2) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Vaqt formati noto‘g‘ri')),
+            SnackBar(content: Text(context.t.booking.timeFormatError)),
           );
         }
         setState(() => _submitting = false);
@@ -303,7 +303,7 @@ class _BookingScreenState extends State<BookingScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text("O'tib ketgan vaqtni tanlash mumkin emas"),
+              content: Text(context.t.booking.pastTimeError),
               backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
             ),
           );
@@ -335,7 +335,7 @@ class _BookingScreenState extends State<BookingScreen> {
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Kunlik bron limitiga yetdingiz (${AppConstants.dailyBookingLimit} ta)'),
+                content: Text('${context.t.booking.dailyLimitError} (${AppConstants.dailyBookingLimit})'),
                 backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
               ),
             );
@@ -351,7 +351,7 @@ class _BookingScreenState extends State<BookingScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Iltimos, to\'lov cheki suratini yuklang'),
+              content: Text(context.t.settings.bookingUploadReceipt),
               backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
             ),
           );
@@ -403,7 +403,7 @@ class _BookingScreenState extends State<BookingScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Xatolik: ${e.toString()}'),
+            content: Text('${context.t.booking.errorText}: ${e.toString()}'),
             backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
           ),
         );
@@ -437,7 +437,7 @@ class _BookingScreenState extends State<BookingScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text('Fayl 5MB dan kichik bo\'lishi kerak'),
+              content: Text(context.t.booking.fileSizeError),
               backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
             ),
           );
@@ -482,7 +482,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                isMember ? 'Bron qabul qilindi!' : 'Bron yuborildi!',
+                isMember ? context.t.booking.bookingAccepted : context.t.booking.bookingSubmitted,
                 style: TextStyle(
                   color: colors.onBackground,
                   fontSize: 18,
@@ -492,8 +492,8 @@ class _BookingScreenState extends State<BookingScreen> {
               const SizedBox(height: 6),
               Text(
                 isMember
-                    ? "Moykaga kelganda ushbu QR kodni CRM'dagi QR Scan orqali skaner qildiring."
-                    : 'Chek tasdiqlangandan so\'ng broningiz faollashadi.',
+                    ? context.t.booking.bookingQrMsg
+                    : context.t.booking.bookingReceiptMsg,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: colors.grey2, fontSize: 13),
               ),
@@ -538,10 +538,10 @@ class _BookingScreenState extends State<BookingScreen> {
                 padding: const EdgeInsets.all(12),
                 child: Column(
                   children: [
-                    _detailRow(colors, 'Filial', _selectedBranch?.name ?? '—'),
-                    _detailRow(colors, 'Xizmat', _selectedService?.name ?? 'Yuvish'),
-                    _detailRow(colors, 'Mashina', _selectedCar?.plate ?? (_session.cars.isNotEmpty ? _session.cars.first.plate : '—')),
-                    _detailRow(colors, 'Vaqt', '$_selectedTime · ${_formatDate(_selectedDate)}'),
+                    _detailRow(colors, context.t.booking.branch, _selectedBranch?.name ?? '—'),
+                    _detailRow(colors, context.t.booking.service, _selectedService?.name ?? 'Yuvish'),
+                    _detailRow(colors, context.t.booking.car, _selectedCar?.plate ?? (_session.cars.isNotEmpty ? _session.cars.first.plate : '—')),
+                    _detailRow(colors, context.t.booking.time, '$_selectedTime · ${_formatDate(_selectedDate)}'),
                   ],
                 ),
               ),
@@ -643,7 +643,12 @@ class _BookingScreenState extends State<BookingScreen> {
     });
   }
 
-  static const _stepTitles = ['Filial', 'Xizmat', 'Vaqt', "To'lov"];
+  static List<String> _stepTitles(Translations t) => [
+    t.booking.stepBranch,
+    t.booking.stepService,
+    t.booking.stepTime,
+    t.booking.stepPayment,
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -707,9 +712,9 @@ class _BookingScreenState extends State<BookingScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Qadam ${_step + 1} / 4',
+              Text(context.t.booking.stepLabel.replaceAll('{step}', '${_step + 1}').replaceAll('{total}', '4'),
                   style: TextStyle(color: colors.grey2, fontSize: 12)),
-              Text(_stepTitles[_step],
+              Text(_stepTitles(context.t)[_step],
                   style: TextStyle(
                       color: colors.onBackground,
                       fontSize: 22,
@@ -820,8 +825,8 @@ class _BookingScreenState extends State<BookingScreen> {
     final colors = context.colors;
     final isLast = _step == 3;
     final label = isLast
-        ? "To'lash · ${_formatPrice(_totalPrice)}"
-        : 'Keyingisi';
+        ? context.t.booking.pay.replaceAll('{price}', _formatPrice(_totalPrice))
+        : context.t.booking.next;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
@@ -884,7 +889,7 @@ String _formatPrice(int sum) {
     if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
     buf.write(s[i]);
   }
-  return '${buf.toString()} so\'m';
+  return '${buf.toString()} UZS';
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -908,7 +913,7 @@ class _BranchStep extends StatelessWidget {
 
     if (branches.isEmpty) {
       return Center(
-        child: Text('Filiallar topilmadi',
+        child: Text(context.t.booking.noBranches,
             style: TextStyle(color: colors.grey2)),
       );
     }
@@ -970,7 +975,7 @@ class _BranchStep extends StatelessWidget {
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          b.isActive ? 'Ochiq' : 'Yopiq',
+                          b.isActive ? context.t.booking.open : context.t.booking.closed,
                           style: TextStyle(
                               color: colors.onPrimary,
                               fontSize: 12,
@@ -1088,8 +1093,8 @@ class _ServiceStep extends StatelessWidget {
       return Center(
         child: Text(
           hasRawServices
-              ? 'Bu filialda pullik xizmatlar mavjud emas'
-              : 'Xizmatlar topilmadi',
+              ? context.t.booking.noPaidServices
+              : context.t.booking.noServices,
           textAlign: TextAlign.center,
           style: TextStyle(color: colors.grey2),
         ),
@@ -1120,7 +1125,7 @@ class _ServiceStep extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'FILIAL',
+                          context.t.booking.branchLabel,
                           style: TextStyle(
                             color: colors.grey2,
                             fontSize: 11,
@@ -1144,7 +1149,7 @@ class _ServiceStep extends StatelessWidget {
                     GestureDetector(
                       onTap: onChangeBranch,
                       child: Text(
-                        "O'zgartirish",
+                        context.t.booking.change,
                         style: TextStyle(
                           color: colors.info,
                           fontSize: 15,
@@ -1182,7 +1187,7 @@ class _ServiceStep extends StatelessWidget {
                       children: [
                         TextSpan(
                           text:
-                          "Istalgan xizmat — atigi 120 000 so'mga",
+                          context.t.booking.anyServicePromo,
                           style: TextStyle(
                             color: const Color(0xFFFF8C00),
                             fontSize: 14,
@@ -1191,7 +1196,7 @@ class _ServiceStep extends StatelessWidget {
                         ),
                         TextSpan(
                           text:
-                          " bron qiling, narxidan qat'i nazar.",
+                          context.t.booking.anyServicePromo2,
                           style: TextStyle(
                             color: colors.onBackground
                                 .withValues(alpha: 0.7),
@@ -1238,7 +1243,7 @@ class _ServiceStep extends StatelessWidget {
           if (addonServices.isNotEmpty) ...[
             const SizedBox(height: 24),
             Text(
-              "QO'SHIMCHA XIZMATLAR",
+              context.t.booking.additionalServices,
               style: TextStyle(
                 color: colors.grey2,
                 fontSize: 12,
@@ -1383,7 +1388,7 @@ class _ServiceCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: isSelected
               ? colors.primary.withValues(alpha: isLight ? 0.08 : 0.15)
@@ -1414,16 +1419,16 @@ class _ServiceCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(height: 4),
                 // Service name
                 Text(
                   service.name,
                   style: TextStyle(
                     color: colors.onBackground,
-                    fontSize: 15,
+                    fontSize: 13,
                     fontWeight: FontWeight.bold,
                   ),
-                  maxLines: 2,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (service.description.isNotEmpty) ...[
@@ -1436,7 +1441,7 @@ class _ServiceCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-                const SizedBox(height: 8),
+                const SizedBox(height: 4),
                 // Price row
                 if (hasDiscount) ...[
                   // Eski narx — strikethrough
@@ -1466,7 +1471,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    "Siz ${_formatPrice(discountAmount)} tejaysiz",
+                    context.t.booking.savedAmount.replaceAll('{amount}', _formatPrice(discountAmount)),
                     style: const TextStyle(
                       color: Color(0xFFFF8C00),
                       fontSize: 11,
@@ -1498,7 +1503,7 @@ class _ServiceCard extends StatelessWidget {
                           color: colors.grey2, size: 12),
                       const SizedBox(width: 3),
                       Text(
-                        '${service.durationMinutes} daq',
+                        context.t.booking.minutes.replaceAll('{minutes}', '${service.durationMinutes}'),
                         style: TextStyle(
                           color: colors.grey2,
                           fontSize: 12,
@@ -1556,7 +1561,7 @@ String _formatShortPrice(int sum) {
     if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
     buf.write(s[i]);
   }
-  return "${buf.toString()} so'm";
+  return "${buf.toString()} UZS";
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -1587,14 +1592,14 @@ class _TimeStep extends StatelessWidget {
 
     final today = DateTime.now();
     final dates = List.generate(10, (i) => today.add(Duration(days: i)));
-    const dayNames = ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'];
+    final dayNames = [context.t.booking.dayMon, context.t.booking.dayTue, context.t.booking.dayWed, context.t.booking.dayThu, context.t.booking.dayFri, context.t.booking.daySat, context.t.booking.daySun];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('SANA',
+          Text(context.t.booking.sana,
               style: TextStyle(
                   color: colors.grey2,
                   fontSize: 12,
@@ -1628,7 +1633,7 @@ class _TimeStep extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          isToday ? 'BUGUN' : dayNames[(d.weekday - 1) % 7],
+                          isToday ? context.t.booking.today : dayNames[(d.weekday - 1) % 7],
                           style: TextStyle(
                               color: isSelected ? colors.onPrimary : colors.grey2,
                               fontSize: 9,
@@ -1650,7 +1655,7 @@ class _TimeStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          Text('VAQT',
+          Text(context.t.booking.timeLabel,
               style: TextStyle(
                   color: colors.grey2,
                   fontSize: 12,
@@ -1773,13 +1778,13 @@ class _PaymentStep extends StatelessWidget {
     final cardBg = isLight ? colors.surface : colors.onPrimaryContainer;
 
     final methods = [
-      {'id': AppConstants.paymentClick, 'label': 'Click',
+      {'id': AppConstants.paymentClick, 'label': context.t.booking.click,
         'icon': Icons.touch_app_outlined},
-      {'id': AppConstants.paymentPayme, 'label': 'Payme',
+      {'id': AppConstants.paymentPayme, 'label': context.t.booking.payme,
         'icon': Icons.payment_outlined},
-      {'id': AppConstants.paymentCard, 'label': 'Karta',
+      {'id': AppConstants.paymentCard, 'label': context.t.booking.card,
         'icon': Icons.credit_card_outlined},
-      {'id': AppConstants.paymentCash, 'label': 'Naqd',
+      {'id': AppConstants.paymentCash, 'label': context.t.booking.cash,
         'icon': Icons.money_outlined},
     ];
 
@@ -1805,7 +1810,7 @@ class _PaymentStep extends StatelessWidget {
                   Icon(Icons.verified, color: colors.success, size: 18),
                   const SizedBox(width: 8),
                   Text(
-                    'Obuna orqali — bepul',
+                    context.t.booking.membershipFree,
                     style: TextStyle(
                       color: colors.success,
                       fontSize: 13,
@@ -1820,7 +1825,7 @@ class _PaymentStep extends StatelessWidget {
 
           // Receipt upload (one-time booking)
           if (!hasSubscription) ...[
-            _sectionLabel("TO'LOV CHEKI", colors),
+            _sectionLabel(context.t.booking.paymentReceipt, colors),
             const SizedBox(height: 10),
             GestureDetector(
               onTap: onPickReceipt,
@@ -1846,11 +1851,11 @@ class _PaymentStep extends StatelessWidget {
                           Icon(Icons.upload_file_outlined, color: colors.grey2, size: 32),
                           const SizedBox(height: 8),
                           Text(
-                            'To\'lov cheki suratini yuklang',
+                            context.t.booking.uploadReceipt,
                             style: TextStyle(color: colors.grey2, fontSize: 13),
                           ),
                           Text(
-                            'Max 5MB',
+                            context.t.booking.maxSize,
                             style: TextStyle(color: colors.grey3, fontSize: 11),
                           ),
                         ],
@@ -1862,7 +1867,7 @@ class _PaymentStep extends StatelessWidget {
 
           // Car selection (agar session'da mashina bor bo'lsa)
           if (cars.isNotEmpty) ...[
-            _sectionLabel("MASHINA", colors),
+            _sectionLabel(context.t.booking.carLabel, colors),
             const SizedBox(height: 10),
             ...cars.map((car) {
               final isSelected = selectedCar?.plate == car.plate;
@@ -1910,7 +1915,7 @@ class _PaymentStep extends StatelessWidget {
             }),
             const SizedBox(height: 20),
           ] else ...[
-            _sectionLabel("MASHINA", colors),
+            _sectionLabel(context.t.booking.carLabel, colors),
             const SizedBox(height: 10),
             GestureDetector(
               onTap: onAddCar,
@@ -1931,7 +1936,7 @@ class _PaymentStep extends StatelessWidget {
                     Icon(Icons.add_circle_outline, color: colors.primary, size: 22),
                     const SizedBox(width: 10),
                     Text(
-                      'Mashina qo\'shish',
+                      context.t.booking.addCar,
                       style: TextStyle(
                         color: colors.primary,
                         fontSize: 15,
@@ -1946,7 +1951,7 @@ class _PaymentStep extends StatelessWidget {
           ],
 
           // Payment methods
-          _sectionLabel("TO'LOV USULI", colors),
+          _sectionLabel(context.t.booking.paymentLabel, colors),
           const SizedBox(height: 12),
           GridView.builder(
             shrinkWrap: true,
@@ -2024,7 +2029,7 @@ class _PaymentStep extends StatelessWidget {
                               color: colors.onSurface, fontSize: 14),
                           decoration: InputDecoration(
                             border: InputBorder.none,
-                            hintText: 'Promokod',
+                            hintText: context.t.booking.promoCode,
                             hintStyle: TextStyle(color: colors.grey2),
                             isDense: true,
                             contentPadding: EdgeInsets.zero,
@@ -2046,7 +2051,7 @@ class _PaymentStep extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Center(
-                    child: Text('Qo\'llash',
+                    child: Text(context.t.booking.apply,
                         style: TextStyle(
                             color: colors.onPrimary,
                             fontSize: 14,
@@ -2060,7 +2065,7 @@ class _PaymentStep extends StatelessWidget {
           const SizedBox(height: 20),
 
           // Summary
-          _sectionLabel('XULOSA', colors),
+          _sectionLabel(context.t.booking.summaryLabel, colors),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(16),
@@ -2071,9 +2076,9 @@ class _PaymentStep extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _summaryRow('Filial', branch?.name ?? '—', colors),
+                _summaryRow(context.t.booking.branch, branch?.name ?? '—', colors),
                 const SizedBox(height: 10),
-                _summaryRow('Sana va vaqt',
+                _summaryRow(context.t.booking.summaryDateTime,
                     selectedTime != null ? '$dateStr · $selectedTime' : '—',
                     colors),
                 if (service != null) ...[
@@ -2098,7 +2103,7 @@ class _PaymentStep extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("To'lash",
+                    Text(context.t.booking.stepPayment,
                         style: TextStyle(
                             color: colors.onSurface,
                             fontSize: 14,

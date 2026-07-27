@@ -36,6 +36,7 @@ class TranslationsRu extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsSplashRu splash = TranslationsSplashRu._(_root);
 	@override late final TranslationsLoginRu login = TranslationsLoginRu._(_root);
 	@override late final TranslationsNavRu nav = TranslationsNavRu._(_root);
+	@override late final TranslationsMapRu map = TranslationsMapRu._(_root);
 	@override late final TranslationsHomeRu home = TranslationsHomeRu._(_root);
 	@override late final TranslationsBookingRu booking = TranslationsBookingRu._(_root);
 	@override late final TranslationsOrdersRu orders = TranslationsOrdersRu._(_root);
@@ -43,6 +44,8 @@ class TranslationsRu extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsNotificationRu notification = TranslationsNotificationRu._(_root);
 	@override late final TranslationsProfileRu profile = TranslationsProfileRu._(_root);
 	@override late final TranslationsSettingsRu settings = TranslationsSettingsRu._(_root);
+	@override late final TranslationsOrderStatusRu orderStatus = TranslationsOrderStatusRu._(_root);
+	@override late final TranslationsTimeRu time = TranslationsTimeRu._(_root);
 }
 
 // Path: splash
@@ -68,6 +71,22 @@ class TranslationsLoginRu extends TranslationsLoginUz {
 	@override String get name => 'Ваше имя';
 	@override String get phone => 'Номер телефона';
 	@override String get button => 'Войти';
+	@override String get telegramLogin => 'Войти через Telegram';
+	@override String get telegramSecure => 'Безопасный вход через Telegram бот';
+	@override String get telegramNotOpened => 'Telegram не открылся. @washclub_bot вручную.';
+	@override String get networkError => 'Ошибка сети. Проверьте интернет.';
+	@override String get errorOccurred => 'Произошла ошибка';
+	@override String get notRegistered => 'Не зарегистрирован. /start в боте.';
+	@override String get wrongCode => 'Неверный код.';
+	@override String get testMode => 'Тестовый режим: введите код';
+	@override String get botRegister => 'Регистрация через бот';
+	@override String get verifyCode => 'Подтвердить';
+	@override String get verifying => 'Проверка...';
+	@override String get telegramOpened => 'Telegram бот открыт';
+	@override String get stepInstruction => '3. После регистрации нажмите кнопку ниже';
+	@override String get testCode => 'Тестовый режим: код 123456';
+	@override String get iRegistered => 'Я зарегистрировался';
+	@override String get reopenBot => 'Открыть бот снова';
 }
 
 // Path: nav
@@ -81,6 +100,22 @@ class TranslationsNavRu extends TranslationsNavUz {
 	@override String get booking => 'Бронь';
 	@override String get orders => 'Заказы';
 	@override String get profile => 'Профиль';
+	@override String get map => 'Карта';
+}
+
+// Path: map
+class TranslationsMapRu extends TranslationsMapUz {
+	TranslationsMapRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get loadingLocation => 'Определение местоположения...';
+	@override String get loadingBranches => 'Загрузка филиалов...';
+	@override String get bookButton => 'Забронировать';
+	@override String get locationError => 'Не удалось определить местоположение';
+	@override String get locationServiceOff => 'Служба геолокации отключена';
+	@override String get locationServiceOffDesc => 'Пожалуйста, включите службу геолокации в настройках устройства.';
 }
 
 // Path: home
@@ -125,6 +160,7 @@ class TranslationsHomeRu extends TranslationsHomeUz {
 	@override String get cancel => 'Отменить';
 	@override String get open => 'Открыто';
 	@override String get closed => 'Закрыто';
+	@override String get searchBranch => 'Поиск филиалов...';
 	@override String get quickActions => 'Быстрые действия';
 	@override String get book => 'Записаться';
 	@override String get history => 'История';
@@ -152,6 +188,67 @@ class TranslationsBookingRu extends TranslationsBookingUz {
 	// Translations
 	@override String get disabledTitle => 'Бронирование временно остановлено';
 	@override String get disabledSubtitle => 'Сейчас бронирование недоступно. Скоро снова заработает!';
+	@override String get stepBranch => 'Филиал';
+	@override String get stepService => 'Услуга';
+	@override String get stepTime => 'Время';
+	@override String get stepPayment => 'Оплата';
+	@override String get stepLabel => 'Шаг {step}/{total}';
+	@override String get next => 'Далее';
+	@override String get pay => 'Оплатить · {price}';
+	@override String get noBranches => 'Филиалы не найдены';
+	@override String get open => 'Открыто';
+	@override String get closed => 'Закрыто';
+	@override String get noServices => 'Услуги не найдены';
+	@override String get noPaidServices => 'Платные услуги отсутствуют';
+	@override String get branchLabel => 'ФИЛИАЛ';
+	@override String get change => 'Изменить';
+	@override String get anyServicePromo => 'Любая услуга — всего 120 000 сум';
+	@override String get anyServicePromo2 => ' бронируйте, независимо от цены.';
+	@override String get additionalServices => 'ДОП. УСЛУГИ';
+	@override String get sana => 'ДАТА';
+	@override String get today => 'СЕГОДНЯ';
+	@override String get timeLabel => 'ВРЕМЯ';
+	@override String get summary => 'Итого';
+	@override String get summaryDateTime => 'Дата и время';
+	@override String get paymentMethod => 'Способ оплаты';
+	@override String get click => 'Click';
+	@override String get payme => 'Payme';
+	@override String get card => 'Карта';
+	@override String get cash => 'Наличные';
+	@override String get membershipFree => 'Бесплатно по подписке';
+	@override String get uploadReceipt => 'Загрузите чек об оплате';
+	@override String get maxSize => 'Макс 5MB';
+	@override String get addCar => 'Добавить машину';
+	@override String get promoCode => 'Промокод';
+	@override String get apply => 'Применить';
+	@override String get promoInvalid => 'Неверный промокод';
+	@override String get timeFormatError => 'Неверный формат времени';
+	@override String get pastTimeError => 'Нельзя выбрать прошедшее время';
+	@override String get dailyLimitError => 'Достигнут дневной лимит';
+	@override String get fileSizeError => 'Файл должен быть меньше 5MB';
+	@override String get bookingSubmitted => 'Бронь отправлена!';
+	@override String get bookingAccepted => 'Бронь принята!';
+	@override String get bookingReceiptMsg => 'Бронь активируется после проверки чека.';
+	@override String get bookingQrMsg => 'Отсканируйте QR-код на мойке через CRM QR Scanner.';
+	@override String get errorText => 'Ошибка';
+	@override String get dayMon => 'Пн';
+	@override String get dayTue => 'Вт';
+	@override String get dayWed => 'Ср';
+	@override String get dayThu => 'Чт';
+	@override String get dayFri => 'Пт';
+	@override String get daySat => 'Сб';
+	@override String get daySun => 'Вс';
+	@override String get car => 'Машина';
+	@override String get service => 'Услуга';
+	@override String get branch => 'Филиал';
+	@override String get time => 'Время';
+	@override String get servicePremium => 'Премиум мойка';
+	@override String get paymentReceipt => 'ЧЕК ОПЛАТЫ';
+	@override String get carLabel => 'МАШИНА';
+	@override String get paymentLabel => 'СПОСОБ ОПЛАТЫ';
+	@override String get summaryLabel => 'ИТОГО';
+	@override String get savedAmount => 'Вы экономите {amount}';
+	@override String get minutes => '{minutes} мин';
 }
 
 // Path: orders
@@ -164,6 +261,22 @@ class TranslationsOrdersRu extends TranslationsOrdersUz {
 	@override String get title => 'Мои заказы';
 	@override String get empty => 'Заказов нет';
 	@override String get emptySubtitle => 'Нет забронированных заказов';
+	@override String get active => 'Активные';
+	@override String get history => 'История';
+	@override String get searchHint => 'Поиск по номеру машины';
+	@override String get summary => '{active} активных · {history} истории';
+	@override String get emptyActive => 'Нет активных заказов';
+	@override String get emptyHistory => 'История пуста';
+	@override String get bookNow => 'Забронировать';
+	@override String get error => 'Произошла ошибка';
+	@override String get retry => 'Повторить';
+	@override String get cancelTitle => 'Отмена';
+	@override String get cancelConfirm => 'Отменить этот заказ?';
+	@override String get cancelError => 'Ошибка отмены';
+	@override String get qrCode => 'Показать QR код';
+	@override String get cancelOrder => 'Отменить заказ';
+	@override String get cancelNo => 'Нет';
+	@override String get cancelYes => 'Да';
 }
 
 // Path: addCar
@@ -182,6 +295,11 @@ class TranslationsAddCarRu extends TranslationsAddCarUz {
 	@override String get model => 'Модель';
 	@override String get bodyType => 'Тип кузова';
 	@override String get continueButton => 'Продолжить';
+	@override String get color => 'Цвет';
+	@override String get colorHint => 'Черный, Белый, Серебристый...';
+	@override String get brandHint => 'Chevrolet';
+	@override String get modelHint => 'Cobalt 2024';
+	@override String get secureSaving => 'Безопасное хранение';
 }
 
 // Path: notification
@@ -220,6 +338,30 @@ class TranslationsProfileRu extends TranslationsProfileUz {
 	@override String get bestPrice => 'Лучшая цена';
 	@override String get months3 => '3 месяца';
 	@override String get months6 => '6 месяцев';
+	@override String get guest => 'Гость';
+	@override String get myCarsLabel => 'МОИ МАШИНЫ';
+	@override String get washed => 'ПОМЫТО';
+	@override String get carStat => 'МАШИНА';
+	@override String get rank => 'УРОВЕНЬ';
+	@override String get remainsLabel => 'Осталось {count} моек';
+	@override String get expiresLabel => 'Действует до: {date}';
+	@override String get premiumOffer => 'Премиум подписка';
+	@override String get inactiveSubtitle => 'Неактивна · Экономьте до 70%';
+	@override String get subscribeNow => 'Оформить подписку';
+	@override String get monthsDuration => '{months} мес.';
+	@override String get unlimitedDesc => 'Безлимитная мойка · {price} / мес.';
+	@override String get totalLabel => 'итого';
+	@override String get addCarButton => 'Добавить машину';
+	@override String get deleteCarTitle => 'Удалить машину';
+	@override String get deleteCarConfirm => 'Удалить {name} ({plate})?';
+	@override String get cancelButton => 'Отмена';
+	@override String get deleteButton => 'Удалить';
+	@override String get editProfile => 'Редактировать профиль';
+	@override String get name => 'Имя';
+	@override String get imagePickError => 'Ошибка выбора фото';
+	@override String get languageUz => 'Узбекский';
+	@override String get languageRu => 'Русский';
+	@override String get languageEn => 'Английский';
 }
 
 // Path: settings
@@ -245,6 +387,17 @@ class TranslationsSettingsRu extends TranslationsSettingsUz {
 	@override String get promoSubtitle => 'Акции и специальные предложения';
 	@override String get language => 'ЯЗЫК';
 	@override String get appLanguage => 'Язык приложения';
+	@override String get languageSelect => 'Выберите язык';
+	@override String get mapPermissionDenied => 'Доступ к местоположению отклонён';
+	@override String get mapBlocked => 'Доступ к местоположению заблокирован';
+	@override String get mapBlockedDesc => 'Доступ к местоположению полностью отклонён. Пожалуйста, включите его в настройках устройства для этого приложения.';
+	@override String get mapClose => 'Закрыть';
+	@override String get mapOpenSettings => 'Настройки';
+	@override String get bookingUploadReceipt => 'Пожалуйста, загрузите чек об оплате';
+	@override String get phoneChange => 'Изменить номер телефона';
+	@override String get phoneLabel => 'Телефон';
+	@override String get save => 'Сохранить';
+	@override String get otpTelegram => 'Вы будете перенаправлены в наш Telegram бот для продолжения. Нажмите /start в боте и поделитесь номером телефона.';
 	@override String get history => 'ИСТОРИЯ';
 	@override String get visitHistory => 'История посещений';
 	@override String get paymentHistory => 'История платежей';
@@ -265,4 +418,35 @@ class TranslationsSettingsRu extends TranslationsSettingsUz {
 	@override String get confirm => 'Выйти';
 	@override String get delete => 'Удалить';
 	@override String get version => 'Wash Club · v1.0.0';
+}
+
+// Path: orderStatus
+class TranslationsOrderStatusRu extends TranslationsOrderStatusUz {
+	TranslationsOrderStatusRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get pending => 'Ожидание';
+	@override String get pendingPayment => 'Ожидание оплаты';
+	@override String get queued => 'Подтверждён';
+	@override String get confirmed => 'QR отсканирован';
+	@override String get washing => 'Мойка';
+	@override String get drying => 'Сушка';
+	@override String get ready => 'Готово';
+	@override String get completed => 'Завершён';
+	@override String get cancelled => 'Отменён';
+}
+
+// Path: time
+class TranslationsTimeRu extends TranslationsTimeUz {
+	TranslationsTimeRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get now => 'сейчас';
+	@override String get minutes => 'мин';
+	@override String get hours => 'ч';
+	@override String get days => 'дн';
 }

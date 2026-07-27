@@ -129,7 +129,7 @@ class MainScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Xarita',
+                        t.nav.map,
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
@@ -170,7 +170,7 @@ class MainScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Xarita',
+                        t.nav.map,
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,

@@ -26,9 +26,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String get _currentLanguageName {
     final locale = LocaleSettings.currentLocale.languageCode;
     switch (locale) {
-      case 'uz': return "O'zbek";
-      case 'ru': return 'Русский';
-      default:   return 'English';
+      case 'uz': return context.t.profile.languageUz;
+      case 'ru': return context.t.profile.languageRu;
+      default:   return context.t.profile.languageEn;
     }
   }
 
@@ -584,7 +584,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Telefon raqamni o\'zgartirish',
+            Text(context.t.settings.phoneChange,
                 style: TextStyle(
                     color: colors.onBackground,
                     fontSize: 17,
@@ -595,7 +595,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               keyboardType: TextInputType.phone,
               style: TextStyle(color: colors.onSurface),
               decoration: InputDecoration(
-                labelText: 'Telefon',
+                labelText: context.t.settings.phoneLabel,
                 labelStyle: TextStyle(color: colors.grey2),
                 filled: true,
                 fillColor: colors.onPrimaryContainer,
@@ -626,7 +626,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14)),
                 ),
-                child: const Text('Saqlash',
+                child: Text(context.t.settings.save,
                     style: TextStyle(
                         fontSize: 16, fontWeight: FontWeight.w600)),
               ),

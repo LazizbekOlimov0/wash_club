@@ -70,7 +70,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
 
-  String get _userName => _session.name ?? 'Mehmon';
+  String get _userName => _session.name ?? context.t.profile.guest;
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -303,7 +303,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      order.statusLabel.toUpperCase(),
+                      _translateStatus(order.status),
                       style: TextStyle(
                         color: _statusColor(order.status, colors),
                         fontSize: 10,
@@ -431,7 +431,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  order.statusLabel.toUpperCase(),
+                  _translateStatus(order.status),
                   style: TextStyle(
                     color: _statusColor(order.status, colors),
                     fontSize: 11,
@@ -446,6 +446,22 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         );
       },
     );
+  }
+
+  String _translateStatus(String status) {
+    final t = context.t;
+    switch (status) {
+      case AppConstants.statusPending:        return t.orderStatus.pending;
+      case AppConstants.statusPendingPayment: return t.orderStatus.pendingPayment;
+      case AppConstants.statusQueued:         return t.orderStatus.queued;
+      case AppConstants.statusConfirmed:      return t.orderStatus.confirmed;
+      case AppConstants.statusWashing:        return t.orderStatus.washing;
+      case AppConstants.statusDrying:         return t.orderStatus.drying;
+      case AppConstants.statusReady:          return t.orderStatus.ready;
+      case AppConstants.statusCompleted:      return t.orderStatus.completed;
+      case AppConstants.statusCancelled:      return t.orderStatus.cancelled;
+      default:                                return status;
+    }
   }
 
   Color _statusColor(String status, ApparenceKitColors colors) {
@@ -550,7 +566,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             onChanged: (v) => setState(() => _branchSearch = v),
             style: TextStyle(color: colors.onSurface, fontSize: 14),
             decoration: InputDecoration(
-              hintText: 'Filial qidirish...',
+              hintText: context.t.home.searchBranch,
               hintStyle: TextStyle(color: colors.grey2, fontSize: 14),
               prefixIcon:
                   Icon(Icons.search, color: colors.grey2, size: 20),
@@ -647,7 +663,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                     BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    b.isActive ? 'Ochiq' : 'Yopiq',
+                                    b.isActive ? context.t.home.open : context.t.home.closed,
                                     style: TextStyle(
                                       color: colors.onPrimary,
                                       fontSize: 10,

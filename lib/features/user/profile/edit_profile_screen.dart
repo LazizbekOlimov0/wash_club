@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
 
@@ -63,7 +64,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Rasm tanlashda xatolik: $e'),
+            content: Text('${context.t.profile.imagePickError}: $e'),
             backgroundColor: _c.error,
           ),
         );
@@ -110,7 +111,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           onPressed: () => context.pop(),
         ),
         title: Text(
-          'Profilni tahrirlash',
+          context.t.profile.editProfile,
           style: TextStyle(
             color: colors.onBackground,
             fontSize: 17,
@@ -126,13 +127,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             _buildAvatar(colors),
             const SizedBox(height: 32),
             _buildTextField(
-              label: 'Ism',
+              label: context.t.profile.name,
               controller: _nameCtrl,
               colors: colors,
             ),
             const SizedBox(height: 16),
             _buildTextField(
-              label: 'Telefon',
+              label: context.t.settings.phoneLabel,
               controller: _phoneCtrl,
               colors: colors,
               keyboardType: TextInputType.phone,
@@ -162,7 +163,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               AlwaysStoppedAnimation(colors.onPrimary),
                         ),
                       )
-                    : const Text('Saqlash',
+                    : Text(context.t.settings.save,
                         style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w600)),
               ),

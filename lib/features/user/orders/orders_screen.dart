@@ -105,7 +105,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${_active.length} faol · ${_history.length} tarix',
+                    t.orders.summary.replaceAll('{active}', '${_active.length}').replaceAll('{history}', '${_history.length}'),
                     style: TextStyle(color: colors.grey2, fontSize: 13),
                   ),
                 ],
@@ -128,7 +128,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    hintText: 'Mashina raqami bo‘yicha qidirish',
+                    hintText: t.orders.searchHint,
                     hintStyle: TextStyle(color: colors.grey2, fontSize: 14),
                     prefixIcon: Icon(Icons.search, color: colors.grey2, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
@@ -187,9 +187,9 @@ class _OrdersScreenState extends State<OrdersScreen>
                     fontWeight: FontWeight.w400,
                     fontFamily: 'SF Pro Rounded',
                   ),
-                  tabs: const [
-                    Tab(text: 'Faol',     height: 34),
-                    Tab(text: 'Tarix',    height: 34),
+                  tabs: [
+                    Tab(text: t.orders.active,     height: 34),
+                    Tab(text: t.orders.history,    height: 34),
                   ],
                 ),
               ),
@@ -211,10 +211,10 @@ class _OrdersScreenState extends State<OrdersScreen>
                             physics: const BouncingScrollPhysics(),
                             children: [
                               _buildList(_active,
-                                  emptyLabel: 'Faol buyurtmalar yo\'q',
+                                  emptyLabel: t.orders.emptyActive,
                                   colors: colors),
                               _buildList(_history,
-                                  emptyLabel: 'Tarix bo\'sh',
+                                  emptyLabel: t.orders.emptyHistory,
                                   showBookButton: true,
                                   colors: colors),
                             ],
@@ -282,7 +282,7 @@ class _OrdersScreenState extends State<OrdersScreen>
             ElevatedButton.icon(
               onPressed: () => context.go(UserRoutePath.booking),
               icon: const Icon(Icons.add, size: 18),
-              label: const Text('Band qilish'),
+              label: Text(context.t.orders.bookNow),
               style: ElevatedButton.styleFrom(
                 backgroundColor: colors.info,
                 foregroundColor: colors.onPrimary,
@@ -306,7 +306,7 @@ class _OrdersScreenState extends State<OrdersScreen>
         children: [
           Icon(Icons.wifi_off_rounded, color: colors.grey2, size: 40),
           const SizedBox(height: 12),
-          Text('Xatolik yuz berdi',
+          Text(context.t.orders.error,
               style: TextStyle(color: colors.onBackground, fontSize: 15)),
           const SizedBox(height: 16),
           ElevatedButton(
@@ -316,7 +316,7 @@ class _OrdersScreenState extends State<OrdersScreen>
               foregroundColor: colors.onPrimary,
               elevation: 0,
             ),
-            child: const Text('Qayta urinish'),
+            child: Text(context.t.orders.retry),
           ),
         ],
       ),
@@ -329,14 +329,14 @@ class _OrdersScreenState extends State<OrdersScreen>
       builder: (ctx) => AlertDialog(
         backgroundColor: _c.onPrimaryContainer,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text('Bekor qilish',
+        title: Text(context.t.orders.cancelTitle,
             style: TextStyle(color: _c.onBackground)),
-        content: Text('Buyurtmani bekor qilmoqchimisiz?',
+        content: Text(context.t.orders.cancelConfirm,
             style: TextStyle(color: _c.grey2)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text("Yo'q", style: TextStyle(color: _c.info)),
+            child: Text(context.t.orders.cancelNo, style: TextStyle(color: _c.info)),
           ),
           TextButton(
             onPressed: _cancelling
@@ -350,7 +350,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Bekor qilishda xatolik: $e'),
+                            content: Text('${context.t.orders.cancelError}: $e'),
                             backgroundColor: _c.error,
                           ),
                         );
@@ -368,7 +368,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                       valueColor: AlwaysStoppedAnimation(_c.error),
                     ),
                   )
-                : Text('Ha', style: TextStyle(color: _c.error)),
+                : Text(context.t.orders.cancelYes, style: TextStyle(color: _c.error)),
           ),
         ],
       ),
@@ -392,6 +392,22 @@ class _OrderCard extends StatelessWidget {
 
   Color get _cardBg =>
       isDark ? colors.onPrimaryContainer : colors.surface;
+
+  String _translateStatus(BuildContext context) {
+    final t = context.t;
+    switch (order.status) {
+      case AppConstants.statusPending:        return t.orderStatus.pending;
+      case AppConstants.statusPendingPayment: return t.orderStatus.pendingPayment;
+      case AppConstants.statusQueued:         return t.orderStatus.queued;
+      case AppConstants.statusConfirmed:      return t.orderStatus.confirmed;
+      case AppConstants.statusWashing:        return t.orderStatus.washing;
+      case AppConstants.statusDrying:         return t.orderStatus.drying;
+      case AppConstants.statusReady:          return t.orderStatus.ready;
+      case AppConstants.statusCompleted:      return t.orderStatus.completed;
+      case AppConstants.statusCancelled:      return t.orderStatus.cancelled;
+      default:                                return order.status;
+    }
+  }
 
   Color _statusColor() {
     switch (order.status) {
@@ -439,7 +455,7 @@ class _OrderCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  order.statusLabel,
+                  _translateStatus(context),
                   style: TextStyle(
                     color: _statusColor(),
                     fontSize: 13,
@@ -512,7 +528,7 @@ class _OrderCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  _paymentLabel(order.paymentMethod),
+                  _paymentLabel(order.paymentMethod, context),
                   style: TextStyle(color: colors.grey2, fontSize: 13),
                 ),
                 Text(
@@ -541,12 +557,12 @@ class _OrderCard extends StatelessWidget {
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
   }
 
-  String _paymentLabel(String method) {
+  String _paymentLabel(String method, BuildContext context) {
     switch (method) {
-      case 'card':  return 'Karta';
-      case 'cash':  return 'Naqd';
-      case 'click': return 'Click';
-      case 'payme': return 'Payme';
+      case 'card':  return context.t.booking.card;
+      case 'cash':  return context.t.booking.cash;
+      case 'click': return context.t.booking.click;
+      case 'payme': return context.t.booking.payme;
       default:      return method;
     }
   }
@@ -588,7 +604,7 @@ class _OrderCard extends StatelessWidget {
             const SizedBox(height: 20),
             _menuItem(ctx,
               icon: Icons.qr_code_2,
-              label: 'QR kodni ko\'rsatish',
+              label: context.t.orders.qrCode,
               color: colors.primary,
               onTap: () {
                 Navigator.pop(ctx);
@@ -599,7 +615,7 @@ class _OrderCard extends StatelessWidget {
               const SizedBox(height: 4),
               _menuItem(ctx,
                 icon: Icons.close,
-                label: 'Buyurtmani bekor qilish',
+                label: context.t.orders.cancelOrder,
                 color: colors.error,
                 onTap: () {
                   Navigator.pop(ctx);
@@ -689,7 +705,7 @@ class _OrderCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    order.statusLabel.toUpperCase(),
+                    _translateStatus(context).toUpperCase(),
                     style: TextStyle(
                       color: _statusColor(),
                       fontSize: 12,
@@ -740,5 +756,5 @@ String _formatPrice(int sum) {
     if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
     buf.write(s[i]);
   }
-  return "${buf.toString()} so'm";
+  return "${buf.toString()} UZS";
 }

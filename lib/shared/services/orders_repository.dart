@@ -27,10 +27,10 @@ class AppNotification {
 
   String get relativeTime {
     final diff = DateTime.now().difference(createdAt);
-    if (diff.inMinutes < 1) return 'hozir';
-    if (diff.inMinutes < 60) return '${diff.inMinutes} daq';
-    if (diff.inHours < 24) return '${diff.inHours} soat';
-    if (diff.inDays < 7) return '${diff.inDays} kun';
+    if (diff.inMinutes < 1) return 'time.now';
+    if (diff.inMinutes < 60) return 'time.minutes.${diff.inMinutes}';
+    if (diff.inHours < 24) return 'time.hours.${diff.inHours}';
+    if (diff.inDays < 7) return 'time.days.${diff.inDays}';
     return '${createdAt.day}/${createdAt.month}';
   }
 }
@@ -202,7 +202,7 @@ class OrdersRepository {
           _addNotification(
             type: NotifType.booking,
             title: _statusToTitle(updated.status),
-            body: '${updated.carNumber} · ${updated.serviceName ?? "Xizmat"}',
+            body: '${updated.carNumber} · ${updated.serviceName ?? "Service"}',
           );
         }
         // Aktiv emas bo'lsa — unsubscribe
@@ -232,16 +232,16 @@ class OrdersRepository {
 
   String _statusToTitle(String status) {
     switch (status) {
-      case 'pending':   return 'Buyurtma qabul qilindi';
-      case 'pending_payment': return 'To\'lov kutilmoqda';
-      case 'queued':    return 'Bron tasdiqlandi';
-      case 'confirmed': return 'QR skanerlangani';
-      case 'washing':   return 'Yuvish boshlandi';
-      case 'drying':    return 'Quritish boshlandi';
-      case 'ready':     return 'Mashinangiz tayyor';
-      case 'completed': return 'Buyurtma yakunlandi';
-      case 'cancelled': return 'Buyurtma bekor qilindi';
-      default:          return 'Holat yangilandi';
+      case AppConstants.statusPending:        return 'orderStatus.pending';
+      case AppConstants.statusPendingPayment: return 'orderStatus.pending_payment';
+      case AppConstants.statusQueued:         return 'orderStatus.queued';
+      case AppConstants.statusConfirmed:      return 'orderStatus.confirmed';
+      case AppConstants.statusWashing:        return 'orderStatus.washing';
+      case AppConstants.statusDrying:         return 'orderStatus.drying';
+      case AppConstants.statusReady:          return 'orderStatus.ready';
+      case AppConstants.statusCompleted:      return 'orderStatus.completed';
+      case AppConstants.statusCancelled:      return 'orderStatus.cancelled';
+      default:                                return 'orderStatus.pending';
     }
   }
 

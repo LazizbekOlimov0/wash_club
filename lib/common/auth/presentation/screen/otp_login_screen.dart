@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:wash_club/core/i18n/translations.g.dart';
 import 'package:wash_club/config/router/router.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
@@ -101,7 +102,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       if (!result.ok) {
         setState(() {
           _loading = false;
-          _errorText = result.error ?? 'Xatolik yuz berdi';
+          _errorText = result.error ?? context.t.login.errorOccurred;
         });
         return;
       }
@@ -125,7 +126,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
             _botOpened = true;
           } else {
             _errorText =
-                'Telegram ilovasi ochilmadi. @washclub_bot ga qo\'lda kiring.';
+                context.t.login.telegramNotOpened;
           }
         });
       }
@@ -133,7 +134,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       if (mounted) {
         setState(() {
           _loading = false;
-          _errorText = 'Tarmoq xatosi. Internetingizni tekshiring.';
+          _errorText = context.t.login.networkError;
         });
       }
     }
@@ -204,7 +205,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       } else {
         setState(() {
           _verifyingOtp = false;
-          _otpError = result.error ?? 'Noto\'g\'ri kod. Qayta urinib ko\'ring.';
+          _otpError = result.error ?? context.t.login.wrongCode;
           for (final c in _otpControllers) {
             c.clear();
           }
@@ -257,15 +258,14 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       } else {
         setState(() {
           _checkingRegistration = false;
-          _errorText = 'Ro\'yxatdan o\'tilmagan. Botda /start ni bosib, '
-              'telefon raqamingizni "📱 Telefon raqamni ulashish" tugmasi orqali yuboring.';
+          _errorText = context.t.login.notRegistered;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
           _checkingRegistration = false;
-          _errorText = 'Tarmoq xatosi. Internetingizni tekshiring.';
+          _errorText = context.t.login.networkError;
         });
       }
     }
@@ -291,11 +291,11 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
 
     String? subtitleText;
     if (_testMode) {
-      subtitleText = 'Test rejimi: kodni kiriting';
+      subtitleText = context.t.login.testMode;
     } else if (_botOpened) {
-      subtitleText = 'Botda ro\'yxatdan o\'ting';
+      subtitleText = context.t.login.botRegister;
     } else {
-      subtitleText = 'Telegram bot orqali xavfsiz kirish';
+      subtitleText = context.t.login.telegramSecure;
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -388,7 +388,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _sectionLabel('Telefon raqam', colors),
+        _sectionLabel(context.t.login.phone, colors),
         const SizedBox(height: 10),
         TextField(
           controller: _phoneController,
@@ -442,7 +442,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           onPressed: _handlePhoneSubmit,
           isActive: _phoneValid && !_loading,
           isLoading: _loading,
-          label: 'Telegram orqali kirish',
+          label: context.t.login.telegramLogin,
           icon: Icons.telegram,
         ),
         const SizedBox(height: 20),
@@ -501,7 +501,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
-                  'Test rejimi: kod 123456',
+                  context.t.login.testCode,
                   style: TextStyle(
                     color: colors.grey3,
                     fontSize: 13,
@@ -590,7 +590,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           onPressed: _verifyTestOtp,
           isActive: _otpComplete && !_verifyingOtp,
           isLoading: _verifyingOtp,
-          label: _verifyingOtp ? 'Tekshirilmoqda...' : 'Tasdiqlash',
+          label: _verifyingOtp ? context.t.login.verifying : context.t.login.verifyCode,
           icon: Icons.check_circle_outline,
         ),
         const SizedBox(height: 16),
@@ -646,7 +646,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
               const Text('🤖', style: TextStyle(fontSize: 40)),
               const SizedBox(height: 12),
               Text(
-                'Telegram bot ochildi',
+                context.t.login.telegramOpened,
                 style: TextStyle(
                   color: colors.onBackground,
                   fontSize: 16,
@@ -655,9 +655,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                '1. Botda /start tugmasini bosing\n'
-                '2. "📱 Telefon raqamni ulashish" tugmasini bosing\n'
-                '3. Ro\'yxatdan o\'tgach, pastdagi tugmani bosing',
+                context.t.login.stepInstruction,
                 style: TextStyle(
                   color: colors.grey3,
                   fontSize: 13,
@@ -707,8 +705,8 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           isActive: !_checkingRegistration,
           isLoading: _checkingRegistration,
           label: _checkingRegistration
-              ? 'Tekshirilmoqda...'
-              : 'Ro\'yxatdan o\'tdim',
+              ? context.t.login.verifying
+              : context.t.login.iRegistered,
           icon: Icons.check_circle_outline,
         ),
 
@@ -723,7 +721,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
               );
             },
             icon: const Icon(Icons.open_in_new, size: 16),
-            label: const Text('Botni qayta ochish'),
+            label: Text(context.t.login.reopenBot),
             style: TextButton.styleFrom(foregroundColor: colors.info),
           ),
         ),
@@ -815,8 +813,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Davom etish uchun Telegram botga o\'tasiz. '
-              'Botda /start ni bosib, telefon raqamingizni ulashing.',
+              context.t.settings.otpTelegram,
               style: TextStyle(
                 color: colors.grey3,
                 fontSize: 12,

@@ -39,6 +39,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsLoginUz login = TranslationsLoginUz.internal(_root);
 	late final TranslationsRegisterUz register = TranslationsRegisterUz.internal(_root);
 	late final TranslationsNavUz nav = TranslationsNavUz.internal(_root);
+	late final TranslationsMapUz map = TranslationsMapUz.internal(_root);
 	late final TranslationsHomeUz home = TranslationsHomeUz.internal(_root);
 	late final TranslationsBookingUz booking = TranslationsBookingUz.internal(_root);
 	late final TranslationsOrdersUz orders = TranslationsOrdersUz.internal(_root);
@@ -46,6 +47,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsNotificationUz notification = TranslationsNotificationUz.internal(_root);
 	late final TranslationsProfileUz profile = TranslationsProfileUz.internal(_root);
 	late final TranslationsSettingsUz settings = TranslationsSettingsUz.internal(_root);
+	late final TranslationsOrderStatusUz orderStatus = TranslationsOrderStatusUz.internal(_root);
+	late final TranslationsTimeUz time = TranslationsTimeUz.internal(_root);
 }
 
 // Path: splash
@@ -100,6 +103,54 @@ class TranslationsLoginUz {
 
 	/// uz: 'Telefon yoki parol noto'g'ri'
 	String get wrongPassword => 'Telefon yoki parol noto\'g\'ri';
+
+	/// uz: 'Telegram orqali kirish'
+	String get telegramLogin => 'Telegram orqali kirish';
+
+	/// uz: 'Telegram bot orqali xavfsiz kirish'
+	String get telegramSecure => 'Telegram bot orqali xavfsiz kirish';
+
+	/// uz: 'Telegram ilovasi ochilmadi. @washclub_bot ga qo'lda kiring.'
+	String get telegramNotOpened => 'Telegram ilovasi ochilmadi. @washclub_bot ga qo\'lda kiring.';
+
+	/// uz: 'Tarmoq xatosi. Internetingizni tekshiring.'
+	String get networkError => 'Tarmoq xatosi. Internetingizni tekshiring.';
+
+	/// uz: 'Xatolik yuz berdi'
+	String get errorOccurred => 'Xatolik yuz berdi';
+
+	/// uz: 'Ro'yxatdan o'tilmagan. Botda /start ni bosib, telefon raqamingizni "📱 Telefon raqamni ulashish" tugmasi orqali yuboring.'
+	String get notRegistered => 'Ro\'yxatdan o\'tilmagan. Botda /start ni bosib, telefon raqamingizni "📱 Telefon raqamni ulashish" tugmasi orqali yuboring.';
+
+	/// uz: 'Noto'g'ri kod. Qayta urinib ko'ring.'
+	String get wrongCode => 'Noto\'g\'ri kod. Qayta urinib ko\'ring.';
+
+	/// uz: 'Test rejimi: kodni kiriting'
+	String get testMode => 'Test rejimi: kodni kiriting';
+
+	/// uz: 'Botda ro'yxatdan o'ting'
+	String get botRegister => 'Botda ro\'yxatdan o\'ting';
+
+	/// uz: 'Tasdiqlash'
+	String get verifyCode => 'Tasdiqlash';
+
+	/// uz: 'Tekshirilmoqda...'
+	String get verifying => 'Tekshirilmoqda...';
+
+	/// uz: 'Telegram bot ochildi'
+	String get telegramOpened => 'Telegram bot ochildi';
+
+	/// uz: '3. Ro'yxatdan o'tgach, pastdagi tugmani bosing'
+	String get stepInstruction => '3. Ro\'yxatdan o\'tgach, pastdagi tugmani bosing';
+
+	/// uz: 'Test rejimi: kod 123456'
+	String get testCode => 'Test rejimi: kod 123456';
+
+	/// uz: 'Ro'yxatdan o'tdim'
+	String get iRegistered => 'Ro\'yxatdan o\'tdim';
+
+	/// uz: 'Botni qayta ochish'
+	String get reopenBot => 'Botni qayta ochish';
 }
 
 // Path: register
@@ -178,6 +229,36 @@ class TranslationsNavUz {
 
 	/// uz: 'Profil'
 	String get profile => 'Profil';
+
+	/// uz: 'Xarita'
+	String get map => 'Xarita';
+}
+
+// Path: map
+class TranslationsMapUz {
+	TranslationsMapUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Joylashuv aniqlanmoqda...'
+	String get loadingLocation => 'Joylashuv aniqlanmoqda...';
+
+	/// uz: 'Filiallar yuklanmoqda...'
+	String get loadingBranches => 'Filiallar yuklanmoqda...';
+
+	/// uz: 'Bron qilish'
+	String get bookButton => 'Bron qilish';
+
+	/// uz: 'Joylashuvni aniqlab bo'lmadi'
+	String get locationError => 'Joylashuvni aniqlab bo\'lmadi';
+
+	/// uz: 'Joylashuv xizmati o'chirilgan'
+	String get locationServiceOff => 'Joylashuv xizmati o\'chirilgan';
+
+	/// uz: 'Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing.'
+	String get locationServiceOffDesc => 'Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing.';
 }
 
 // Path: home
@@ -293,6 +374,9 @@ class TranslationsHomeUz {
 	/// uz: 'Yopiq'
 	String get closed => 'Yopiq';
 
+	/// uz: 'Filial qidirish...'
+	String get searchBranch => 'Filial qidirish...';
+
 	/// uz: 'Tezkor amallar'
 	String get quickActions => 'Tezkor amallar';
 
@@ -355,6 +439,189 @@ class TranslationsBookingUz {
 
 	/// uz: 'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!'
 	String get disabledSubtitle => 'Hozirda bron qilish imkoniyati mavjud emas. Tez orada qayta ishga tushiriladi!';
+
+	/// uz: 'Filial'
+	String get stepBranch => 'Filial';
+
+	/// uz: 'Xizmat'
+	String get stepService => 'Xizmat';
+
+	/// uz: 'Vaqt'
+	String get stepTime => 'Vaqt';
+
+	/// uz: 'To'lov'
+	String get stepPayment => 'To\'lov';
+
+	/// uz: 'Qadam {step}/{total}'
+	String get stepLabel => 'Qadam {step}/{total}';
+
+	/// uz: 'Keyingisi'
+	String get next => 'Keyingisi';
+
+	/// uz: 'To'lash · {price}'
+	String get pay => 'To\'lash · {price}';
+
+	/// uz: 'Filiallar topilmadi'
+	String get noBranches => 'Filiallar topilmadi';
+
+	/// uz: 'Ochiq'
+	String get open => 'Ochiq';
+
+	/// uz: 'Yopiq'
+	String get closed => 'Yopiq';
+
+	/// uz: 'Xizmatlar topilmadi'
+	String get noServices => 'Xizmatlar topilmadi';
+
+	/// uz: 'Bu filialda pullik xizmatlar mavjud emas'
+	String get noPaidServices => 'Bu filialda pullik xizmatlar mavjud emas';
+
+	/// uz: 'FILIAL'
+	String get branchLabel => 'FILIAL';
+
+	/// uz: 'O'zgartirish'
+	String get change => 'O\'zgartirish';
+
+	/// uz: 'Istalgan xizmat — atigi 120 000 so'mga'
+	String get anyServicePromo => 'Istalgan xizmat — atigi 120 000 so\'mga';
+
+	/// uz: ' bron qiling, narxidan qat'i nazar.'
+	String get anyServicePromo2 => ' bron qiling, narxidan qat\'i nazar.';
+
+	/// uz: 'QO'SHIMCHA XIZMATLAR'
+	String get additionalServices => 'QO\'SHIMCHA XIZMATLAR';
+
+	/// uz: 'SANA'
+	String get sana => 'SANA';
+
+	/// uz: 'BUGUN'
+	String get today => 'BUGUN';
+
+	/// uz: 'VAQT'
+	String get timeLabel => 'VAQT';
+
+	/// uz: 'Xulosa'
+	String get summary => 'Xulosa';
+
+	/// uz: 'Sana va vaqt'
+	String get summaryDateTime => 'Sana va vaqt';
+
+	/// uz: 'To'lov usuli'
+	String get paymentMethod => 'To\'lov usuli';
+
+	/// uz: 'Click'
+	String get click => 'Click';
+
+	/// uz: 'Payme'
+	String get payme => 'Payme';
+
+	/// uz: 'Karta'
+	String get card => 'Karta';
+
+	/// uz: 'Naqd'
+	String get cash => 'Naqd';
+
+	/// uz: 'Obuna orqali — bepul'
+	String get membershipFree => 'Obuna orqali — bepul';
+
+	/// uz: 'To'lov cheki suratini yuklang'
+	String get uploadReceipt => 'To\'lov cheki suratini yuklang';
+
+	/// uz: 'Max 5MB'
+	String get maxSize => 'Max 5MB';
+
+	/// uz: 'Mashina qo'shish'
+	String get addCar => 'Mashina qo\'shish';
+
+	/// uz: 'Promokod'
+	String get promoCode => 'Promokod';
+
+	/// uz: 'Qo'llash'
+	String get apply => 'Qo\'llash';
+
+	/// uz: 'Promokod noto'g'ri'
+	String get promoInvalid => 'Promokod noto\'g\'ri';
+
+	/// uz: 'Vaqt formati noto'g'ri'
+	String get timeFormatError => 'Vaqt formati noto\'g\'ri';
+
+	/// uz: 'O'tib ketgan vaqtni tanlash mumkin emas'
+	String get pastTimeError => 'O\'tib ketgan vaqtni tanlash mumkin emas';
+
+	/// uz: 'Kunlik bron limitiga yetdingiz'
+	String get dailyLimitError => 'Kunlik bron limitiga yetdingiz';
+
+	/// uz: 'Fayl 5MB dan kichik bo'lishi kerak'
+	String get fileSizeError => 'Fayl 5MB dan kichik bo\'lishi kerak';
+
+	/// uz: 'Bron yuborildi!'
+	String get bookingSubmitted => 'Bron yuborildi!';
+
+	/// uz: 'Bron qabul qilindi!'
+	String get bookingAccepted => 'Bron qabul qilindi!';
+
+	/// uz: 'Chek tasdiqlangandan so'ng broningiz faollashadi.'
+	String get bookingReceiptMsg => 'Chek tasdiqlangandan so\'ng broningiz faollashadi.';
+
+	/// uz: 'Moykaga kelganda ushbu QR kodni CRM'dagi QR Scan orqali skaner qildiring.'
+	String get bookingQrMsg => 'Moykaga kelganda ushbu QR kodni CRM\'dagi QR Scan orqali skaner qildiring.';
+
+	/// uz: 'Xatolik'
+	String get errorText => 'Xatolik';
+
+	/// uz: 'Du'
+	String get dayMon => 'Du';
+
+	/// uz: 'Se'
+	String get dayTue => 'Se';
+
+	/// uz: 'Ch'
+	String get dayWed => 'Ch';
+
+	/// uz: 'Pa'
+	String get dayThu => 'Pa';
+
+	/// uz: 'Ju'
+	String get dayFri => 'Ju';
+
+	/// uz: 'Sh'
+	String get daySat => 'Sh';
+
+	/// uz: 'Ya'
+	String get daySun => 'Ya';
+
+	/// uz: 'Mashina'
+	String get car => 'Mashina';
+
+	/// uz: 'Xizmat'
+	String get service => 'Xizmat';
+
+	/// uz: 'Filial'
+	String get branch => 'Filial';
+
+	/// uz: 'Vaqt'
+	String get time => 'Vaqt';
+
+	/// uz: 'Premium yuvish'
+	String get servicePremium => 'Premium yuvish';
+
+	/// uz: 'TO'LOV CHEKI'
+	String get paymentReceipt => 'TO\'LOV CHEKI';
+
+	/// uz: 'MASHINA'
+	String get carLabel => 'MASHINA';
+
+	/// uz: 'TO'LOV USULI'
+	String get paymentLabel => 'TO\'LOV USULI';
+
+	/// uz: 'XULOSA'
+	String get summaryLabel => 'XULOSA';
+
+	/// uz: 'Siz {amount} tejaysiz'
+	String get savedAmount => 'Siz {amount} tejaysiz';
+
+	/// uz: '{minutes} daq'
+	String get minutes => '{minutes} daq';
 }
 
 // Path: orders
@@ -373,6 +640,54 @@ class TranslationsOrdersUz {
 
 	/// uz: 'Zabronированных buyurtmalar yo'q'
 	String get emptySubtitle => 'Zabronированных buyurtmalar yo\'q';
+
+	/// uz: 'Faol'
+	String get active => 'Faol';
+
+	/// uz: 'Tarix'
+	String get history => 'Tarix';
+
+	/// uz: 'Mashina raqami bo'yicha qidirish'
+	String get searchHint => 'Mashina raqami bo\'yicha qidirish';
+
+	/// uz: '{active} faol · {history} tarix'
+	String get summary => '{active} faol · {history} tarix';
+
+	/// uz: 'Faol buyurtmalar yo'q'
+	String get emptyActive => 'Faol buyurtmalar yo\'q';
+
+	/// uz: 'Tarix bo'sh'
+	String get emptyHistory => 'Tarix bo\'sh';
+
+	/// uz: 'Band qilish'
+	String get bookNow => 'Band qilish';
+
+	/// uz: 'Xatolik yuz berdi'
+	String get error => 'Xatolik yuz berdi';
+
+	/// uz: 'Qayta urinish'
+	String get retry => 'Qayta urinish';
+
+	/// uz: 'Bekor qilish'
+	String get cancelTitle => 'Bekor qilish';
+
+	/// uz: 'Buyurtmani bekor qilmoqchimisiz?'
+	String get cancelConfirm => 'Buyurtmani bekor qilmoqchimisiz?';
+
+	/// uz: 'Bekor qilishda xatolik'
+	String get cancelError => 'Bekor qilishda xatolik';
+
+	/// uz: 'QR kodni ko'rsatish'
+	String get qrCode => 'QR kodni ko\'rsatish';
+
+	/// uz: 'Buyurtmani bekor qilish'
+	String get cancelOrder => 'Buyurtmani bekor qilish';
+
+	/// uz: 'Yo'q'
+	String get cancelNo => 'Yo\'q';
+
+	/// uz: 'Ha'
+	String get cancelYes => 'Ha';
 }
 
 // Path: addCar
@@ -409,6 +724,21 @@ class TranslationsAddCarUz {
 
 	/// uz: 'Davom etish'
 	String get continueButton => 'Davom etish';
+
+	/// uz: 'Rang'
+	String get color => 'Rang';
+
+	/// uz: 'Qora, Oq, Kumush...'
+	String get colorHint => 'Qora, Oq, Kumush...';
+
+	/// uz: 'Chevrolet'
+	String get brandHint => 'Chevrolet';
+
+	/// uz: 'Cobalt 2024'
+	String get modelHint => 'Cobalt 2024';
+
+	/// uz: 'Xavfsiz saqlash'
+	String get secureSaving => 'Xavfsiz saqlash';
 }
 
 // Path: notification
@@ -487,6 +817,78 @@ class TranslationsProfileUz {
 
 	/// uz: '6 oy'
 	String get months6 => '6 oy';
+
+	/// uz: 'Mehmon'
+	String get guest => 'Mehmon';
+
+	/// uz: 'MENING MASHINALARIM'
+	String get myCarsLabel => 'MENING MASHINALARIM';
+
+	/// uz: 'YUVILGAN'
+	String get washed => 'YUVILGAN';
+
+	/// uz: 'MASHINA'
+	String get carStat => 'MASHINA';
+
+	/// uz: 'DARAJA'
+	String get rank => 'DARAJA';
+
+	/// uz: '{count} ta yuvish qoldi'
+	String get remainsLabel => '{count} ta yuvish qoldi';
+
+	/// uz: 'Amal qiladi: {date}'
+	String get expiresLabel => 'Amal qiladi: {date}';
+
+	/// uz: 'Premium obuna'
+	String get premiumOffer => 'Premium obuna';
+
+	/// uz: 'Faol emas · 70% gacha tejang'
+	String get inactiveSubtitle => 'Faol emas · 70% gacha tejang';
+
+	/// uz: 'Obuna rasmiylashtirish'
+	String get subscribeNow => 'Obuna rasmiylashtirish';
+
+	/// uz: '{months} oy'
+	String get monthsDuration => '{months} oy';
+
+	/// uz: 'Cheksiz yuvish · {price} / oy'
+	String get unlimitedDesc => 'Cheksiz yuvish · {price} / oy';
+
+	/// uz: 'jami'
+	String get totalLabel => 'jami';
+
+	/// uz: 'Mashina qo'shing'
+	String get addCarButton => 'Mashina qo\'shing';
+
+	/// uz: 'Mashina o'chirish'
+	String get deleteCarTitle => 'Mashina o\'chirish';
+
+	/// uz: '{name} ({plate}) ni o'chirmoqchimisiz?'
+	String get deleteCarConfirm => '{name} ({plate}) ni o\'chirmoqchimisiz?';
+
+	/// uz: 'Bekor'
+	String get cancelButton => 'Bekor';
+
+	/// uz: 'O'chirish'
+	String get deleteButton => 'O\'chirish';
+
+	/// uz: 'Profilni tahrirlash'
+	String get editProfile => 'Profilni tahrirlash';
+
+	/// uz: 'Ism'
+	String get name => 'Ism';
+
+	/// uz: 'Rasm tanlashda xatolik'
+	String get imagePickError => 'Rasm tanlashda xatolik';
+
+	/// uz: 'O'zbek'
+	String get languageUz => 'O\'zbek';
+
+	/// uz: 'Русский'
+	String get languageRu => 'Русский';
+
+	/// uz: 'English'
+	String get languageEn => 'English';
 }
 
 // Path: settings
@@ -544,6 +946,39 @@ class TranslationsSettingsUz {
 
 	/// uz: 'Ilova tili'
 	String get appLanguage => 'Ilova tili';
+
+	/// uz: 'Tilni tanlang'
+	String get languageSelect => 'Tilni tanlang';
+
+	/// uz: 'Joylashuv ruxsati rad etildi'
+	String get mapPermissionDenied => 'Joylashuv ruxsati rad etildi';
+
+	/// uz: 'Joylashuv ruxsati bloklangan'
+	String get mapBlocked => 'Joylashuv ruxsati bloklangan';
+
+	/// uz: 'Joylashuv ruxsati butunlay rad etilgan. Iltimos, qurilmangiz sozlamalaridan ushbu ilova uchun joylashuv ruxsatini qayta yoqing.'
+	String get mapBlockedDesc => 'Joylashuv ruxsati butunlay rad etilgan. Iltimos, qurilmangiz sozlamalaridan ushbu ilova uchun joylashuv ruxsatini qayta yoqing.';
+
+	/// uz: 'Yopish'
+	String get mapClose => 'Yopish';
+
+	/// uz: 'Sozlamalar'
+	String get mapOpenSettings => 'Sozlamalar';
+
+	/// uz: 'Iltimos, to'lov cheki suratini yuklang'
+	String get bookingUploadReceipt => 'Iltimos, to\'lov cheki suratini yuklang';
+
+	/// uz: 'Telefon raqamni o'zgartirish'
+	String get phoneChange => 'Telefon raqamni o\'zgartirish';
+
+	/// uz: 'Telefon'
+	String get phoneLabel => 'Telefon';
+
+	/// uz: 'Saqlash'
+	String get save => 'Saqlash';
+
+	/// uz: 'Davom etish uchun Telegram botga o'tasiz. Botda /start ni bosib, telefon raqamingizni ulashing.'
+	String get otpTelegram => 'Davom etish uchun Telegram botga o\'tasiz. Botda /start ni bosib, telefon raqamingizni ulashing.';
 
 	/// uz: 'TARIX'
 	String get history => 'TARIX';
@@ -604,4 +1039,61 @@ class TranslationsSettingsUz {
 
 	/// uz: 'Wash Club · v1.0.0'
 	String get version => 'Wash Club · v1.0.0';
+}
+
+// Path: orderStatus
+class TranslationsOrderStatusUz {
+	TranslationsOrderStatusUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Kutilmoqda'
+	String get pending => 'Kutilmoqda';
+
+	/// uz: 'To'lov kutilmoqda'
+	String get pendingPayment => 'To\'lov kutilmoqda';
+
+	/// uz: 'Tasdiqlangan'
+	String get queued => 'Tasdiqlangan';
+
+	/// uz: 'QR skanerlangan'
+	String get confirmed => 'QR skanerlangan';
+
+	/// uz: 'Yuvilmoqda'
+	String get washing => 'Yuvilmoqda';
+
+	/// uz: 'Quritilmoqda'
+	String get drying => 'Quritilmoqda';
+
+	/// uz: 'Tayyor'
+	String get ready => 'Tayyor';
+
+	/// uz: 'Bajarildi'
+	String get completed => 'Bajarildi';
+
+	/// uz: 'Bekor qilindi'
+	String get cancelled => 'Bekor qilindi';
+}
+
+// Path: time
+class TranslationsTimeUz {
+	TranslationsTimeUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'hozir'
+	String get now => 'hozir';
+
+	/// uz: 'daq'
+	String get minutes => 'daq';
+
+	/// uz: 'soat'
+	String get hours => 'soat';
+
+	/// uz: 'kun'
+	String get days => 'kun';
 }

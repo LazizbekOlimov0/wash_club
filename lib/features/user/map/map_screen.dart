@@ -4,6 +4,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/colors.dart';
+import '../../../../core/i18n/extensions/i18n_extension.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/supabase_service.dart';
 import '../../../../shared/constants/app_constants.dart';
@@ -49,7 +50,7 @@ class _MapScreenState extends State<MapScreen> {
         if (permission == LocationPermission.denied) {
           if (mounted) {
             setState(() => _locating = false);
-            _showSnackBar('Joylashuv ruxsati rad etildi');
+            _showSnackBar(context.t.settings.mapPermissionDenied);
           }
           return;
         }
@@ -79,7 +80,7 @@ class _MapScreenState extends State<MapScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _locating = false);
-        _showSnackBar('Joylashuvni aniqlab bo\'lmadi: $e');
+        _showSnackBar('${context.t.map.locationError}: $e');
       }
     }
   }
@@ -98,19 +99,19 @@ class _MapScreenState extends State<MapScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Joylashuv xizmati o\'chirilgan'),
-        content: const Text('Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing.'),
+        title: Text(context.t.map.locationServiceOff),
+        content: Text(context.t.map.locationServiceOffDesc),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Yopish'),
+            child: Text(context.t.settings.mapClose),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               Geolocator.openLocationSettings();
             },
-            child: const Text('Sozlamalar'),
+            child: Text(context.t.settings.mapOpenSettings),
           ),
         ],
       ),
@@ -121,22 +122,19 @@ class _MapScreenState extends State<MapScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Joylashuv ruxsati bloklangan'),
-        content: const Text(
-          'Joylashuv ruxsati butunlay rad etilgan. Iltimos, qurilmangiz sozlamalaridan '
-          'ushbu ilova uchun joylashuv ruxsatini qayta yoqing.',
-        ),
+        title: Text(context.t.settings.mapBlocked),
+        content: Text(context.t.settings.mapBlockedDesc),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Yopish'),
+            child: Text(context.t.settings.mapClose),
           ),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
               Geolocator.openAppSettings();
             },
-            child: const Text('Sozlamalar'),
+            child: Text(context.t.settings.mapOpenSettings),
           ),
         ],
       ),
@@ -359,7 +357,7 @@ class _MapScreenState extends State<MapScreen> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        _locating ? 'Joylashuv aniqlanmoqda...' : 'Filiallar yuklanmoqda...',
+                        _locating ? context.t.map.loadingLocation : context.t.map.loadingBranches,
                         style: TextStyle(
                             color: colors.grey2, fontSize: 13),
                       ),
@@ -537,7 +535,7 @@ class _MapScreenState extends State<MapScreen> {
                         borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
                   ),
-                  child: const Text('Bron qilish',
+                  child: Text(context.t.map.bookButton,
                       style: TextStyle(
                           fontSize: 15, fontWeight: FontWeight.w600)),
                 ),
