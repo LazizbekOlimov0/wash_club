@@ -39,6 +39,16 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
   bool _verifyingOtp = false;
   String _otpError = '';
 
+  void _goToPendingOrHome() {
+    if (mounted) {
+      if (Navigator.of(context).canPop()) {
+        context.pop();
+        return;
+      }
+      context.go(UserRoutePath.home);
+    }
+  }
+
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
@@ -200,7 +210,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
         );
         OrdersRepository.instance.invalidate();
         if (mounted) {
-          context.go(UserRoutePath.home);
+          _goToPendingOrHome();
         }
       } else {
         setState(() {
@@ -253,7 +263,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
         }
         OrdersRepository.instance.invalidate();
         if (mounted) {
-          context.go(UserRoutePath.home);
+          _goToPendingOrHome();
         }
       } else {
         setState(() {

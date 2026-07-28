@@ -56,7 +56,7 @@ class _LanguageScreenState extends State<LanguageScreen>
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('locale', _selectedLang);
     if (mounted) {
-      context.go(UserRoutePath.otpLogin);
+      context.go(UserRoutePath.home);
     }
   }
 

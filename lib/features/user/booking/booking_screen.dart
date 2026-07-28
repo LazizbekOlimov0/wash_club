@@ -13,6 +13,7 @@ import '../../../../../shared/services/supabase_service.dart';
 import '../../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/orders_repository.dart';
+import '../../../../../config/router/router.dart';
 import 'package:image_picker/image_picker.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -272,6 +273,7 @@ class _BookingScreenState extends State<BookingScreen> {
     }
 
     if (!_session.isOnboarded) {
+      PendingDestination.set(UserRoutePath.booking);
       await context.push(UserRoutePath.otpLogin);
       return;
     }

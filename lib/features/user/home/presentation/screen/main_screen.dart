@@ -5,14 +5,33 @@ import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 
 import '../../../../../config/router/router.dart';
 import '../../../../../core/theme/colors.dart';
+import '../../../../../shared/services/client_session.dart';
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({
     super.key,
     required this.navigationShell,
   });
 
   final StatefulNavigationShell navigationShell;
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _checkPending());
+  }
+
+  void _checkPending() {
+    final pending = PendingDestination.consume();
+    if (pending == null || !mounted) return;
+    final shellIdx = pending == '/orders' ? 2 : 3;
+    widget.navigationShell.goBranch(shellIdx);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +45,12 @@ class MainScreen extends StatelessWidget {
 
     // UI index mapping: [0=home, 1=booking, 2=map, 3=orders, 4=profile]
     // Shell index mapping: [0=home, 1=booking, 2=orders, 3=profile]
-    final shellIdx = navigationShell.currentIndex;
+    final shellIdx = widget.navigationShell.currentIndex;
     final uiIdx = shellIdx >= 2 ? shellIdx + 1 : shellIdx;
 
     return Scaffold(
       backgroundColor: colors.background,
-      body: navigationShell,
+      body: widget.navigationShell,
       bottomNavigationBar: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
@@ -68,10 +87,18 @@ class MainScreen extends StatelessWidget {
                   context.push(UserRoutePath.map);
                   return;
                 }
+                // Orders (idx=3) va Profile (idx=4) — auth kerak
+                if (idx == 3 || idx == 4) {
+                  if (!ClientSession.instance.isOnboarded) {
+                    PendingDestination.set(idx == 3 ? '/orders' : '/profile');
+                    context.push(UserRoutePath.otpLogin);
+                    return;
+                  }
+                }
                 final shellI = idx > 2 ? idx - 1 : idx;
-                navigationShell.goBranch(
+                widget.navigationShell.goBranch(
                   shellI,
-                  initialLocation: shellI == navigationShell.currentIndex,
+                  initialLocation: shellI == widget.navigationShell.currentIndex,
                 );
               },
               backgroundColor: Colors.transparent,

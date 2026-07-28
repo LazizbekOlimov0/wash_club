@@ -17,6 +17,17 @@ import '../../features/user/map/map_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
+class PendingDestination {
+  static String? _pending;
+
+  static void set(String dest) => _pending = dest;
+  static String? consume() {
+    final d = _pending;
+    _pending = null;
+    return d;
+  }
+}
+
 final GoRouter generateRouter = GoRouter(
   initialLocation: UserRoutePath.splash,
   navigatorKey: navigatorKey,
