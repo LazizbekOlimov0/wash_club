@@ -69,6 +69,19 @@ class AppView extends StatelessWidget {
           localizationsDelegates: GlobalMaterialLocalizations.delegates,
           routerConfig: generateRouter,
           debugShowCheckedModeBanner: false,
+          builder: (context, child) => GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () {
+              final scope = FocusScope.of(context);
+              final prevFocus = scope.focusedChild;
+              Future.delayed(Duration.zero, () {
+                if (scope.focusedChild == prevFocus && scope.focusedChild != null) {
+                  scope.unfocus();
+                }
+              });
+            },
+            child: child,
+          ),
         );
       },
     );

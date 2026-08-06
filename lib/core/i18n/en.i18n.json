@@ -34,6 +34,9 @@
     "map": "Map"
   },
   "map": {
+    "title": "Map",
+    "showMap": "Map",
+    "showList": "List",
     "loadingLocation": "Detecting location...",
     "loadingBranches": "Loading branches...",
     "bookButton": "Book now",

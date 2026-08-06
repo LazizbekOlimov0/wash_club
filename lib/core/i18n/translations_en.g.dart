@@ -110,6 +110,9 @@ class TranslationsMapEn extends TranslationsMapUz {
 	final TranslationsEn _root; // ignore: unused_field
 
 	// Translations
+	@override String get title => 'Map';
+	@override String get showMap => 'Map';
+	@override String get showList => 'List';
 	@override String get loadingLocation => 'Detecting location...';
 	@override String get loadingBranches => 'Loading branches...';
 	@override String get bookButton => 'Book now';

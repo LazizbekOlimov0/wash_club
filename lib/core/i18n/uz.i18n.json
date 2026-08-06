@@ -57,6 +57,9 @@
     "map": "Xarita"
   },
   "map": {
+    "title": "Xarita",
+    "showMap": "Xarita",
+    "showList": "Ro'yxat",
     "loadingLocation": "Joylashuv aniqlanmoqda...",
     "loadingBranches": "Filiallar yuklanmoqda...",
     "bookButton": "Bron qilish",

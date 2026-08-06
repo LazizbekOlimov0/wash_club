@@ -242,6 +242,15 @@ class TranslationsMapUz {
 
 	// Translations
 
+	/// uz: 'Xarita'
+	String get title => 'Xarita';
+
+	/// uz: 'Xarita'
+	String get showMap => 'Xarita';
+
+	/// uz: 'Ro\'yxat'
+	String get showList => 'Ro\'yxat';
+
 	/// uz: 'Joylashuv aniqlanmoqda...'
 	String get loadingLocation => 'Joylashuv aniqlanmoqda...';
 

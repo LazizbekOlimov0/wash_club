@@ -346,32 +346,42 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
             const SizedBox(height: 8),
             Text('+998 ${_phoneController.text.trim()}', style: TextStyle(fontSize: 14, color: _c.grey2)),
             const SizedBox(height: 28),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(6, (i) {
-                return Container(
-                  width: 48, height: 56,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  child: TextField(
-                    controller: _otpControllers[i],
-                    focusNode: _otpFocusNodes[i],
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    maxLength: 1,
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: _c.onBackground),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      filled: true,
-                      fillColor: _c.surface,
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _c.primary.withValues(alpha: 0.3))),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _c.primary, width: 2)),
+            Builder(builder: (context) {
+              final screenW = MediaQuery.of(context).size.width;
+              final totalPadding = 48.0; // 24 on each side
+              final totalMargins = 8.0 * 6; // 4px horizontal margin per cell
+              final cellW = ((screenW - totalPadding - totalMargins) / 6).clamp(40.0, 52.0);
+              final cellH = cellW * 1.15;
+              final fontSize = cellW * 0.48;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(6, (i) {
+                  return Container(
+                    width: cellW, height: cellH,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    child: TextField(
+                      controller: _otpControllers[i],
+                      focusNode: _otpFocusNodes[i],
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      maxLength: 1,
+                      showCursor: false,
+                      style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w700, color: _c.onBackground),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        filled: true,
+                        fillColor: _c.surface,
+                        contentPadding: EdgeInsets.zero,
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _c.primary.withValues(alpha: 0.3))),
+                        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _c.primary, width: 2)),
+                      ),
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      onChanged: (v) => _onOtpChanged(i, v),
                     ),
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    onChanged: (v) => _onOtpChanged(i, v),
-                  ),
-                );
-              }),
-            ),
+                  );
+                }),
+              );
+            }),
             if (_otpError.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16),

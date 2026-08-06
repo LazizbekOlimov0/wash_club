@@ -110,6 +110,9 @@ class TranslationsMapRu extends TranslationsMapUz {
 	final TranslationsRu _root; // ignore: unused_field
 
 	// Translations
+	@override String get title => 'Карта';
+	@override String get showMap => 'Карта';
+	@override String get showList => 'Список';
 	@override String get loadingLocation => 'Определение местоположения...';
 	@override String get loadingBranches => 'Загрузка филиалов...';
 	@override String get bookButton => 'Забронировать';
