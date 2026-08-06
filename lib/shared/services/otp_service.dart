@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Telegram bot orqali autentifikatsiya servisi.
@@ -25,9 +26,31 @@ class OtpService {
   /// Telegram bot linki.
   static String get botUrl => 'https://t.me/$_botUsername';
 
-  /// Telegram bot linkini ochish uchun URL (verify_ bilan).
-  static String botVerifyUrl(String phone) =>
-      'https://t.me/$_botUsername?start=verify_${Uri.encodeComponent(phone)}';
+  /// Yangi login token yaratish va Telegram bot linkini olish.
+  Future<String> createLoginToken(String phone) async {
+    final normalized = _normalizePhone(phone);
+    final token = _generateToken();
+    debugPrint('[OtpService] createLoginToken phone=$normalized token=$token');
+
+    await _client.from('login_requests').insert({
+      'phone': normalized,
+      'token': token,
+      'status': 'pending',
+      'expires_at': DateTime.now().add(const Duration(minutes: 5)).toIso8601String(),
+    });
+
+    return token;
+  }
+
+  /// Bot login linki (login_TOKEN).
+  String botLoginUrl(String token) =>
+      'https://t.me/$_botUsername?start=login_$token';
+
+  String _generateToken() {
+    final now = DateTime.now().microsecondsSinceEpoch;
+    final rnd = (now * 1103515245 + 12345) & 0x7fffffff;
+    return rnd.toRadixString(16).padLeft(8, '0');
+  }
 
   /// Botda ro'yxatdan o'tgan customer'ni telefon raqam orqali qidirish.
   /// Agar customer topilsa, uning ma'lumotlarini qaytaradi.
@@ -96,12 +119,14 @@ class OtpService {
   /// kod to'g'ridan-to'g'ri Telegram'ga yuboriladi.
   /// Aks holda `needs_bot_link: true` va `bot_url` qaytariladi.
   Future<OtpRequestResult> requestOtp(String phone) async {
+    debugPrint('[OtpService] requestOtp invoked for phone: $phone');
     final response = await _client.functions.invoke(
       'otp-request',
       body: {'phone': phone, 'channel': 'telegram'},
     );
 
     final data = response.data;
+    debugPrint('[OtpService] requestOtp response data: $data');
     if (data is Map<String, dynamic>) {
       if (data['error'] != null) {
         return OtpRequestResult(
@@ -114,6 +139,7 @@ class OtpService {
         needsBotLink: data['needs_bot_link'] == true,
         botUrl: data['bot_url'] as String?,
         testMode: data['test_mode'] == true,
+        token: data['token'] as String?,
       );
     }
 
@@ -161,6 +187,40 @@ class OtpService {
 
     return const OtpVerifyResult(ok: false, error: 'unknown_error');
   }
+
+  /// Telegram login holatini tekshirish (polling).
+  Future<OtpVerifyResult> checkLoginStatus(String token) async {
+    try {
+      final response = await _client.functions.invoke(
+        'login-status',
+        body: {'token': token},
+      );
+
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final status = data['status'] as String? ?? 'pending';
+        if (status == 'approved') {
+          return OtpVerifyResult(
+            ok: true,
+            customerId: data['customer_id'] as String?,
+            phone: data['phone'] as String?,
+            fullName: data['full_name'] as String?,
+          );
+        }
+        if (status == 'expired') {
+          return const OtpVerifyResult(ok: false, error: 'Muddati o\'tgan. Qayta urinib ko\'ring.');
+        }
+        if (status == 'not_found') {
+          return const OtpVerifyResult(ok: false, error: 'Login so\'rovi topilmadi.');
+        }
+        return const OtpVerifyResult(ok: false);
+      }
+    } catch (e, st) {
+      debugPrint('[checkLoginStatus] error: $e\n$st');
+    }
+
+    return const OtpVerifyResult(ok: false);
+  }
 }
 
 class OtpRequestResult {
@@ -169,6 +229,7 @@ class OtpRequestResult {
   final String? botUrl;
   final String? error;
   final bool testMode;
+  final String? token;
 
   const OtpRequestResult({
     required this.ok,
@@ -176,6 +237,7 @@ class OtpRequestResult {
     this.botUrl,
     this.error,
     this.testMode = false,
+    this.token,
   });
 }
 

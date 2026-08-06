@@ -28,9 +28,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
-  int get _completedCount =>
-      _ordersRepo.cachedOrders.where((o) => o.isCompleted).length;
-
   @override
   void initState() {
     super.initState();
@@ -105,8 +102,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildHeader(colors, name, phone),
           _buildHeaderDivider(colors),
           const SizedBox(height: 20),
-          _buildStatsRow(colors),
-          const SizedBox(height: 12),
           _buildSubscriptionBanner(colors),
           const SizedBox(height: 24),
           _buildSectionLabel(context.t.profile.myCarsLabel, colors),
@@ -240,66 +235,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Divider(color: colors.divider, height: 1, thickness: 1),
     );
   }
-
-  Widget _buildStatsRow(ApparenceKitColors colors) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-        decoration: BoxDecoration(
-          color: colors.onPrimaryContainer,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: colors.grey1, width: 1),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Flexible(
-              child: _statItem(
-                  '$_completedCount', context.t.profile.washed, colors: colors),
-            ),
-            Flexible(
-              child: _statItem(
-                  _session.cars.length.toString(), context.t.profile.carStat, colors: colors),
-            ),
-            Flexible(
-              child: _statItem('Bronze', context.t.profile.rank,
-                  colors: colors, valueColor: colors.info),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _statItem(
-    String value,
-    String label, {
-    required ApparenceKitColors colors,
-    Color? valueColor,
-  }) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: valueColor ?? colors.onBackground,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(label,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(color: colors.grey2, fontSize: 11)),
-      ],
-    );
-  }
-
-  Widget _statDivider(ApparenceKitColors colors) =>
-      Container(width: 1, height: 32, color: colors.grey1);
 
   Widget _buildSubscriptionBanner(ApparenceKitColors colors) {
     final sub = _subscription;

@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
     final textTheme = ApparenceKitTextTheme.build();
 
     _appTheme = AppTheme.uniform(
-      defaultMode: ThemeMode.dark,
+      defaultMode: ThemeMode.light,
       textTheme: textTheme,
       themeFactory: factory,
       lightColors: ApparenceKitColors.light(),

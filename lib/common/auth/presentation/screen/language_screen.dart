@@ -108,15 +108,19 @@ class _LanguageScreenState extends State<LanguageScreen>
                             width: 72, height: 72,
                             decoration: BoxDecoration(
                               color: colors.onPrimaryContainer,
-                              borderRadius: BorderRadius.circular(22),
+                              borderRadius: BorderRadius.circular(20),
                               border: Border.all(color: colors.grey1, width: 1.5),
                               boxShadow: [BoxShadow(
                                 color: colors.info.withValues(alpha: 0.15),
                                 blurRadius: 20, spreadRadius: 1,
                               )],
                             ),
-                            child: const Center(
-                              child: Text('🚿', style: TextStyle(fontSize: 32)),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                'assets/image/wash_club.png',
+                                fit: BoxFit.cover,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),

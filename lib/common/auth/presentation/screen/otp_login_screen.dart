@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -28,13 +29,12 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
   bool _botOpened = false;
   bool _checkingRegistration = false;
   String _errorText = '';
+  String? _loginToken;
+  Timer? _pollTimer;
 
   // --- Test mode state ---
   bool _testMode = false;
-  final List<TextEditingController> _otpControllers = List.generate(
-    6,
-    (_) => TextEditingController(),
-  );
+  final List<TextEditingController> _otpControllers = List.generate(6, (_) => TextEditingController());
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
   bool _verifyingOtp = false;
   String _otpError = '';
@@ -49,49 +49,32 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     }
   }
 
-  ApparenceKitColors get _c =>
-      Theme.of(context).extension<ApparenceKitColors>()!;
+  ApparenceKitColors get _c => Theme.of(context).extension<ApparenceKitColors>()!;
 
   bool get _phoneValid => _phoneController.text.trim().length >= 9;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 700),
-    );
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
-    );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(
-        CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 700));
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: const Interval(0.0, 0.8, curve: Curves.easeOut));
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic));
     _animController.forward();
 
     final prevPhone = ClientSession.instance.phone;
-    if (prevPhone != null) {
-      _phoneController.text = prevPhone;
-    }
+    if (prevPhone != null) _phoneController.text = prevPhone;
   }
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
     _animController.dispose();
     _phoneController.dispose();
-    for (final c in _otpControllers) {
-      c.dispose();
-    }
-    for (final f in _otpFocusNodes) {
-      f.dispose();
-    }
+    for (final c in _otpControllers) c.dispose();
+    for (final f in _otpFocusNodes) f.dispose();
     super.dispose();
   }
-
-  // --------------- Phone submit (branch: test mode vs Telegram) ---------------
 
   Future<void> _handlePhoneSubmit() async {
     if (!_phoneValid || _loading) return;
@@ -99,696 +82,315 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     final rawPhone = _phoneController.text.trim();
     final phone = rawPhone.startsWith('+') ? rawPhone : '+998$rawPhone';
 
-    setState(() {
-      _loading = true;
-      _errorText = '';
-    });
+    setState(() { _loading = true; _errorText = ''; });
 
     try {
+      // Try OTP request (test mode only)
       final result = await OtpService.instance.requestOtp(phone);
-
       if (!mounted) return;
 
-      if (!result.ok) {
-        setState(() {
-          _loading = false;
-          _errorText = result.error ?? context.t.login.errorOccurred;
-        });
+      if (result.testMode) {
+        setState(() { _loading = false; _testMode = true; });
         return;
       }
 
-      if (result.testMode) {
-        setState(() {
-          _loading = false;
-          _testMode = true;
-        });
-      } else {
-        final launched = await launchUrl(
-          Uri.parse(OtpService.botUrl),
-          mode: LaunchMode.externalApplication,
-        );
-
-        if (!mounted) return;
-
-        setState(() {
-          _loading = false;
-          if (launched) {
-            _botOpened = true;
-          } else {
-            _errorText =
-                context.t.login.telegramNotOpened;
-          }
-        });
+      // Codeless login: otp-request already created the login_requests row,
+      // use the token from the edge function response.
+      final token = result.token;
+      if (token == null || token.isEmpty) {
+        if (mounted) setState(() { _loading = false; _errorText = context.t.login.networkError; });
+        return;
       }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-          _errorText = context.t.login.networkError;
-        });
-      }
+      _loginToken = token;
+      debugPrint('[OtpLogin] Token from otp-request: $token');
+
+      final botUrl = OtpService.instance.botLoginUrl(token);
+      debugPrint('[OtpLogin] Opening Telegram deeplink: $botUrl');
+      final launched = await launchUrl(Uri.parse(botUrl), mode: LaunchMode.externalApplication);
+      debugPrint('[OtpLogin] launchUrl result: $launched');
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        if (launched) { _botOpened = true; _startPolling(); }
+        else { _errorText = context.t.login.telegramNotOpened; }
+      });
+    } catch (e, st) {
+      debugPrint('[OtpLogin] _handlePhoneSubmit error: $e');
+      debugPrint('[OtpLogin] stack: $st');
+      if (mounted) setState(() { _loading = false; _errorText = context.t.login.networkError; });
     }
   }
 
-  // --------------- Test mode OTP verify ---------------
+  void _startPolling() {
+    _pollTimer?.cancel();
+    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _checkLogin());
+  }
 
-  String get _enteredOtp =>
-      _otpControllers.map((c) => c.text).join();
+  Future<void> _checkLogin() async {
+    if (_loginToken == null) return;
+    final result = await OtpService.instance.checkLoginStatus(_loginToken!);
+    if (!mounted) return;
 
+    if (result.ok && result.customerId != null) {
+      _pollTimer?.cancel();
+      await ClientSession.instance.saveFromOtp(
+        customerId: result.customerId!,
+        phone: result.phone!,
+        name: result.fullName!,
+      );
+      OrdersRepository.instance.invalidate();
+      if (mounted) _goToPendingOrHome();
+    } else if (result.error != null) {
+      _pollTimer?.cancel();
+      setState(() { _errorText = result.error!; _loading = false; _botOpened = false; });
+    }
+  }
+
+  // Test mode OTP
+  String get _enteredOtp => _otpControllers.map((c) => c.text).join();
   bool get _otpComplete => _enteredOtp.length == 6;
 
   void _onOtpChanged(int index, String value) {
     if (value.length > 1) {
-      // Handle paste
       final pasted = value.replaceAll(RegExp(r'[^0-9]'), '');
       if (pasted.length == 6) {
-        for (int i = 0; i < 6; i++) {
-          _otpControllers[i].text = pasted[i];
-        }
+        for (int i = 0; i < 6; i++) _otpControllers[i].text = pasted[i];
         _otpFocusNodes.last.requestFocus();
         setState(() {});
         return;
       }
     }
-
-    if (value.length == 1 && index < 5) {
-      _otpFocusNodes[index + 1].requestFocus();
-    }
+    if (value.length == 1 && index < 5) _otpFocusNodes[index + 1].requestFocus();
     setState(() {});
   }
 
   void _onOtpBackspace(int index, String value) {
-    if (value.isEmpty && index > 0) {
-      _otpFocusNodes[index - 1].requestFocus();
-    }
+    if (value.isEmpty && index > 0) _otpFocusNodes[index - 1].requestFocus();
   }
 
   Future<void> _verifyTestOtp() async {
     if (!_otpComplete || _verifyingOtp) return;
-
     final rawPhone = _phoneController.text.trim();
     final phone = rawPhone.startsWith('+') ? rawPhone : '+998$rawPhone';
 
-    setState(() {
-      _verifyingOtp = true;
-      _otpError = '';
-    });
+    setState(() { _verifyingOtp = true; _otpError = ''; });
 
     try {
-      final result = await OtpService.instance.verifyOtp(
-        phone: phone,
-        code: _enteredOtp,
-      );
-
+      final result = await OtpService.instance.verifyOtp(phone: phone, code: _enteredOtp);
       if (!mounted) return;
 
       if (result.ok) {
-        await ClientSession.instance.saveFromOtp(
-          customerId: result.customerId!,
-          phone: result.phone!,
-          name: result.fullName!,
-        );
+        await ClientSession.instance.saveFromOtp(customerId: result.customerId!, phone: result.phone!, name: result.fullName!);
         OrdersRepository.instance.invalidate();
-        if (mounted) {
-          _goToPendingOrHome();
-        }
+        if (mounted) _goToPendingOrHome();
       } else {
         setState(() {
           _verifyingOtp = false;
           _otpError = result.error ?? context.t.login.wrongCode;
-          for (final c in _otpControllers) {
-            c.clear();
-          }
+          for (final c in _otpControllers) c.clear();
           _otpFocusNodes.first.requestFocus();
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _verifyingOtp = false;
-          _otpError = 'Tarmoq xatosi. Internetingizni tekshiring.';
-        });
-      }
+      if (mounted) setState(() { _verifyingOtp = false; _otpError = 'Tarmoq xatosi.'; });
     }
   }
-
-  // --------------- Telegram bot flow ---------------
-
-  Future<void> _checkRegistration() async {
-    final rawPhone = _phoneController.text.trim();
-    if (_checkingRegistration) return;
-
-    final phone =
-        rawPhone.startsWith('+') ? rawPhone : '+998$rawPhone';
-
-    setState(() {
-      _checkingRegistration = true;
-      _errorText = '';
-    });
-
-    try {
-      final result = await OtpService.instance.checkCustomer(phone);
-
-      if (!mounted) return;
-
-      if (result.found) {
-        await ClientSession.instance.saveFromOtp(
-          customerId: result.customerId!,
-          phone: result.phone!,
-          name: result.fullName!,
-        );
-        if (result.telegramChatId != null) {
-          await ClientSession.instance
-              .saveTelegramChatId(result.telegramChatId!);
-        }
-        OrdersRepository.instance.invalidate();
-        if (mounted) {
-          _goToPendingOrHome();
-        }
-      } else {
-        setState(() {
-          _checkingRegistration = false;
-          _errorText = context.t.login.notRegistered;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _checkingRegistration = false;
-          _errorText = context.t.login.networkError;
-        });
-      }
-    }
-  }
-
-  void _goBack() {
-    setState(() {
-      _testMode = false;
-      _botOpened = false;
-      _errorText = '';
-      _otpError = '';
-      for (final c in _otpControllers) {
-        c.clear();
-      }
-    });
-  }
-
-  // --------------- Build ---------------
 
   @override
   Widget build(BuildContext context) {
-    final colors = _c;
-
-    String? subtitleText;
-    if (_testMode) {
-      subtitleText = context.t.login.testMode;
-    } else if (_botOpened) {
-      subtitleText = context.t.login.botRegister;
-    } else {
-      subtitleText = context.t.login.telegramSecure;
-    }
-
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: colors.background,
-        body: FadeTransition(
-          opacity: _fadeAnim,
-          child: Column(
-            children: [
-              _buildHero(colors, subtitleText),
-              Expanded(
-                child: SlideTransition(
-                  position: _slideAnim,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(20, 28, 20, 20),
-                    child: _testMode
-                        ? _buildTestOtpForm(colors)
-                        : _botOpened
-                            ? _buildBotInstructions(colors)
-                            : _buildPhoneForm(colors),
-                  ),
-                ),
+    return Scaffold(
+      backgroundColor: _c.background,
+      body: Stack(
+        children: [
+          // Animated water bubbles background
+          const _WaterBackground(),
+          // Content
+          SafeArea(
+            child: FadeTransition(
+              opacity: _fadeAnim,
+              child: SlideTransition(
+                position: _slideAnim,
+                child: _testMode ? _buildOtpStep() : _buildPhoneStep(),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 
-  Widget _buildHero(ApparenceKitColors colors, String? subtitle) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 28,
-        left: 24,
-        right: 24,
-        bottom: 32,
-      ),
-      color: colors.surface,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 58,
-            height: 58,
-            decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: colors.primary.withValues(alpha: 0.4),
-                width: 1.5,
+  Widget _buildPhoneStep() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 24),
+            // App icon
+            Container(
+              width: 80, height: 80,
+              decoration: BoxDecoration(
+                color: _c.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: Center(
+                child: Text('🚗', style: TextStyle(fontSize: 36)),
               ),
             ),
-            child: const Center(
-              child: Text('🚿', style: TextStyle(fontSize: 28)),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            'Wash Club',
-            style: TextStyle(
-              color: colors.onBackground,
-              fontSize: 30,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.3,
-              height: 1.1,
-            ),
-          ),
-          if (subtitle != null) ...[
+            const SizedBox(height: 24),
+            Text(context.t.login.title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: _c.onBackground)),
             const SizedBox(height: 8),
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: colors.grey3,
-                fontSize: 14,
-                height: 1.4,
+            Text(context.t.login.subtitle, style: TextStyle(fontSize: 14, color: _c.grey2)),
+            const SizedBox(height: 32),
+            // Phone input
+            Container(
+              decoration: BoxDecoration(
+                color: _c.surface,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: _c.primary.withValues(alpha: 0.2)),
               ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  // --------------- Phone form ---------------
-
-  Widget _buildPhoneForm(ApparenceKitColors colors) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _sectionLabel(context.t.login.phone, colors),
-        const SizedBox(height: 10),
-        TextField(
-          controller: _phoneController,
-          keyboardType: TextInputType.phone,
-          onChanged: (_) => setState(() {}),
-          style: TextStyle(color: colors.onSurface, fontSize: 15),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: colors.surface,
-            hintText: '90 123 45 67',
-            hintStyle: TextStyle(color: colors.grey2, fontSize: 15),
-            prefixText: '+998 ',
-            prefixStyle: TextStyle(
-              color: colors.onSurface,
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-            ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.divider),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.divider),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: colors.primary, width: 1.5),
-            ),
-          ),
-          inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(9),
-          ],
-        ),
-        if (_errorText.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              _errorText,
-              style: TextStyle(color: colors.error, fontSize: 13),
-            ),
-          ),
-        ],
-        const SizedBox(height: 36),
-        _buildButton(
-          colors: colors,
-          onPressed: _handlePhoneSubmit,
-          isActive: _phoneValid && !_loading,
-          isLoading: _loading,
-          label: context.t.login.telegramLogin,
-          icon: Icons.telegram,
-        ),
-        const SizedBox(height: 20),
-        _buildTelegramInfo(colors),
-      ],
-    );
-  }
-
-  // --------------- Test mode OTP form ---------------
-
-  Widget _buildTestOtpForm(ApparenceKitColors colors) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: _goBack,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: colors.divider),
-                ),
-                child: Icon(Icons.arrow_back_rounded,
-                    color: colors.grey2, size: 18),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              '+998 ${_phoneController.text.trim()}',
-              style: TextStyle(
-                color: colors.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-
-        // Test mode info banner
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: colors.info.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: colors.info.withValues(alpha: 0.2)),
-          ),
-          child: Row(
-            children: [
-              Icon(Icons.bug_report, size: 18, color: colors.info),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  context.t.login.testCode,
-                  style: TextStyle(
-                    color: colors.grey3,
-                    fontSize: 13,
-                    height: 1.4,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Text('+998', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _c.onBackground)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: TextField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _c.onBackground),
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'XX XXX XX XX',
+                        hintStyle: TextStyle(color: _c.grey2.withValues(alpha: 0.5), fontSize: 16),
+                      ),
+                      onChanged: (_) => setState(() => _errorText = ''),
+                    ),
                   ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 20),
-
-        _sectionLabel('Tasdiqlash kodini kiriting', colors),
-        const SizedBox(height: 12),
-
-        // OTP input row
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: List.generate(6, (i) {
-            return SizedBox(
-              width: 50,
-              height: 56,
-              child: TextField(
-                controller: _otpControllers[i],
-                focusNode: _otpFocusNodes[i],
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                maxLength: 1,
-                style: TextStyle(
-                  color: colors.onSurface,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w700,
-                ),
-                decoration: InputDecoration(
-                  counterText: '',
-                  filled: true,
-                  fillColor: colors.surface,
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: colors.divider),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: colors.divider),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: colors.primary, width: 1.5),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide:
-                        BorderSide(color: colors.error, width: 1.5),
-                  ),
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
                 ],
-                onChanged: (value) {
-                  _onOtpChanged(i, value);
-                  if (value.isEmpty) {
-                    _onOtpBackspace(i, value);
-                  }
-                },
-              ),
-            );
-          }),
-        ),
-        if (_otpError.isNotEmpty) ...[
-          const SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.only(left: 4),
-            child: Text(
-              _otpError,
-              style: TextStyle(color: colors.error, fontSize: 13),
-            ),
-          ),
-        ],
-        const SizedBox(height: 28),
-
-        _buildButton(
-          colors: colors,
-          onPressed: _verifyTestOtp,
-          isActive: _otpComplete && !_verifyingOtp,
-          isLoading: _verifyingOtp,
-          label: _verifyingOtp ? context.t.login.verifying : context.t.login.verifyCode,
-          icon: Icons.check_circle_outline,
-        ),
-        const SizedBox(height: 16),
-      ],
-    );
-  }
-
-  // --------------- Bot instructions ---------------
-
-  Widget _buildBotInstructions(ApparenceKitColors colors) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            GestureDetector(
-              onTap: _goBack,
-              child: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: colors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: colors.divider),
-                ),
-                child: Icon(Icons.arrow_back_rounded,
-                    color: colors.grey2, size: 18),
               ),
             ),
-            const SizedBox(width: 12),
-            Text(
-              '+998 ${_phoneController.text.trim()}',
-              style: TextStyle(
-                color: colors.onSurface,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: colors.info.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: colors.info.withValues(alpha: 0.2)),
-          ),
-          child: Column(
-            children: [
-              const Text('🤖', style: TextStyle(fontSize: 40)),
-              const SizedBox(height: 12),
-              Text(
-                context.t.login.telegramOpened,
-                style: TextStyle(
-                  color: colors.onBackground,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                context.t.login.stepInstruction,
-                style: TextStyle(
-                  color: colors.grey3,
-                  fontSize: 13,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        if (_errorText.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: colors.error.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border:
-                  Border.all(color: colors.error.withValues(alpha: 0.2)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.info_outline,
-                    color: colors.error, size: 18),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    _errorText,
-                    style: TextStyle(
-                        color: colors.error,
-                        fontSize: 12,
-                        height: 1.5),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-
-        const SizedBox(height: 24),
-
-        _buildButton(
-          colors: colors,
-          onPressed: _checkRegistration,
-          isActive: !_checkingRegistration,
-          isLoading: _checkingRegistration,
-          label: _checkingRegistration
-              ? context.t.login.verifying
-              : context.t.login.iRegistered,
-          icon: Icons.check_circle_outline,
-        ),
-
-        const SizedBox(height: 20),
-
-        Center(
-          child: TextButton.icon(
-            onPressed: () async {
-              await launchUrl(
-                Uri.parse(OtpService.botUrl),
-                mode: LaunchMode.externalApplication,
-              );
-            },
-            icon: const Icon(Icons.open_in_new, size: 16),
-            label: Text(context.t.login.reopenBot),
-            style: TextButton.styleFrom(foregroundColor: colors.info),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // --------------- Shared widgets ---------------
-
-  Widget _buildButton({
-    required ApparenceKitColors colors,
-    required VoidCallback onPressed,
-    required bool isActive,
-    required bool isLoading,
-    required String label,
-    required IconData icon,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: isActive ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor:
-              isActive ? colors.primary : colors.grey2.withValues(alpha: 0.3),
-          foregroundColor: colors.onPrimary,
-          disabledBackgroundColor: colors.grey2.withValues(alpha: 0.3),
-          disabledForegroundColor: colors.grey3,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          elevation: 0,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (isLoading)
+            if (_errorText.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: colors.onPrimary,
-                  ),
+                padding: const EdgeInsets.only(top: 12),
+                child: Text(_errorText, style: TextStyle(color: _c.error, fontSize: 13)),
+              ),
+            const SizedBox(height: 24),
+            // Submit button
+            SizedBox(
+              width: double.infinity, height: 54,
+              child: ElevatedButton(
+                onPressed: _loading ? null : _handlePhoneSubmit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _c.primary,
+                  disabledBackgroundColor: _c.primary.withValues(alpha: 0.5),
+                  foregroundColor: _c.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
                 ),
-              )
-            else ...[
-              Icon(icon, size: 20),
-              const SizedBox(width: 10),
+                child: _loading
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(context.t.login.button, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              ),
+            ),
+            if (_botOpened) ...[
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: _c.primary.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44, height: 44,
+                      decoration: BoxDecoration(color: const Color(0xFF229ED9), borderRadius: BorderRadius.circular(12)),
+                      child: const Center(
+                        child: Icon(Icons.send, color: Colors.white, size: 20),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Telegram', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _c.onBackground)),
+                          const SizedBox(height: 2),
+                          Text(context.t.login.telegramSecure, style: TextStyle(fontSize: 13, color: _c.grey2)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
+                  ],
+                ),
+              ),
             ],
-            Text(
-              isLoading ? '' : label,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOtpStep() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 32),
+            Text(context.t.login.verifyCode, style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: _c.onBackground)),
+            const SizedBox(height: 8),
+            Text('+998 ${_phoneController.text.trim()}', style: TextStyle(fontSize: 14, color: _c.grey2)),
+            const SizedBox(height: 28),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(6, (i) {
+                return Container(
+                  width: 48, height: 56,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  child: TextField(
+                    controller: _otpControllers[i],
+                    focusNode: _otpFocusNodes[i],
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    maxLength: 1,
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: _c.onBackground),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      filled: true,
+                      fillColor: _c.surface,
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _c.primary.withValues(alpha: 0.3))),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _c.primary, width: 2)),
+                    ),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: (v) => _onOtpChanged(i, v),
+                  ),
+                );
+              }),
+            ),
+            if (_otpError.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: Text(_otpError, style: TextStyle(color: _c.error, fontSize: 13)),
+              ),
+            const SizedBox(height: 28),
+            SizedBox(
+              width: double.infinity, height: 54,
+              child: ElevatedButton(
+                onPressed: _otpComplete && !_verifyingOtp ? _verifyTestOtp : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _c.primary,
+                  foregroundColor: _c.onPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  elevation: 0,
+                ),
+                child: _verifyingOtp
+                    ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(context.t.login.verifying, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
             ),
           ],
@@ -796,43 +398,69 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       ),
     );
   }
+}
 
-  Widget _sectionLabel(String text, ApparenceKitColors colors) {
-    return Text(
-      text,
-      style: TextStyle(
-        color: colors.grey3,
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
-      ),
-    );
+// ── Animated water bubbles background ──
+class _WaterBackground extends StatefulWidget {
+  const _WaterBackground();
+  @override
+  State<_WaterBackground> createState() => _WaterBackgroundState();
+}
+
+class _WaterBackgroundState extends State<_WaterBackground> with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
   }
 
-  Widget _buildTelegramInfo(ApparenceKitColors colors) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: colors.info.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.info.withValues(alpha: 0.15)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, size: 18, color: colors.info),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              context.t.settings.otpTelegram,
-              style: TextStyle(
-                color: colors.grey3,
-                fontSize: 12,
-                height: 1.4,
-              ),
-            ),
-          ),
-        ],
-      ),
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).extension<ApparenceKitColors>()!;
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) {
+        return CustomPaint(
+          size: Size.infinite,
+          painter: _BubblePainter(c.primary.withValues(alpha: 0.06), _ctrl.value),
+        );
+      },
     );
   }
+}
+
+class _BubblePainter extends CustomPainter {
+  final Color color;
+  final double t;
+
+  _BubblePainter(this.color, this.t);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color..style = PaintingStyle.fill;
+    final rng = _hash(t);
+
+    for (int i = 0; i < 8; i++) {
+      final x = size.width * (0.1 + (rng[i % rng.length] / 100) * 0.8);
+      final y = size.height * (0.3 - (t + i * 0.13) % 1.3);
+      final r = 20.0 + (rng[(i + 3) % rng.length] % 40).toDouble();
+      canvas.drawCircle(Offset(x, y), r, paint);
+    }
+  }
+
+  List<int> _hash(double v) {
+    final h = (v * 100000).toInt();
+    return List.generate(12, (i) => ((h >> (i * 2)) & 0xFF));
+  }
+
+  @override
+  bool shouldRepaint(covariant _BubblePainter old) => old.t != t;
 }

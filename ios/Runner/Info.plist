@@ -85,5 +85,10 @@
 	</array>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>tg</string>
+		<string>telegram</string>
+	</array>
 </dict>
 </plist>

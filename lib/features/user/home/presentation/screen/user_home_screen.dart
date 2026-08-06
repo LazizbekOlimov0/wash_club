@@ -70,7 +70,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
 
-  String get _userName => _session.name ?? context.t.profile.guest;
+  String get _userName => _session.name ?? context.t.home.welcome;
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -1023,7 +1023,11 @@ Widget _buildMembershipCard(BuildContext context, ApparenceKitColors colors) {
               ),
               child: TextButton(
                 onPressed: () {
-                  // Navigate to profile (tariff plans / subscriptions)
+                  // If guest, ask to login first
+                  if (!ClientSession.instance.isOnboarded) {
+                    context.push(UserRoutePath.otpLogin);
+                    return;
+                  }
                   context.go(UserRoutePath.profile);
                 },
                 child: Row(

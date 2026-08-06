@@ -130,7 +130,7 @@ class _SplashScreenState extends State<SplashScreen>
                       height: 110,
                       decoration: BoxDecoration(
                         color: colors.onPrimaryContainer,
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(24),
                         border: Border.all(color: colors.grey1, width: 1.5),
                         boxShadow: [
                           BoxShadow(
@@ -140,8 +140,12 @@ class _SplashScreenState extends State<SplashScreen>
                           ),
                         ],
                       ),
-                      child: const Center(
-                        child: Text('🚿', style: TextStyle(fontSize: 52)),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: Image.asset(
+                          'assets/image/wash_club.png',
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 28),

@@ -24,8 +24,6 @@ class _OrdersScreenState extends State<OrdersScreen>
   bool _loading = true;
   bool _cancelling = false;
   String? _error;
-  final TextEditingController _searchController = TextEditingController();
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -44,7 +42,6 @@ class _OrdersScreenState extends State<OrdersScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _searchController.dispose();
     super.dispose();
   }
 
@@ -58,16 +55,8 @@ class _OrdersScreenState extends State<OrdersScreen>
     }
   }
 
-  List<OrderModel> _filtered(List<OrderModel> orders) {
-    if (_searchQuery.isEmpty) return orders;
-    final q = _searchQuery.toLowerCase();
-    return orders.where((o) =>
-        o.carNumber.toLowerCase().contains(q) ||
-        o.carModel.toLowerCase().contains(q)).toList();
-  }
-
-  List<OrderModel> get _active  => _filtered(_all.where((o) => o.isActive).toList());
-  List<OrderModel> get _history => _filtered(_all.where((o) => o.isCompleted || o.isCancelled).toList());
+  List<OrderModel> get _active  => _all.where((o) => o.isActive).toList();
+  List<OrderModel> get _history => _all.where((o) => o.isCompleted || o.isCancelled).toList();
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -111,40 +100,6 @@ class _OrdersScreenState extends State<OrdersScreen>
                 ],
               ),
             ),
-            // Search
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-              child: Container(
-                height: 44,
-                decoration: BoxDecoration(
-                  color: _isDark ? colors.onPrimaryContainer : colors.surface,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: colors.divider),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (v) => setState(() => _searchQuery = v),
-                  style: TextStyle(color: colors.onSurface, fontSize: 14),
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-                    hintText: t.orders.searchHint,
-                    hintStyle: TextStyle(color: colors.grey2, fontSize: 14),
-                    prefixIcon: Icon(Icons.search, color: colors.grey2, size: 20),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? GestureDetector(
-                            onTap: () {
-                              _searchController.clear();
-                              setState(() => _searchQuery = '');
-                            },
-                            child: Icon(Icons.clear, color: colors.grey2, size: 18),
-                          )
-                        : null,
-                  ),
-                ),
-              ),
-            ),
-
             // ── Tabs ─────────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),

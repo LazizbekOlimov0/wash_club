@@ -98,6 +98,15 @@ class _BookingScreenState extends State<BookingScreen> {
       if (mounted) {
         final found = _branches.where((b) => b.id == branchId).firstOrNull;
         if (found != null) {
+          if (!_session.isOnboarded) {
+            setState(() { _selectedBranch = found; _loadingBranches = false; });
+            if (mounted) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                context.push(UserRoutePath.otpLogin);
+              });
+            }
+            return;
+          }
           setState(() {
             _selectedBranch = found;
             _loadingBranches = false;
@@ -179,6 +188,10 @@ class _BookingScreenState extends State<BookingScreen> {
 
   // ── Helpers ───────────────────────────────────────────────
   void _nextStep() {
+    if (_step == 0 && !_session.isOnboarded) {
+      context.push(UserRoutePath.otpLogin);
+      return;
+    }
     if (_step == 0 && _selectedBranch != null) {
       _loadServices(_selectedBranch!.id);
     }
@@ -697,20 +710,22 @@ class _BookingScreenState extends State<BookingScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: _step > 0 ? _prevStep : () => Navigator.maybePop(context),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: colors.surface,
-                shape: BoxShape.circle,
-                border: Border.all(color: colors.divider),
+          if (_step > 0) ...[
+            GestureDetector(
+              onTap: _prevStep,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: colors.surface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: colors.divider),
+                ),
+                child: Icon(Icons.arrow_back, color: colors.onSurface, size: 18),
               ),
-              child: Icon(Icons.arrow_back, color: colors.onSurface, size: 18),
             ),
-          ),
-          const SizedBox(width: 12),
+            const SizedBox(width: 12),
+          ],
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1593,7 +1608,7 @@ class _TimeStep extends StatelessWidget {
     final cardBg = isLight ? colors.surface : colors.onPrimaryContainer;
 
     final today = DateTime.now();
-    final dates = List.generate(10, (i) => today.add(Duration(days: i)));
+    final dates = List.generate(5, (i) => today.add(Duration(days: i)));
     final dayNames = [context.t.booking.dayMon, context.t.booking.dayTue, context.t.booking.dayWed, context.t.booking.dayThu, context.t.booking.dayFri, context.t.booking.daySat, context.t.booking.daySun];
 
     return SingleChildScrollView(
