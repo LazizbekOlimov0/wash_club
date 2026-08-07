@@ -13,8 +13,7 @@ import '../../../../../shared/services/supabase_service.dart';
 import '../../../../../shared/constants/app_constants.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/orders_repository.dart';
-import '../../../../../config/router/router.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ─────────────────────────────────────────────────────────────
 // BOOKING SCREEN — 4 qadam, real Supabase data
@@ -59,11 +58,7 @@ class _BookingScreenState extends State<BookingScreen> {
   // Subscription detection
   bool _checkingSubscription = false;
   bool _hasSubscription = false;
-
-  // Receipt upload (one-time booking)
-  Uint8List? _receiptBytes;
-  String? _receiptFileName;
-  final ImagePicker _imagePicker = ImagePicker();
+  bool _hasActiveBooking = false;
 
   // Time slots — API dan keladi
   List<String> _timeSlots = [];
@@ -86,6 +81,7 @@ class _BookingScreenState extends State<BookingScreen> {
     super.initState();
     _loadBranches();
     _initCarSelection();
+    _checkActiveBooking();
     if (widget.presetBranchId != null) {
       _preselectBranch(widget.presetBranchId!);
     }
@@ -138,6 +134,24 @@ class _BookingScreenState extends State<BookingScreen> {
       _branches = await _branchRepo.getBranches(forceRefresh: true);
     } finally {
       if (mounted) setState(() => _loadingBranches = false);
+    }
+  }
+
+  Future<void> _checkActiveBooking() async {
+    final customerId = _session.customerId;
+    if (customerId == null) return;
+    try {
+      final response = await Supabase.instance.client
+          .from('orders')
+          .select('id')
+          .eq('customer_id', customerId)
+          .eq('source', 'by_client_app')
+          .filter('status', 'in',
+              '(queued,pending,pending_payment,confirmed,washing,drying,ready)')
+          .limit(1);
+      if (mounted) setState(() => _hasActiveBooking = (response as List).isNotEmpty);
+    } catch (_) {
+      if (mounted) setState(() => _hasActiveBooking = false);
     }
   }
 
@@ -210,8 +224,7 @@ class _BookingScreenState extends State<BookingScreen> {
       case 0: return _selectedBranch != null;
       case 1: return _selectedService != null;
       case 2: return _selectedTime != null;
-      case 3: return (_selectedCar != null || _session.cars.isNotEmpty) &&
-                    (_hasSubscription || _receiptBytes != null);
+      case 3: return !_hasActiveBooking && (_selectedCar != null || _session.cars.isNotEmpty);
       default: return false;
     }
   }
@@ -360,29 +373,6 @@ class _BookingScreenState extends State<BookingScreen> {
         }
       }
 
-      // Receipt upload for one-time booking
-      String? receiptUrl;
-      if (!_hasSubscription && _receiptBytes == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.t.settings.bookingUploadReceipt),
-              backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
-            ),
-          );
-        }
-        setState(() => _submitting = false);
-        return;
-      }
-
-      if (!_hasSubscription && _receiptBytes != null && customerId != null) {
-        receiptUrl = await SupabaseService.instance.uploadReceipt(
-          customerId: customerId,
-          fileBytes: _receiptBytes!,
-          fileName: _receiptFileName ?? 'receipt.jpg',
-        );
-      }
-
       final carModel = car.displayName;
       final promoCode = _promoResult?.ok == true
           ? _promoController.text.trim().toUpperCase()
@@ -404,7 +394,7 @@ class _BookingScreenState extends State<BookingScreen> {
         scheduledAt:      scheduledAt,
         addonServiceIds:  _selectedAddons.toList(),
         hasSubscription:  _hasSubscription,
-        receiptUrl:       receiptUrl,
+        receiptUrl:       null,
         promoCode:        promoCode,
         branchName:       branchName,
         serviceName:      _selectedService?.name,
@@ -435,33 +425,6 @@ class _BookingScreenState extends State<BookingScreen> {
         if (_session.cars.isNotEmpty && _selectedCar == null) {
           _selectedCar = _session.cars.first;
         }
-      });
-    }
-  }
-
-  void _pickReceipt() async {
-    final picked = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1920,
-      maxHeight: 1920,
-      imageQuality: 85,
-    );
-    if (picked != null) {
-      final bytes = await picked.readAsBytes();
-      if (bytes.length > 5 * 1024 * 1024) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(context.t.booking.fileSizeError),
-              backgroundColor: Theme.of(context).extension<ApparenceKitColors>()!.error,
-            ),
-          );
-        }
-        return;
-      }
-      setState(() {
-        _receiptBytes = bytes;
-        _receiptFileName = picked.name;
       });
     }
   }
@@ -652,8 +615,6 @@ class _BookingScreenState extends State<BookingScreen> {
       _bookedSlots = {};
       _promoResult = null;
       _promoController.clear();
-      _receiptBytes = null;
-      _receiptFileName = null;
       _hasSubscription = false;
     });
   }
@@ -675,6 +636,7 @@ class _BookingScreenState extends State<BookingScreen> {
           children: [
             _buildHeader(context),
             _buildStepIndicator(context),
+            if (_hasActiveBooking) _buildActiveBookingBanner(context),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _step == 0
@@ -765,6 +727,37 @@ class _BookingScreenState extends State<BookingScreen> {
     );
   }
 
+  Widget _buildActiveBookingBanner(BuildContext context) {
+    final colors = context.colors;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFDF0E1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF5C88A), width: 1),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.info_outline, color: Color(0xFFB8650E), size: 18),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                context.t.booking.activeBookingExists,
+                style: const TextStyle(
+                  color: Color(0xFF8A4F0C),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildStepContent(BuildContext context) {
     switch (_step) {
       case 0:
@@ -829,8 +822,6 @@ class _BookingScreenState extends State<BookingScreen> {
               setState(() => _paymentMethod = m),
           onCarSelect:    (car) => setState(() => _selectedCar = car),
           hasSubscription: _hasSubscription,
-          receiptBytes:   _receiptBytes,
-          onPickReceipt:  _pickReceipt,
           onAddCar:       _goToAddCar,
         );
       default:
@@ -988,11 +979,11 @@ class _BranchStep extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: b.isActive ? colors.success : colors.error,
+                          color: b.isOpenNow ? colors.success : colors.error,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
-                          b.isActive ? context.t.booking.open : context.t.booking.closed,
+                          b.isOpenNow ? context.t.booking.open : context.t.booking.closed,
                           style: TextStyle(
                               color: colors.onPrimary,
                               fontSize: 12,
@@ -1423,8 +1414,8 @@ class _ServiceCard extends StatelessWidget {
               children: [
                 // Icon container
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: _iconBg(context),
                     borderRadius: BorderRadius.circular(14),
@@ -1436,7 +1427,7 @@ class _ServiceCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 // Service name
                 Text(
                   service.name,
@@ -1449,16 +1440,16 @@ class _ServiceCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 if (service.description.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 1),
                   Text(
                     service.description,
                     style:
-                    TextStyle(color: colors.grey2, fontSize: 12),
+                    TextStyle(color: colors.grey2, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 // Price row
                 if (hasDiscount) ...[
                   // Eski narx — strikethrough
@@ -1513,17 +1504,22 @@ class _ServiceCard extends StatelessWidget {
                 ],
                 // Vaqt (duration) — agar service'da bo'lsa
                 if (service.durationMinutes != null) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 2),
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.access_time,
                           color: colors.grey2, size: 12),
                       const SizedBox(width: 3),
-                      Text(
-                        context.t.booking.minutes.replaceAll('{minutes}', '${service.durationMinutes}'),
-                        style: TextStyle(
-                          color: colors.grey2,
-                          fontSize: 12,
+                      Flexible(
+                        child: Text(
+                          context.t.booking.minutes.replaceAll('{minutes}', '${service.durationMinutes}'),
+                          style: TextStyle(
+                            color: colors.grey2,
+                            fontSize: 12,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.visible,
                         ),
                       ),
                     ],
@@ -1763,8 +1759,6 @@ class _PaymentStep extends StatelessWidget {
   final ValueChanged<String> onPaymentMethodChange;
   final ValueChanged<SavedCar> onCarSelect;
   final bool hasSubscription;
-  final Uint8List? receiptBytes;
-  final VoidCallback onPickReceipt;
   final VoidCallback onAddCar;
 
   const _PaymentStep({
@@ -1783,8 +1777,6 @@ class _PaymentStep extends StatelessWidget {
     required this.onPaymentMethodChange,
     required this.onCarSelect,
     this.hasSubscription = false,
-    this.receiptBytes,
-    required this.onPickReceipt,
     required this.onAddCar,
   });
 
@@ -1793,17 +1785,6 @@ class _PaymentStep extends StatelessWidget {
     final colors = context.colors;
     final isLight = Theme.of(context).brightness == Brightness.light;
     final cardBg = isLight ? colors.surface : colors.onPrimaryContainer;
-
-    final methods = [
-      {'id': AppConstants.paymentClick, 'label': context.t.booking.click,
-        'icon': Icons.touch_app_outlined},
-      {'id': AppConstants.paymentPayme, 'label': context.t.booking.payme,
-        'icon': Icons.payment_outlined},
-      {'id': AppConstants.paymentCard, 'label': context.t.booking.card,
-        'icon': Icons.credit_card_outlined},
-      {'id': AppConstants.paymentCash, 'label': context.t.booking.cash,
-        'icon': Icons.money_outlined},
-    ];
 
     final dateStr =
         '${selectedDate.year}-${selectedDate.month.toString().padLeft(2, '0')}-${selectedDate.day.toString().padLeft(2, '0')}';
@@ -1839,48 +1820,6 @@ class _PaymentStep extends StatelessWidget {
             ),
 
           if (hasSubscription) const SizedBox(height: 20),
-
-          // Receipt upload (one-time booking)
-          if (!hasSubscription) ...[
-            _sectionLabel(context.t.booking.paymentReceipt, colors),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: onPickReceipt,
-              child: Container(
-                width: double.infinity,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: cardBg,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: receiptBytes != null ? colors.success : colors.divider,
-                    width: receiptBytes != null ? 2 : 1,
-                  ),
-                ),
-                child: receiptBytes != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.memory(receiptBytes!, fit: BoxFit.cover),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.upload_file_outlined, color: colors.grey2, size: 32),
-                          const SizedBox(height: 8),
-                          Text(
-                            context.t.booking.uploadReceipt,
-                            style: TextStyle(color: colors.grey2, fontSize: 13),
-                          ),
-                          Text(
-                            context.t.booking.maxSize,
-                            style: TextStyle(color: colors.grey3, fontSize: 11),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-            const SizedBox(height: 20),
-          ],
 
           // Car selection (agar session'da mashina bor bo'lsa)
           if (cars.isNotEmpty) ...[
@@ -1967,55 +1906,74 @@ class _PaymentStep extends StatelessWidget {
             const SizedBox(height: 20),
           ],
 
-          // Payment methods
+          // Payment method — only cash at car wash
           _sectionLabel(context.t.booking.paymentLabel, colors),
           const SizedBox(height: 12),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-              childAspectRatio: 3.5,
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: cardBg,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: colors.primary, width: 2),
             ),
-            itemCount: methods.length,
-            itemBuilder: (context, i) {
-              final m = methods[i];
-              final isSelected = paymentMethod == m['id'];
-              return GestureDetector(
-                onTap: () => onPaymentMethodChange(m['id'] as String),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? colors.primary.withValues(alpha: isLight ? 0.08 : 0.15)
-                        : cardBg,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: isSelected ? colors.primary : colors.divider,
-                      width: isSelected ? 2 : 1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 40, height: 40,
+                      decoration: BoxDecoration(
+                        color: colors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(Icons.money_outlined, color: colors.primary, size: 22),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(m['icon'] as IconData,
-                          color: isSelected ? colors.primary : colors.grey2,
-                          size: 18),
-                      const SizedBox(width: 6),
-                      Text(m['label'] as String,
-                          style: TextStyle(
-                              color: isSelected
-                                  ? colors.onSurface
-                                  : colors.grey2,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500)),
-                    ],
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.t.booking.cash,
+                            style: TextStyle(
+                              color: colors.onSurface,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            context.t.booking.payAtCarWash(price: _formatPrice(totalPrice)),
+                            style: TextStyle(color: colors.grey2, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF3E0),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        context.t.booking.unpaidLabel,
+                        style: const TextStyle(
+                          color: Color(0xFFE65100),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
+                const SizedBox(height: 12),
+                Text(
+                  context.t.booking.payAtCarWashDesc,
+                  style: TextStyle(color: colors.grey2, fontSize: 12, height: 1.4),
+                ),
+              ],
+            ),
           ),
 
           const SizedBox(height: 20),

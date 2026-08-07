@@ -201,7 +201,7 @@ class _OrdersScreenState extends State<OrdersScreen>
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       itemCount: orders.length,
       itemBuilder: (context, i) =>
           _OrderCard(order: orders[i], colors: colors, isDark: _isDark,

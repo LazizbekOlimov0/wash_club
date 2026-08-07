@@ -96,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onRefresh: _refresh,
         color: colors.info,
         child: ListView(
-        padding: EdgeInsets.zero,
+        padding: const EdgeInsets.only(bottom: 100),
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           _buildHeader(colors, name, phone),

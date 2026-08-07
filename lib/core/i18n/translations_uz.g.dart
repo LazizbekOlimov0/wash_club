@@ -560,6 +560,18 @@ class TranslationsBookingUz {
 	/// uz: 'Kunlik bron limitiga yetdingiz'
 	String get dailyLimitError => 'Kunlik bron limitiga yetdingiz';
 
+	/// uz: 'Sizda allaqachon faol bron bor. Bir vaqtda faqat bitta avtomoykani bron qilish mumkin.'
+	String get activeBookingExists => 'Sizda allaqachon faol bron bor. Bir vaqtda faqat bitta avtomoykani bron qilish mumkin.';
+
+	/// uz: 'Summa: {price} so\'m'
+	String payAtCarWash({required Object price}) => 'Summa: $price so\'m';
+
+	/// uz: 'To\'lov yuvishdan so\'ng joyida naqd shaklda amalga oshiriladi. Boshqa usullar hozircha mavjud emas.'
+	String get payAtCarWashDesc => 'To\'lov yuvishdan so\'ng joyida naqd shaklda amalga oshiriladi. Boshqa usullar hozircha mavjud emas.';
+
+	/// uz: 'To\'lanmagan'
+	String get unpaidLabel => 'To\'lanmagan';
+
 	/// uz: 'Fayl 5MB dan kichik bo'lishi kerak'
 	String get fileSizeError => 'Fayl 5MB dan kichik bo\'lishi kerak';
 

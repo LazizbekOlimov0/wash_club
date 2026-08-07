@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -33,6 +34,27 @@ class _MainScreenState extends State<MainScreen> {
     widget.navigationShell.goBranch(shellIdx);
   }
 
+  void _onTabTap(int uiIdx) {
+    // uiIdx mapping: 0=home, 1=booking, 2=map(sep), 3=orders, 4=profile
+    if (uiIdx == 2) {
+      context.push(UserRoutePath.map);
+      return;
+    }
+    final shellIdx = uiIdx > 2 ? uiIdx - 1 : uiIdx;
+    // Auth check for orders (shell 2) and profile (shell 3)
+    if (shellIdx == 2 || shellIdx == 3) {
+      if (!ClientSession.instance.isOnboarded) {
+        PendingDestination.set(shellIdx == 2 ? '/orders' : '/profile');
+        context.push(UserRoutePath.otpLogin);
+        return;
+      }
+    }
+    widget.navigationShell.goBranch(
+      shellIdx,
+      initialLocation: shellIdx == widget.navigationShell.currentIndex,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = context.t;
@@ -43,174 +65,93 @@ class _MainScreenState extends State<MainScreen> {
       isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
     );
 
-    // UI index mapping: [0=home, 1=booking, 2=map, 3=orders, 4=profile]
-    // Shell index mapping: [0=home, 1=booking, 2=orders, 3=profile]
     final shellIdx = widget.navigationShell.currentIndex;
     final uiIdx = shellIdx >= 2 ? shellIdx + 1 : shellIdx;
 
     return Scaffold(
       backgroundColor: colors.background,
+      extendBody: true,
       body: widget.navigationShell,
-      bottomNavigationBar: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: colors.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(24),
-            topRight: Radius.circular(24),
-          ),
-          border: Border(
-            top: BorderSide(color: colors.divider, width: 1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: colors.shadow.withValues(
-                alpha: isDark ? 0.25 : 0.06,
-              ),
-              blurRadius: 24,
-              offset: const Offset(0, -6),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              splashFactory: NoSplash.splashFactory,
-              splashColor: Colors.transparent,
-              highlightColor: Colors.transparent,
-            ),
-            child: BottomNavigationBar(
-              currentIndex: uiIdx,
-              onTap: (idx) {
-                if (idx == 2) {
-                  context.push(UserRoutePath.map);
-                  return;
-                }
-                // Orders (idx=3) va Profile (idx=4) — auth kerak
-                if (idx == 3 || idx == 4) {
-                  if (!ClientSession.instance.isOnboarded) {
-                    PendingDestination.set(idx == 3 ? '/orders' : '/profile');
-                    context.push(UserRoutePath.otpLogin);
-                    return;
-                  }
-                }
-                final shellI = idx > 2 ? idx - 1 : idx;
-                widget.navigationShell.goBranch(
-                  shellI,
-                  initialLocation: shellI == widget.navigationShell.currentIndex,
-                );
-              },
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              type: BottomNavigationBarType.fixed,
-              enableFeedback: false,
-              selectedItemColor: colors.primary,
-              unselectedItemColor: colors.grey3,
-              selectedLabelStyle: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                fontFamily: 'SF Pro Rounded',
-                letterSpacing: -0.1,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                fontFamily: 'SF Pro Rounded',
-                letterSpacing: -0.1,
-              ),
-              items: [
-                _barItem(Icons.home_outlined, Icons.home, t.nav.home, uiIdx == 0, colors),
-                _barItem(Icons.calendar_today_outlined, Icons.calendar_today, t.nav.booking, uiIdx == 1, colors),
-                // Map — markaziy, kattaroq, gradientli
-                BottomNavigationBarItem(
-                  label: '',
-                  icon: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(height: 2),
-                      Container(
-                        width: 46,
-                        height: 46,
-                        margin: const EdgeInsets.only(bottom: 2),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF3B72D9), Color(0xFF4E85F0)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3B72D9).withValues(alpha: 0.4),
-                              blurRadius: 14,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.map_outlined,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        t.nav.map,
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color: colors.primary,
-                          fontFamily: 'SF Pro Rounded',
-                        ),
-                      ),
-                    ],
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+            child: Container(
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.black.withValues(alpha: 0.62)
+                    : Colors.white.withValues(alpha: 0.72),
+                borderRadius: BorderRadius.circular(28),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.06),
+                  width: 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark
+                        ? Colors.black.withValues(alpha: 0.45)
+                        : Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 24,
+                    offset: const Offset(0, 6),
                   ),
-                  activeIcon: Column(
-                    mainAxisSize: MainAxisSize.min,
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      const SizedBox(height: 2),
-                      Container(
-                        width: 46,
-                        height: 46,
-                        margin: const EdgeInsets.only(bottom: 2),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF3B72D9), Color(0xFF4E85F0)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF3B72D9).withValues(alpha: 0.5),
-                              blurRadius: 18,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(
-                          Icons.map,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                      _navTab(
+                        icon: Icons.home_outlined,
+                        activeIcon: Icons.home,
+                        label: t.nav.home,
+                        isSelected: uiIdx == 0,
+                        colors: colors,
+                        onTap: () => _onTabTap(0),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        t.nav.map,
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color: colors.primary,
-                          fontFamily: 'SF Pro Rounded',
-                        ),
+                      _navTab(
+                        icon: Icons.calendar_today_outlined,
+                        activeIcon: Icons.calendar_today,
+                        label: t.nav.booking,
+                        isSelected: uiIdx == 1,
+                        colors: colors,
+                        onTap: () => _onTabTap(1),
+                      ),
+                      _mapTab(
+                        icon: Icons.map_outlined,
+                        activeIcon: Icons.map,
+                        label: t.nav.map,
+                        isSelected: uiIdx == 2,
+                        colors: colors,
+                        onTap: () => _onTabTap(2),
+                      ),
+                      _navTab(
+                        icon: Icons.receipt_long_outlined,
+                        activeIcon: Icons.receipt_long,
+                        label: t.nav.orders,
+                        isSelected: uiIdx == 3,
+                        colors: colors,
+                        onTap: () => _onTabTap(3),
+                      ),
+                      _navTab(
+                        icon: Icons.person_outline,
+                        activeIcon: Icons.person,
+                        label: t.nav.profile,
+                        isSelected: uiIdx == 4,
+                        colors: colors,
+                        onTap: () => _onTabTap(4),
                       ),
                     ],
                   ),
                 ),
-                _barItem(Icons.receipt_long_outlined, Icons.receipt_long, t.nav.orders, uiIdx == 3, colors),
-                _barItem(Icons.person_outline, Icons.person, t.nav.profile, uiIdx == 4, colors),
-              ],
+              ),
             ),
           ),
         ),
@@ -218,36 +159,108 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  BottomNavigationBarItem _barItem(
-    IconData icon,
-    IconData activeIcon,
-    String label,
-    bool isSelected,
-    ApparenceKitColors colors,
-  ) {
-    return BottomNavigationBarItem(
-      label: label,
-      icon: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  Widget _navTab({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required bool isSelected,
+    required ApparenceKitColors colors,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? colors.primary.withValues(alpha: 0.12)
+              ? colors.primary.withValues(alpha: 0.1)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: Icon(icon, size: 23),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              transitionBuilder: (child, anim) =>
+                  FadeTransition(opacity: anim, child: child),
+              child: Icon(
+                isSelected ? activeIcon : icon,
+                key: ValueKey('${isSelected}_$label'),
+                size: 24,
+                color: isSelected ? colors.primary : colors.grey3,
+              ),
+            ),
+            const SizedBox(height: 4),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontFamily: 'SF Pro Rounded',
+                color: isSelected ? colors.primary : colors.grey3,
+              ),
+              child: Text(label),
+            ),
+          ],
+        ),
       ),
-      activeIcon: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    );
+  }
+
+  Widget _mapTab({
+    required IconData icon,
+    required IconData activeIcon,
+    required String label,
+    required bool isSelected,
+    required ApparenceKitColors colors,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: colors.primary.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(14),
+          color: isSelected
+              ? colors.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: Icon(activeIcon, size: 23),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              transitionBuilder: (child, anim) =>
+                  FadeTransition(opacity: anim, child: child),
+              child: Icon(
+                isSelected ? activeIcon : icon,
+                key: ValueKey('map_$isSelected'),
+                size: 28,
+                color: isSelected ? colors.primary : colors.grey3,
+              ),
+            ),
+            const SizedBox(height: 4),
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontFamily: 'SF Pro Rounded',
+                color: isSelected ? colors.primary : colors.grey3,
+              ),
+              child: Text(label),
+            ),
+          ],
+        ),
       ),
     );
   }

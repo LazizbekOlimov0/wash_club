@@ -228,6 +228,10 @@ class TranslationsBookingEn extends TranslationsBookingUz {
 	@override String get timeFormatError => 'Invalid time format';
 	@override String get pastTimeError => 'Cannot select past time';
 	@override String get dailyLimitError => 'Daily booking limit reached';
+	@override String get activeBookingExists => 'You already have an active booking. Only one booking at a time is allowed.';
+	@override String payAtCarWash({required Object price}) => 'Amount: $price UZS';
+	@override String get payAtCarWashDesc => 'Payment is made in cash at the car wash after service. Other payment methods are currently unavailable.';
+	@override String get unpaidLabel => 'Unpaid';
 	@override String get fileSizeError => 'File must be under 5MB';
 	@override String get bookingSubmitted => 'Booking submitted!';
 	@override String get bookingAccepted => 'Booking accepted!';

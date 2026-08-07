@@ -21,7 +21,7 @@ class SupabaseService {
   Future<List<BranchModel>> getBranches() async {
     final response = await _client
         .from('branches')
-        .select('id,name,address,is_active,created_at,latitude,longitude,services(id,name,description,is_active,is_addon,icon,sort_order,duration_minutes,service_prices(vehicle_category,price))')
+        .select('id,name,address,is_active,latitude,longitude,open_time,close_time,is_24_7,is_temporarily_closed,services(id,name,description,is_active,is_addon,icon,sort_order,duration_minutes,service_prices(vehicle_category,price))')
         .eq('is_active', true)
         .order('name');
 
@@ -621,6 +621,10 @@ class BranchModel {
   final double? latitude;
   final double? longitude;
   final List<ServiceModel> services;
+  final String openTime;
+  final String closeTime;
+  final bool is24_7;
+  final bool isTemporarilyClosed;
 
   const BranchModel({
     required this.id,
@@ -630,6 +634,10 @@ class BranchModel {
     required this.services,
     this.latitude,
     this.longitude,
+    this.openTime = '09:00',
+    this.closeTime = '23:00',
+    this.is24_7 = false,
+    this.isTemporarilyClosed = false,
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> j) {
@@ -646,7 +654,39 @@ class BranchModel {
       latitude:    (j['latitude'] as num?)?.toDouble(),
       longitude:   (j['longitude'] as num?)?.toDouble(),
       services:    services,
+      openTime:    j['open_time'] as String? ?? '09:00',
+      closeTime:   j['close_time'] as String? ?? '23:00',
+      is24_7:     j['is_24_7'] as bool? ?? false,
+      isTemporarilyClosed: j['is_temporarily_closed'] as bool? ?? false,
     );
+  }
+  /// Hozir ochiqmi?
+  bool get isOpenNow {
+    if (isTemporarilyClosed) return false;
+    if (is24_7) return true;
+
+    final now = DateTime.now();
+    final currentMinutes = now.hour * 60 + now.minute;
+
+    final openParts = openTime.split(':');
+    final closeParts = closeTime.split(':');
+    if (openParts.length < 2 || closeParts.length < 2) return false;
+
+    final openMinutes = int.tryParse(openParts[0])! * 60 + int.tryParse(openParts[1])!;
+    final closeMinutes = int.tryParse(closeParts[0])! * 60 + int.tryParse(closeParts[1])!;
+
+    if (openMinutes <= closeMinutes) {
+      return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+    }
+    // Overnight (masalan 22:00–02:00)
+    return currentMinutes >= openMinutes || currentMinutes < closeMinutes;
+  }
+
+  /// Qolgan vaqt matni (masalan "Ochiq · 23:00 gacha")
+  String get hoursLabel {
+    if (isTemporarilyClosed) return 'Yopiq';
+    if (is24_7) return '24/7';
+    return '${openTime.substring(0, 5)} – ${closeTime.substring(0, 5)}';
   }
 }
 

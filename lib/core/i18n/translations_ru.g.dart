@@ -228,6 +228,10 @@ class TranslationsBookingRu extends TranslationsBookingUz {
 	@override String get timeFormatError => 'Неверный формат времени';
 	@override String get pastTimeError => 'Нельзя выбрать прошедшее время';
 	@override String get dailyLimitError => 'Достигнут дневной лимит';
+	@override String get activeBookingExists => 'У вас уже есть активная бронь. Только одна бронь за раз.';
+	@override String payAtCarWash({required Object price}) => 'Сумма: $price сум';
+	@override String get payAtCarWashDesc => 'Оплата производится наличными на автомойке после обслуживания. Другие способы пока недоступны.';
+	@override String get unpaidLabel => 'Не оплачено';
 	@override String get fileSizeError => 'Файл должен быть меньше 5MB';
 	@override String get bookingSubmitted => 'Бронь отправлена!';
 	@override String get bookingAccepted => 'Бронь принята!';

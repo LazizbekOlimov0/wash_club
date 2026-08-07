@@ -126,7 +126,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             : _error != null
             ? _buildError(colors)
             : ListView(
-          padding: EdgeInsets.zero,
+          padding: const EdgeInsets.only(bottom: 100),
           physics: const ClampingScrollPhysics(),
           children: [
             _buildHeader(context, colors),
@@ -656,14 +656,14 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: b.isActive
+                                    color: b.isOpenNow
                                         ? colors.success
                                         : colors.error,
                                     borderRadius:
                                     BorderRadius.circular(6),
                                   ),
                                   child: Text(
-                                    b.isActive ? context.t.home.open : context.t.home.closed,
+                                    b.isOpenNow ? context.t.home.open : context.t.home.closed,
                                     style: TextStyle(
                                       color: colors.onPrimary,
                                       fontSize: 10,
@@ -1061,6 +1061,7 @@ Widget _buildBookingPromoCard(BuildContext context, ApparenceKitColors colors) {
     child: Container(
       width: double.infinity,
       height: 200,
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(

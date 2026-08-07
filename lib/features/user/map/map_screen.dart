@@ -464,7 +464,29 @@ class _MapScreenState extends State<MapScreen>
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(b.name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(b.name, style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600)),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: b.isOpenNow ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Text(
+                                          b.isOpenNow ? 'Ochiq' : 'Yopiq',
+                                          style: TextStyle(
+                                            color: b.isOpenNow ? Colors.green : Colors.red,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                   const SizedBox(height: 2),
                                   Text(b.address, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: colors.grey2, fontSize: 12)),
                                 ],
@@ -503,6 +525,31 @@ class _MapScreenState extends State<MapScreen>
               ),
               const SizedBox(height: 16),
               Text(branch.name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: branch.isOpenNow ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      branch.isOpenNow ? 'Ochiq' : 'Yopiq',
+                      style: TextStyle(
+                        color: branch.isOpenNow ? Colors.green : Colors.red,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    branch.hoursLabel,
+                    style: TextStyle(color: colors.grey2, fontSize: 13),
+                  ),
+                ],
+              ),
               const SizedBox(height: 4),
               Text(branch.address, style: TextStyle(color: colors.grey2, fontSize: 13)),
               const SizedBox(height: 16),
