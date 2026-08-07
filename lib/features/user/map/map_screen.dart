@@ -185,11 +185,19 @@ class _MapScreenState extends State<MapScreen>
               onTap: (_, real) => _showList ? setState(() => _showList = false) : null,
             ),
             children: [
-              // Dark tile layer — CartoDB dark matter
-              TileLayer(
-                urlTemplate: 'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-                userAgentPackageName: 'com.wash_club.app',
-                maxZoom: 19,
+              // Light tiles + dark filter — dark background with readable labels
+              ColorFiltered(
+                colorFilter: const ColorFilter.matrix(<double>[
+                  -0.75, 0, 0, 0, 220,
+                  0, -0.75, 0, 0, 220,
+                  0, 0, -0.75, 0, 225,
+                  0, 0, 0, 1, 0,
+                ]),
+                child: TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: 'com.wash_club.app',
+                  maxZoom: 19,
+                ),
               ),
               // Branch markers (teardrop style)
               MarkerLayer(
