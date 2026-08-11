@@ -63,7 +63,9 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     _animController.forward();
 
     final prevPhone = ClientSession.instance.phone;
-    if (prevPhone != null) _phoneController.text = prevPhone;
+    if (prevPhone != null) {
+      _phoneController.text = prevPhone.startsWith('+998') ? prevPhone.substring(4) : prevPhone;
+    }
   }
 
   @override
@@ -226,51 +228,62 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 24),
-            // App icon
-            Container(
-              width: 80, height: 80,
-              decoration: BoxDecoration(
-                color: _c.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: Center(
-                child: Text('🚗', style: TextStyle(fontSize: 36)),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(context.t.login.title, style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: _c.onBackground)),
-            const SizedBox(height: 8),
+            const SizedBox(height: 48),
+            Text(context.t.login.title, style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: _c.onBackground)),
+            const SizedBox(height: 6),
             Text(context.t.login.subtitle, style: TextStyle(fontSize: 14, color: _c.grey2)),
-            const SizedBox(height: 32),
-            // Phone input
-            Container(
-              decoration: BoxDecoration(
-                color: _c.surface,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: _c.primary.withValues(alpha: 0.2)),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Text('+998', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _c.onBackground)),
-                  const SizedBox(width: 8),
-                  Expanded(
+            const SizedBox(height: 28),
+            // Phone input — two separate blocks
+            Row(
+              children: [
+                // Country code block
+                SizedBox(
+                  width: 112,
+                  height: 56,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: _c.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: _c.primary.withValues(alpha: 0.2)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🇺🇿', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 6),
+                        Text('+998', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _c.onBackground)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Number input block
+                Expanded(
+                  child: Container(
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: _c.surface,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: _c.primary.withValues(alpha: 0.2)),
+                    ),
                     child: TextField(
                       controller: _phoneController,
                       keyboardType: TextInputType.phone,
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: _c.onBackground),
-                      decoration: InputDecoration(
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _c.onBackground),
+                      decoration: const InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'XX XXX XX XX',
-                        hintStyle: TextStyle(color: _c.grey2.withValues(alpha: 0.5), fontSize: 16),
+                        hintText: '90 123 45 67',
+                        hintStyle: TextStyle(color: Color(0xFFB0B0B0), fontSize: 16),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
                       ),
                       onChanged: (_) => setState(() => _errorText = ''),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
             if (_errorText.isNotEmpty)
               Padding(
@@ -328,6 +341,12 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
                 ),
               ),
             ],
+            const SizedBox(height: 16),
+            Text(
+              'Davom etish orqali siz xizmat shartlariga rozilik bildirasiz.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: _c.grey2, fontSize: 12),
+            ),
           ],
         ),
       ),

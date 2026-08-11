@@ -95,13 +95,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   Widget _branchPlaceholder(ApparenceKitColors colors) => Container(
         height: 110,
-        decoration: BoxDecoration(
-          color: _isLight
-              ? colors.primary.withValues(alpha: 0.06)
-              : colors.grey1,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1A3A6B), Color(0xFF2D5AA0)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: Center(
-          child: Icon(Icons.local_car_wash, color: colors.info, size: 40),
+          child: Opacity(
+            opacity: 0.7,
+            child: Icon(Icons.local_car_wash_rounded, color: Colors.white, size: 40),
+          ),
         ),
       );
 
@@ -624,14 +629,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                           topLeft: Radius.circular(16),
                           topRight: Radius.circular(16),
                         ),
-                        child: Image.asset(
-                          AppConstants.branchImages[i % AppConstants.branchImages.length],
-                          height: 110,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) =>
-                              _branchPlaceholder(colors),
-                        ),
+                        child: b.imageUrl != null && b.imageUrl!.isNotEmpty
+                            ? Image.network(
+                                b.imageUrl!,
+                                height: 110,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) =>
+                                    _branchPlaceholder(colors),
+                              )
+                            : ClipRRect(
+                                borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(16),
+                                  topRight: Radius.circular(16),
+                                ),
+                                child: Image.asset(
+                                  'assets/image/wash_club.png',
+                                  height: 110,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(12),

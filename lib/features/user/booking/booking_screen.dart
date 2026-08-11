@@ -963,14 +963,25 @@ class _BranchStep extends StatelessWidget {
                     ClipRRect(
                       borderRadius: const BorderRadius.vertical(
                           top: Radius.circular(14)),
-                      child: Image.asset(
-                        AppConstants.branchImages[i % AppConstants.branchImages.length],
-                        height: 140,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            _buildPlaceholder(colors),
-                      ),
+                      child: b.imageUrl != null && b.imageUrl!.isNotEmpty
+                          ? Image.network(
+                              b.imageUrl!,
+                              height: 140,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) =>
+                                  _buildPlaceholder(colors),
+                            )
+                          : ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(14)),
+                              child: Image.asset(
+                                'assets/image/wash_club.png',
+                                height: 140,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
                     ),
                     Positioned(
                       top: 10,
@@ -1030,19 +1041,18 @@ class _BranchStep extends StatelessWidget {
   static Widget _buildPlaceholder(ApparenceKitColors colors) {
     return Container(
       height: 140,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            colors.primary.withValues(alpha: 0.18),
-            colors.primary.withValues(alpha: 0.04),
-          ],
+          colors: [Color(0xFF1A3A6B), Color(0xFF2D5AA0)],
         ),
       ),
       child: Center(
-        child:
-            Icon(Icons.local_car_wash, color: colors.primary, size: 56),
+        child: Opacity(
+          opacity: 0.7,
+          child: Icon(Icons.local_car_wash_rounded, color: Colors.white, size: 56),
+        ),
       ),
     );
   }
@@ -1229,7 +1239,7 @@ class _ServiceStep extends StatelessWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.93,
             ),
             itemCount: mainServices.length,
             itemBuilder: (context, i) {
@@ -1410,6 +1420,7 @@ class _ServiceCard extends StatelessWidget {
         child: Stack(
           children: [
             Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Icon container

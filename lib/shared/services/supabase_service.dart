@@ -21,7 +21,7 @@ class SupabaseService {
   Future<List<BranchModel>> getBranches() async {
     final response = await _client
         .from('branches')
-        .select('id,name,address,is_active,latitude,longitude,open_time,close_time,is_24_7,is_temporarily_closed,services(id,name,description,is_active,is_addon,icon,sort_order,duration_minutes,service_prices(vehicle_category,price))')
+        .select('id,name,address,is_active,latitude,longitude,image_url,open_time,close_time,is_24_7,is_temporarily_closed,services(id,name,description,is_active,is_addon,icon,sort_order,duration_minutes,service_prices(vehicle_category,price))')
         .eq('is_active', true)
         .order('name');
 
@@ -621,6 +621,7 @@ class BranchModel {
   final double? latitude;
   final double? longitude;
   final List<ServiceModel> services;
+  final String? imageUrl;
   final String openTime;
   final String closeTime;
   final bool is24_7;
@@ -638,6 +639,7 @@ class BranchModel {
     this.closeTime = '23:00',
     this.is24_7 = false,
     this.isTemporarilyClosed = false,
+    this.imageUrl,
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> j) {
@@ -658,6 +660,7 @@ class BranchModel {
       closeTime:   j['close_time'] as String? ?? '23:00',
       is24_7:     j['is_24_7'] as bool? ?? false,
       isTemporarilyClosed: j['is_temporarily_closed'] as bool? ?? false,
+      imageUrl:     j['image_url'] as String?,
     );
   }
   /// Hozir ochiqmi?
