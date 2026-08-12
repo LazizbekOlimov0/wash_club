@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
 import 'package:wash_club/config/router/router.dart';
+import 'package:wash_club/common/auth/presentation/widgets/water_background.dart';
+import 'package:wash_club/common/auth/presentation/screen/telegram_waiting_screen.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
 import '../../../../shared/services/otp_service.dart';
@@ -26,11 +26,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
   final _phoneController = TextEditingController();
 
   bool _loading = false;
-  bool _botOpened = false;
-  bool _checkingRegistration = false;
   String _errorText = '';
-  String? _loginToken;
-  Timer? _pollTimer;
 
   // --- Test mode state ---
   bool _testMode = false;
@@ -70,8 +66,6 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
 
   @override
   void dispose() {
-    _pollTimer?.cancel();
-    _animController.dispose();
     _phoneController.dispose();
     for (final c in _otpControllers) c.dispose();
     for (final f in _otpFocusNodes) f.dispose();
@@ -103,17 +97,10 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
         if (mounted) setState(() { _loading = false; _errorText = context.t.login.networkError; });
         return;
       }
-      _loginToken = token;
       debugPrint('[OtpLogin] Token from otp-request: $token');
-
-      final launched = await _launchTelegram(token);
-      debugPrint('[OtpLogin] launchUrl result: $launched');
+      setState(() { _loading = false; });
       if (!mounted) return;
-      setState(() {
-        _loading = false;
-        if (launched) { _botOpened = true; _startPolling(); }
-        else { _errorText = context.t.login.telegramNotOpened; }
-      });
+      _navigateToWaiting(token);
     } catch (e, st) {
       debugPrint('[OtpLogin] _handlePhoneSubmit error: $e');
       debugPrint('[OtpLogin] stack: $st');
@@ -121,43 +108,12 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
     }
   }
 
-  Future<bool> _launchTelegram(String token) async {
-    final tgUri = Uri.parse('tg://resolve?domain=washclub_bot&start=login_$token');
-    final canTg = await canLaunchUrl(tgUri);
-    debugPrint('[OtpLogin] canLaunchUrl(tg://): $canTg');
-    if (canTg) {
-      debugPrint('[OtpLogin] Opening via tg:// scheme');
-      return launchUrl(tgUri, mode: LaunchMode.externalApplication);
-    }
-    final httpsUri = Uri.parse(OtpService.instance.botLoginUrl(token));
-    debugPrint('[OtpLogin] tg:// not available, fallback to https://');
-    debugPrint('[OtpLogin] Opening Telegram deeplink: $httpsUri');
-    return launchUrl(httpsUri, mode: LaunchMode.externalApplication);
-  }
-
-  void _startPolling() {
-    _pollTimer?.cancel();
-    _pollTimer = Timer.periodic(const Duration(seconds: 3), (_) => _checkLogin());
-  }
-
-  Future<void> _checkLogin() async {
-    if (_loginToken == null) return;
-    final result = await OtpService.instance.checkLoginStatus(_loginToken!);
-    if (!mounted) return;
-
-    if (result.ok && result.customerId != null) {
-      _pollTimer?.cancel();
-      await ClientSession.instance.saveFromOtp(
-        customerId: result.customerId!,
-        phone: result.phone!,
-        name: result.fullName!,
-      );
-      OrdersRepository.instance.invalidate();
-      if (mounted) _goToPendingOrHome();
-    } else if (result.error != null) {
-      _pollTimer?.cancel();
-      setState(() { _errorText = result.error!; _loading = false; _botOpened = false; });
-    }
+  void _navigateToWaiting(String token) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => TelegramWaitingScreen(loginToken: token),
+      ),
+    );
   }
 
   // Test mode OTP
@@ -217,7 +173,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       body: Stack(
         children: [
           // Animated water bubbles background
-          const _WaterBackground(),
+          const WaterBackground(),
           // Content
           SafeArea(
             child: FadeTransition(
@@ -320,39 +276,6 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
                     : Text(context.t.login.button, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
               ),
             ),
-            if (_botOpened) ...[
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: _c.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 44, height: 44,
-                      decoration: BoxDecoration(color: const Color(0xFF229ED9), borderRadius: BorderRadius.circular(12)),
-                      child: const Center(
-                        child: Icon(Icons.send, color: Colors.white, size: 20),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Telegram', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: _c.onBackground)),
-                          const SizedBox(height: 2),
-                          Text(context.t.login.telegramSecure, style: TextStyle(fontSize: 13, color: _c.grey2)),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2)),
-                  ],
-                ),
-              ),
-            ],
             const SizedBox(height: 16),
             Text(
               'Davom etish orqali siz xizmat shartlariga rozilik bildirasiz.',
@@ -439,69 +362,4 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       ),
     );
   }
-}
-
-// ── Animated water bubbles background ──
-class _WaterBackground extends StatefulWidget {
-  const _WaterBackground();
-  @override
-  State<_WaterBackground> createState() => _WaterBackgroundState();
-}
-
-class _WaterBackgroundState extends State<_WaterBackground> with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _ctrl = AnimationController(vsync: this, duration: const Duration(seconds: 8))..repeat();
-  }
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final c = Theme.of(context).extension<ApparenceKitColors>()!;
-    return AnimatedBuilder(
-      animation: _ctrl,
-      builder: (_, __) {
-        return CustomPaint(
-          size: Size.infinite,
-          painter: _BubblePainter(c.primary.withValues(alpha: 0.06), _ctrl.value),
-        );
-      },
-    );
-  }
-}
-
-class _BubblePainter extends CustomPainter {
-  final Color color;
-  final double t;
-
-  _BubblePainter(this.color, this.t);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..style = PaintingStyle.fill;
-    final rng = _hash(t);
-
-    for (int i = 0; i < 8; i++) {
-      final x = size.width * (0.1 + (rng[i % rng.length] / 100) * 0.8);
-      final y = size.height * (0.3 - (t + i * 0.13) % 1.3);
-      final r = 20.0 + (rng[(i + 3) % rng.length] % 40).toDouble();
-      canvas.drawCircle(Offset(x, y), r, paint);
-    }
-  }
-
-  List<int> _hash(double v) {
-    final h = (v * 100000).toInt();
-    return List.generate(12, (i) => ((h >> (i * 2)) & 0xFF));
-  }
-
-  @override
-  bool shouldRepaint(covariant _BubblePainter old) => old.t != t;
 }

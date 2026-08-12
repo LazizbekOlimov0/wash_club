@@ -87,6 +87,16 @@ class TranslationsLoginRu extends TranslationsLoginUz {
 	@override String get testCode => 'Тестовый режим: код 123456';
 	@override String get iRegistered => 'Я зарегистрировался';
 	@override String get reopenBot => 'Открыть бот снова';
+	@override String get telegramWaitTitle => 'Вход через Telegram';
+	@override String get telegramWaitDesc => 'Откройте Telegram и подтвердите вход в нашем боте. Вы автоматически вернётесь в приложение.';
+	@override String get telegramWaitPending => 'Ожидание подтверждения в Telegram';
+	@override String get telegramWaitOpen => 'Открыть Telegram';
+	@override String get telegramWaitCantLogin => 'Не можете войти через Telegram?';
+	@override String get telegramWaitExpired => 'Срок истёк. Попробуйте снова.';
+	@override String get openTelegramTitle => 'Wash Club';
+	@override String get openTelegramBody => 'Wash Club хочет открыть Telegram';
+	@override String get openTelegramCancel => 'Отмена';
+	@override String get openTelegramOpen => 'Открыть';
 }
 
 // Path: nav
@@ -229,7 +239,7 @@ class TranslationsBookingRu extends TranslationsBookingUz {
 	@override String get pastTimeError => 'Нельзя выбрать прошедшее время';
 	@override String get dailyLimitError => 'Достигнут дневной лимит';
 	@override String get activeBookingExists => 'У вас уже есть активная бронь. Только одна бронь за раз.';
-	@override String payAtCarWash({required Object price}) => 'Сумма: $price сум';
+	@override String payAtCarWash({required Object price}) => 'Сумма: ${price} сум';
 	@override String get payAtCarWashDesc => 'Оплата производится наличными на автомойке после обслуживания. Другие способы пока недоступны.';
 	@override String get unpaidLabel => 'Не оплачено';
 	@override String get fileSizeError => 'Файл должен быть меньше 5MB';

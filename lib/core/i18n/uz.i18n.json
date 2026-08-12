@@ -29,7 +29,17 @@
     "stepInstruction": "3. Ro'yxatdan o'tgach, pastdagi tugmani bosing",
     "testCode": "Test rejimi: kod 123456",
     "iRegistered": "Ro'yxatdan o'tdim",
-    "reopenBot": "Botni qayta ochish"
+    "reopenBot": "Botni qayta ochish",
+    "telegramWaitTitle": "Telegram orqali kirish",
+    "telegramWaitDesc": "Telegramni oching va botimizda kirishni tasdiqlang. Siz avtomatik ravishda ilovaga qaytasiz.",
+    "telegramWaitPending": "Telegramdagi tasdiqni kutyapmiz",
+    "telegramWaitOpen": "Telegramni ochish",
+    "telegramWaitCantLogin": "Telegram orqali kira olmadingizmi?",
+    "telegramWaitExpired": "Muddati o'tgan. Qayta urinib ko'ring.",
+    "openTelegramTitle": "Wash Club",
+    "openTelegramBody": "Wash Club Telegram ilovasini ochmoqchi",
+    "openTelegramCancel": "Bekor qilish",
+    "openTelegramOpen": "Ochish"
   },
   "register": {
     "title": "Ro'yxatdan o'tish",
@@ -162,7 +172,7 @@
     "pastTimeError": "O'tib ketgan vaqtni tanlash mumkin emas",
     "dailyLimitError": "Kunlik bron limitiga yetdingiz",
     "activeBookingExists": "Sizda allaqachon faol bron bor. Bir vaqtda faqat bitta avtomoykani bron qilish mumkin.",
-    "payAtCarWash": "Summa: {price} so'm",
+    "payAtCarWash": "Summa: ${price} so'm",
     "payAtCarWashDesc": "To'lov yuvishdan so'ng joyida naqd shaklda amalga oshiriladi. Boshqa usullar hozircha mavjud emas.",
     "unpaidLabel": "To'lanmagan",
     "fileSizeError": "Fayl 5MB dan kichik bo'lishi kerak",

@@ -151,6 +151,36 @@ class TranslationsLoginUz {
 
 	/// uz: 'Botni qayta ochish'
 	String get reopenBot => 'Botni qayta ochish';
+
+	/// uz: 'Telegram orqali kirish'
+	String get telegramWaitTitle => 'Telegram orqali kirish';
+
+	/// uz: 'Telegramni oching va botimizda kirishni tasdiqlang. Siz avtomatik ravishda ilovaga qaytasiz.'
+	String get telegramWaitDesc => 'Telegramni oching va botimizda kirishni tasdiqlang. Siz avtomatik ravishda ilovaga qaytasiz.';
+
+	/// uz: 'Telegramdagi tasdiqni kutyapmiz'
+	String get telegramWaitPending => 'Telegramdagi tasdiqni kutyapmiz';
+
+	/// uz: 'Telegramni ochish'
+	String get telegramWaitOpen => 'Telegramni ochish';
+
+	/// uz: 'Telegram orqali kira olmadingizmi?'
+	String get telegramWaitCantLogin => 'Telegram orqali kira olmadingizmi?';
+
+	/// uz: 'Muddati o'tgan. Qayta urinib ko'ring.'
+	String get telegramWaitExpired => 'Muddati o\'tgan. Qayta urinib ko\'ring.';
+
+	/// uz: 'Wash Club'
+	String get openTelegramTitle => 'Wash Club';
+
+	/// uz: 'Wash Club Telegram ilovasini ochmoqchi'
+	String get openTelegramBody => 'Wash Club Telegram ilovasini ochmoqchi';
+
+	/// uz: 'Bekor qilish'
+	String get openTelegramCancel => 'Bekor qilish';
+
+	/// uz: 'Ochish'
+	String get openTelegramOpen => 'Ochish';
 }
 
 // Path: register
@@ -248,7 +278,7 @@ class TranslationsMapUz {
 	/// uz: 'Xarita'
 	String get showMap => 'Xarita';
 
-	/// uz: 'Ro\'yxat'
+	/// uz: 'Ro'yxat'
 	String get showList => 'Ro\'yxat';
 
 	/// uz: 'Joylashuv aniqlanmoqda...'
@@ -563,13 +593,13 @@ class TranslationsBookingUz {
 	/// uz: 'Sizda allaqachon faol bron bor. Bir vaqtda faqat bitta avtomoykani bron qilish mumkin.'
 	String get activeBookingExists => 'Sizda allaqachon faol bron bor. Bir vaqtda faqat bitta avtomoykani bron qilish mumkin.';
 
-	/// uz: 'Summa: {price} so\'m'
-	String payAtCarWash({required Object price}) => 'Summa: $price so\'m';
+	/// uz: 'Summa: ${price} so'm'
+	String payAtCarWash({required Object price}) => 'Summa: ${price} so\'m';
 
-	/// uz: 'To\'lov yuvishdan so\'ng joyida naqd shaklda amalga oshiriladi. Boshqa usullar hozircha mavjud emas.'
+	/// uz: 'To'lov yuvishdan so'ng joyida naqd shaklda amalga oshiriladi. Boshqa usullar hozircha mavjud emas.'
 	String get payAtCarWashDesc => 'To\'lov yuvishdan so\'ng joyida naqd shaklda amalga oshiriladi. Boshqa usullar hozircha mavjud emas.';
 
-	/// uz: 'To\'lanmagan'
+	/// uz: 'To'lanmagan'
 	String get unpaidLabel => 'To\'lanmagan';
 
 	/// uz: 'Fayl 5MB dan kichik bo'lishi kerak'

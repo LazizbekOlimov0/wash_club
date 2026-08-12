@@ -24,7 +24,17 @@
     "stepInstruction": "3. After registering, press the button below",
     "testCode": "Test mode: code 123456",
     "iRegistered": "I have registered",
-    "reopenBot": "Reopen bot"
+    "reopenBot": "Reopen bot",
+    "telegramWaitTitle": "Login via Telegram",
+    "telegramWaitDesc": "Open Telegram and confirm the login in our bot. You will be automatically returned to the app.",
+    "telegramWaitPending": "Waiting for confirmation in Telegram",
+    "telegramWaitOpen": "Open Telegram",
+    "telegramWaitCantLogin": "Can't login via Telegram?",
+    "telegramWaitExpired": "Expired. Please try again.",
+    "openTelegramTitle": "Wash Club",
+    "openTelegramBody": "Wash Club wants to open Telegram",
+    "openTelegramCancel": "Cancel",
+    "openTelegramOpen": "Open"
   },
   "nav": {
     "home": "Home",
@@ -139,7 +149,7 @@
     "pastTimeError": "Cannot select past time",
     "dailyLimitError": "Daily booking limit reached",
     "activeBookingExists": "You already have an active booking. Only one booking at a time is allowed.",
-    "payAtCarWash": "Amount: {price} UZS",
+    "payAtCarWash": "Amount: ${price} UZS",
     "payAtCarWashDesc": "Payment is made in cash at the car wash after service. Other payment methods are currently unavailable.",
     "unpaidLabel": "Unpaid",
     "fileSizeError": "File must be under 5MB",

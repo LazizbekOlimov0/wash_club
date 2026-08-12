@@ -87,6 +87,16 @@ class TranslationsLoginEn extends TranslationsLoginUz {
 	@override String get testCode => 'Test mode: code 123456';
 	@override String get iRegistered => 'I have registered';
 	@override String get reopenBot => 'Reopen bot';
+	@override String get telegramWaitTitle => 'Login via Telegram';
+	@override String get telegramWaitDesc => 'Open Telegram and confirm the login in our bot. You will be automatically returned to the app.';
+	@override String get telegramWaitPending => 'Waiting for confirmation in Telegram';
+	@override String get telegramWaitOpen => 'Open Telegram';
+	@override String get telegramWaitCantLogin => 'Can\'t login via Telegram?';
+	@override String get telegramWaitExpired => 'Expired. Please try again.';
+	@override String get openTelegramTitle => 'Wash Club';
+	@override String get openTelegramBody => 'Wash Club wants to open Telegram';
+	@override String get openTelegramCancel => 'Cancel';
+	@override String get openTelegramOpen => 'Open';
 }
 
 // Path: nav
@@ -229,7 +239,7 @@ class TranslationsBookingEn extends TranslationsBookingUz {
 	@override String get pastTimeError => 'Cannot select past time';
 	@override String get dailyLimitError => 'Daily booking limit reached';
 	@override String get activeBookingExists => 'You already have an active booking. Only one booking at a time is allowed.';
-	@override String payAtCarWash({required Object price}) => 'Amount: $price UZS';
+	@override String payAtCarWash({required Object price}) => 'Amount: ${price} UZS';
 	@override String get payAtCarWashDesc => 'Payment is made in cash at the car wash after service. Other payment methods are currently unavailable.';
 	@override String get unpaidLabel => 'Unpaid';
 	@override String get fileSizeError => 'File must be under 5MB';

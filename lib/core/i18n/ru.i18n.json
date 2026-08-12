@@ -24,7 +24,17 @@
     "stepInstruction": "3. После регистрации нажмите кнопку ниже",
     "testCode": "Тестовый режим: код 123456",
     "iRegistered": "Я зарегистрировался",
-    "reopenBot": "Открыть бот снова"
+    "reopenBot": "Открыть бот снова",
+    "telegramWaitTitle": "Вход через Telegram",
+    "telegramWaitDesc": "Откройте Telegram и подтвердите вход в нашем боте. Вы автоматически вернётесь в приложение.",
+    "telegramWaitPending": "Ожидание подтверждения в Telegram",
+    "telegramWaitOpen": "Открыть Telegram",
+    "telegramWaitCantLogin": "Не можете войти через Telegram?",
+    "telegramWaitExpired": "Срок истёк. Попробуйте снова.",
+    "openTelegramTitle": "Wash Club",
+    "openTelegramBody": "Wash Club хочет открыть Telegram",
+    "openTelegramCancel": "Отмена",
+    "openTelegramOpen": "Открыть"
   },
   "nav": {
     "home": "Главная",
@@ -139,7 +149,7 @@
     "pastTimeError": "Нельзя выбрать прошедшее время",
     "dailyLimitError": "Достигнут дневной лимит",
     "activeBookingExists": "У вас уже есть активная бронь. Только одна бронь за раз.",
-    "payAtCarWash": "Сумма: {price} сум",
+    "payAtCarWash": "Сумма: ${price} сум",
     "payAtCarWashDesc": "Оплата производится наличными на автомойке после обслуживания. Другие способы пока недоступны.",
     "unpaidLabel": "Не оплачено",
     "fileSizeError": "Файл должен быть меньше 5MB",
