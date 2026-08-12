@@ -106,9 +106,7 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       _loginToken = token;
       debugPrint('[OtpLogin] Token from otp-request: $token');
 
-      final botUrl = OtpService.instance.botLoginUrl(token);
-      debugPrint('[OtpLogin] Opening Telegram deeplink: $botUrl');
-      final launched = await launchUrl(Uri.parse(botUrl), mode: LaunchMode.externalApplication);
+      final launched = await _launchTelegram(token);
       debugPrint('[OtpLogin] launchUrl result: $launched');
       if (!mounted) return;
       setState(() {
@@ -121,6 +119,20 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
       debugPrint('[OtpLogin] stack: $st');
       if (mounted) setState(() { _loading = false; _errorText = context.t.login.networkError; });
     }
+  }
+
+  Future<bool> _launchTelegram(String token) async {
+    final tgUri = Uri.parse('tg://resolve?domain=washclub_bot&start=login_$token');
+    final canTg = await canLaunchUrl(tgUri);
+    debugPrint('[OtpLogin] canLaunchUrl(tg://): $canTg');
+    if (canTg) {
+      debugPrint('[OtpLogin] Opening via tg:// scheme');
+      return launchUrl(tgUri, mode: LaunchMode.externalApplication);
+    }
+    final httpsUri = Uri.parse(OtpService.instance.botLoginUrl(token));
+    debugPrint('[OtpLogin] tg:// not available, fallback to https://');
+    debugPrint('[OtpLogin] Opening Telegram deeplink: $httpsUri');
+    return launchUrl(httpsUri, mode: LaunchMode.externalApplication);
   }
 
   void _startPolling() {
