@@ -1055,6 +1055,21 @@ class TranslationsSettingsUz {
 	/// uz: 'Maxfiylik siyosati'
 	String get privacyPolicy => 'Maxfiylik siyosati';
 
+	/// uz: 'Telegram'ga o'tish'
+	String get telegramRedirectTitle => 'Telegram\'ga o\'tish';
+
+	/// uz: 'Qo'llab-quvvatlash uchun Telegram botga o'tasiz'
+	String get telegramSupportBody => 'Qo\'llab-quvvatlash uchun Telegram botga o\'tasiz';
+
+	/// uz: 'Telegram kanalimizga o'tasiz'
+	String get telegramChannelBody => 'Telegram kanalimizga o\'tasiz';
+
+	/// uz: 'Ha, o'tish'
+	String get telegramGo => 'Ha, o\'tish';
+
+	/// uz: 'Yopish'
+	String get close => 'Yopish';
+
 	/// uz: 'Foydalanuvchi shartnomasi'
 	String get termsOfService => 'Foydalanuvchi shartnomasi';
 

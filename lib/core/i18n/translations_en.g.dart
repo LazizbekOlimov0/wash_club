@@ -423,6 +423,11 @@ class TranslationsSettingsEn extends TranslationsSettingsUz {
 	@override String get telegramChannel => 'Telegram channel';
 	@override String get rateApp => 'Rate the app';
 	@override String get privacyPolicy => 'Privacy policy';
+	@override String get telegramRedirectTitle => 'Open Telegram';
+	@override String get telegramSupportBody => 'You will be redirected to the Telegram bot for support';
+	@override String get telegramChannelBody => 'You will be redirected to our Telegram channel';
+	@override String get telegramGo => 'Yes, open';
+	@override String get close => 'Close';
 	@override String get termsOfService => 'Terms of service';
 	@override String get dangerZone => 'ACCOUNT';
 	@override String get logout => 'Log out';

@@ -137,6 +137,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               controller: _phoneCtrl,
               colors: colors,
               keyboardType: TextInputType.phone,
+              editable: false,
             ),
             const SizedBox(height: 32),
             SizedBox(
@@ -253,11 +254,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     required TextEditingController controller,
     required ApparenceKitColors colors,
     TextInputType? keyboardType,
+    bool editable = true,
   }) {
-    return TextField(
+    final field = TextField(
       controller: controller,
       keyboardType: keyboardType,
-      onChanged: (_) => setState(() {}),
+      readOnly: !editable,
+      enableInteractiveSelection: editable,
+      onChanged: editable ? (_) => setState(() {}) : null,
       style: TextStyle(color: colors.onSurface, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
@@ -274,5 +278,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         ),
       ),
     );
+    if (!editable) return IgnorePointer(child: field);
+    return field;
   }
 }

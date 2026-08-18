@@ -423,6 +423,11 @@ class TranslationsSettingsRu extends TranslationsSettingsUz {
 	@override String get telegramChannel => 'Telegram канал';
 	@override String get rateApp => 'Оценить приложение';
 	@override String get privacyPolicy => 'Политика конфиденциальности';
+	@override String get telegramRedirectTitle => 'Перейти в Telegram';
+	@override String get telegramSupportBody => 'Вы перейдёте в Telegram-бот для связи с поддержкой';
+	@override String get telegramChannelBody => 'Вы перейдёте в наш Telegram-канал';
+	@override String get telegramGo => 'Да, перейти';
+	@override String get close => 'Закрыть';
 	@override String get termsOfService => 'Пользовательское соглашение';
 	@override String get dangerZone => 'АККАУНТ';
 	@override String get logout => 'Выйти из аккаунта';

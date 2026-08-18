@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../core/theme/providers/theme_provider.dart';
 import '../../../../shared/services/client_session.dart';
@@ -70,12 +72,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               onTap: () => context.push(UserRoutePath.editProfile),
               colors: colors,
             ),
-            _navItem(
-              icon: Icons.phone_outlined,
-              label: t.settings.changePhone,
-              onTap: () => _showChangePhone(context, colors),
-              colors: colors,
-            ),
           ], colors),
           const SizedBox(height: 24),
 
@@ -125,25 +121,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
             _navItem(
               icon: Icons.headset_mic_outlined,
               label: t.settings.contactSupport,
-              onTap: () {},
+              onTap: () => _showTelegramRedirectDialog(
+                context,
+                colors: colors,
+                domain: 'washclub_bot',
+                title: t.settings.telegramRedirectTitle,
+                body: t.settings.telegramSupportBody,
+              ),
               colors: colors,
             ),
             _navItem(
               icon: Icons.send_outlined,
               label: t.settings.telegramChannel,
-              onTap: () {},
-              colors: colors,
-            ),
-            _navItem(
-              icon: Icons.star_outline,
-              label: t.settings.rateApp,
-              onTap: () {},
+              onTap: () => _showTelegramRedirectDialog(
+                context,
+                colors: colors,
+                domain: 'washclub_uz',
+                title: t.settings.telegramRedirectTitle,
+                body: t.settings.telegramChannelBody,
+              ),
               colors: colors,
             ),
             _navItem(
               icon: Icons.description_outlined,
               label: t.settings.privacyPolicy,
-              onTap: () {},
+              onTap: () => _showPrivacyPolicySheet(context, colors),
               colors: colors,
             ),
           ], colors),
@@ -556,84 +558,96 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (mounted) context.go(UserRoutePath.otpLogin);
   }
 
-  void _showChangePhone(
-      BuildContext context, ApparenceKitColors colors) {
-    final session = ClientSession.instance;
-    final phoneCtrl = TextEditingController(text: session.phone);
-
-    showModalBottomSheet(
+  Future<void> _showTelegramRedirectDialog(
+    BuildContext context, {
+    required String domain,
+    required String title,
+    required String body,
+    required ApparenceKitColors colors,
+  }) async {
+    final t = context.t;
+    final shouldOpen = await showDialog<bool>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: colors.onPrimaryContainer,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: Text(title,
+            style: TextStyle(color: colors.onBackground, fontSize: 17)),
+        content: Text(body,
+            style: TextStyle(color: colors.grey2, fontSize: 14)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(t.settings.cancel,
+                style: TextStyle(color: colors.info)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(t.settings.telegramGo,
+                style: TextStyle(color: colors.info)),
+          ),
+        ],
       ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.fromLTRB(20, 20, 20,
-            MediaQuery.of(ctx).viewInsets.bottom + 20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Center(
-              child: Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(
-                  color: colors.grey1,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
+    );
+    if (shouldOpen != true) return;
+
+    final tgUri = Uri.parse('tg://resolve?domain=$domain');
+    if (await canLaunchUrl(tgUri)) {
+      await launchUrl(tgUri, mode: LaunchMode.externalApplication);
+      return;
+    }
+
+    final httpsUri = Uri.parse('https://t.me/$domain');
+    await launchUrl(httpsUri, mode: LaunchMode.externalApplication);
+  }
+
+  void _showPrivacyPolicySheet(
+      BuildContext context, ApparenceKitColors colors) {
+    final t = context.t;
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black45,
+      transitionDuration: const Duration(milliseconds: 420),
+      pageBuilder: (ctx, animation, secondaryAnimation) {
+        return Align(
+          alignment: Alignment.bottomCenter,
+          child: Material(
+            color: colors.surface,
+            clipBehavior: Clip.antiAlias,
+            shape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
             ),
-            const SizedBox(height: 16),
-            Text(context.t.settings.phoneChange,
-                style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700)),
-            const SizedBox(height: 20),
-            TextField(
-              controller: phoneCtrl,
-              keyboardType: TextInputType.phone,
-              style: TextStyle(color: colors.onSurface),
-              decoration: InputDecoration(
-                labelText: context.t.settings.phoneLabel,
-                labelStyle: TextStyle(color: colors.grey2),
-                filled: true,
-                fillColor: colors.onPrimaryContainer,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
+            child: SizedBox(
+              height: MediaQuery.of(ctx).size.height * 0.9,
               width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final newPhone = phoneCtrl.text.trim();
-                  if (newPhone.length < 9) return;
-                  await session.saveProfile(
-                    name: session.name ?? '',
-                    phone: newPhone,
-                  );
-                  Navigator.pop(ctx);
-                  if (mounted) setState(() {});
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colors.info,
-                  foregroundColor: colors.onPrimary,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                ),
-                child: Text(context.t.settings.save,
-                    style: TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.w600)),
+              child: _PrivacyPolicySheet(
+                url:
+                    'https://lazizbekolimov0.github.io/washclub_privacy_policy/',
+                colors: colors,
+                title: t.settings.privacyPolicy,
+                closeLabel: t.settings.close,
               ),
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
+      transitionBuilder: (ctx, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 1),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        );
+      },
     );
   }
 
@@ -662,6 +676,114 @@ class _SettingsScreenState extends State<SettingsScreen> {
             },
             child: Text(t.settings.confirm as String,
                 style: TextStyle(color: colors.error)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PrivacyPolicySheet extends StatefulWidget {
+  final String url;
+  final ApparenceKitColors colors;
+  final String title;
+  final String closeLabel;
+
+  const _PrivacyPolicySheet({
+    required this.url,
+    required this.colors,
+    required this.title,
+    required this.closeLabel,
+  });
+
+  @override
+  State<_PrivacyPolicySheet> createState() => _PrivacyPolicySheetState();
+}
+
+class _PrivacyPolicySheetState extends State<_PrivacyPolicySheet> {
+  late final WebViewController _controller;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (_) {
+            if (mounted) setState(() => _loading = true);
+          },
+          onPageFinished: (_) {
+            if (mounted) setState(() => _loading = false);
+          },
+          onWebResourceError: (_) {
+            if (mounted) setState(() => _loading = false);
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = widget.colors;
+    return SafeArea(
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colors.grey1,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(
+                      color: colors.onBackground,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: colors.onPrimaryContainer,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(Icons.close, color: colors.grey2, size: 18),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Divider(height: 1, color: colors.grey1),
+          Expanded(
+            child: Stack(
+              children: [
+                WebViewWidget(controller: _controller),
+                if (_loading)
+                  Center(
+                    child: CircularProgressIndicator(color: colors.info),
+                  ),
+              ],
+            ),
           ),
         ],
       ),
