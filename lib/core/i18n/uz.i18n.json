@@ -235,6 +235,8 @@
     "colorHint": "Qora, Oq, Kumush...",
     "brandHint": "Chevrolet",
     "modelHint": "Cobalt 2024",
+    "carModel": "Mashina modeli",
+    "carModelHint": "BMW e34",
     "secureSaving": "Xavfsiz saqlash"
   },
   "notification": {

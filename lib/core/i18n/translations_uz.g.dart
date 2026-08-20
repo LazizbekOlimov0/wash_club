@@ -788,6 +788,12 @@ class TranslationsAddCarUz {
 	/// uz: 'Cobalt 2024'
 	String get modelHint => 'Cobalt 2024';
 
+	/// uz: 'Mashina modeli'
+	String get carModel => 'Mashina modeli';
+
+	/// uz: 'BMW e34'
+	String get carModelHint => 'BMW e34';
+
 	/// uz: 'Xavfsiz saqlash'
 	String get secureSaving => 'Xavfsiz saqlash';
 }

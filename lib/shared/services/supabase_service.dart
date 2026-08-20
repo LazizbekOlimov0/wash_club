@@ -607,6 +607,101 @@ class SupabaseService {
         .eq('source', AppConstants.orderSourceClientApp)
         .inFilter('status', ['pending_payment', 'queued']);
   }
+
+  // ─────────────────────────────────────────────────────────
+  // CARS (customer_cars)
+  // ─────────────────────────────────────────────────────────
+
+  static String _normalizePlate(String plate) =>
+      (plate).toUpperCase().replaceAll(RegExp(r'[\s\-]'), '');
+
+  /// Berilgan customer yoki telefonga tegishli barcha customer id'lari.
+  Future<List<String>> _relatedCustomerIds({
+    String? customerId,
+    String? phone,
+  }) async {
+    final ids = <String>{};
+    if (customerId != null && customerId.isNotEmpty) ids.add(customerId);
+    if (phone != null && phone.isNotEmpty) {
+      final response = await _client
+          .from('customers')
+          .select('id')
+          .eq('phone', phone);
+      for (final row in (response as List<dynamic>)) {
+        ids.add((row as Map<String, dynamic>)['id'] as String);
+      }
+    }
+    return ids.toList();
+  }
+
+  /// Foydalanuvchining mashinalari (telefon bo'yicha — dublikat customer'lar ham).
+  Future<List<CarModel>> getMyCars({
+    String? customerId,
+    String? phone,
+  }) async {
+    final ids = await _relatedCustomerIds(customerId: customerId, phone: phone);
+    if (ids.isEmpty) return [];
+
+    final response = await _client
+        .from('customer_cars')
+        .select('id, customer_id, brand, model, plate, color, category')
+        .inFilter('customer_id', ids)
+        .order('created_at');
+
+    final seen = <String>{};
+    final cars = <CarModel>[];
+    for (final row in (response as List<dynamic>)) {
+      final car = CarModel.fromJson(row as Map<String, dynamic>);
+      final key = _normalizePlate(car.plate);
+      if (seen.add(key)) cars.add(car);
+    }
+    return cars;
+  }
+
+  /// Yangi mashina qo'shish. Mavjud bo'lsa — o'sha mashinani qaytaradi.
+  Future<CarModel?> addCar({
+    required String customerId,
+    String? phone,
+    required String brand,
+    required String model,
+    required String plate,
+    required String color,
+    required String category,
+  }) async {
+    final normalized = _normalizePlate(plate);
+
+    // Bir telefonli barcha yozuvlar bo'yicha duplicate plate tekshirish
+    final ids = await _relatedCustomerIds(customerId: customerId, phone: phone);
+    final existing = await _client
+        .from('customer_cars')
+        .select('id, customer_id, brand, model, plate, color, category')
+        .inFilter('customer_id', ids)
+        .eq('plate', normalized)
+        .maybeSingle();
+    if (existing != null) {
+      return CarModel.fromJson(existing);
+    }
+
+    final inserted = await _client
+        .from('customer_cars')
+        .insert({
+          'customer_id': customerId,
+          'brand': brand.trim().isEmpty ? null : brand.trim(),
+          'model': model.trim().isEmpty ? null : model.trim(),
+          'plate': normalized,
+          'color': color.trim().isEmpty ? null : color.trim(),
+          'category': category,
+        })
+        .select('id, customer_id, brand, model, plate, color, category')
+        .single();
+
+    return CarModel.fromJson(inserted);
+  }
+
+  /// Mashinani o'chirish.
+  Future<void> removeCar(String id) async {
+    await _client.from('customer_cars').delete().eq('id', id);
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -765,6 +860,36 @@ class CustomerModel {
     totalVisits:  j['total_visits'] as int? ?? 0,
     totalSpent:   j['total_spent'] as int? ?? 0,
   );
+}
+
+class CarModel {
+  final String id;
+  final String customerId;
+  final String brand;
+  final String model;
+  final String plate;
+  final String color;
+  final String category;
+
+  const CarModel({
+    required this.id,
+    required this.customerId,
+    required this.brand,
+    required this.model,
+    required this.plate,
+    required this.color,
+    required this.category,
+  });
+
+  factory CarModel.fromJson(Map<String, dynamic> j) => CarModel(
+        id: j['id'] as String,
+        customerId: j['customer_id'] as String? ?? '',
+        brand: j['brand'] as String? ?? '',
+        model: j['model'] as String? ?? '',
+        plate: j['plate'] as String? ?? '',
+        color: j['color'] as String? ?? '',
+        category: j['category'] as String? ?? 'sedan',
+      );
 }
 
 class OrderModel {

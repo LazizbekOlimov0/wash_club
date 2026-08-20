@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../constants/app_constants.dart';
+import 'supabase_service.dart';
 
 /// Foydalanuvchi sessiyasini boshqaruvchi servis.
 /// 
@@ -63,6 +64,11 @@ class ClientSession {
       final list = jsonDecode(carsJson) as List<dynamic>;
       _cars = list.map((e) => SavedCar.fromJson(e as Map<String, dynamic>)).toList();
     }
+
+    // Login qilingan bo'lsa — mashinalar backend'dan yuklanadi
+    if (_customerId != null) {
+      await loadCars();
+    }
   }
 
   // ── Save profile from OTP (Telegram login) ────────────
@@ -78,6 +84,7 @@ class ClientSession {
     await prefs.setString(AppConstants.kClientCustomerId, customerId);
     await prefs.setString(AppConstants.kClientName,       name);
     await prefs.setString(AppConstants.kClientPhone,      phone);
+    await loadCars();
   }
 
   // ── Save profile (register) ──────────────────────────────
@@ -120,16 +127,68 @@ class ClientSession {
   }
 
   // ── Cars ──────────────────────────────────────────────────
-  Future<void> addCar(SavedCar car) async {
-    // Duplicate plate check
-    _cars.removeWhere((c) => c.plate == car.plate);
-    _cars.insert(0, car);
-    await _persistCars();
+  /// Mashinalarni backend'dan yuklash (login qilingan foydalanuvchi uchun).
+  Future<void> loadCars() async {
+    if (_customerId == null && _phone == null) {
+      _cars = [];
+      return;
+    }
+    try {
+      final list = await SupabaseService.instance.getMyCars(
+        customerId: _customerId,
+        phone: _phone,
+      );
+      _cars = list.map(_carModelToSaved).toList();
+    } catch (_) {
+      // Offline yoki xatolik — lokal cache qoladi
+    }
   }
 
-  Future<void> removeCar(String plate) async {
-    _cars.removeWhere((c) => c.plate == plate);
-    await _persistCars();
+  SavedCar _carModelToSaved(CarModel c) => SavedCar(
+        id: c.id,
+        plate: c.plate,
+        brand: c.brand,
+        model: c.model,
+        bodyType: c.category,
+        color: c.color,
+      );
+
+  Future<void> addCar(SavedCar car) async {
+    final customerId = _customerId;
+    if (customerId == null) {
+      // Guest mode — lokal saqlash
+      _cars.removeWhere((c) => c.plate == car.plate);
+      _cars.insert(0, car);
+      await _persistCars();
+      return;
+    }
+
+    final created = await SupabaseService.instance.addCar(
+      customerId: customerId,
+      phone: _phone,
+      brand: car.brand,
+      model: car.model,
+      plate: car.plate,
+      color: car.color,
+      category: car.vehicleCategory,
+    );
+    if (created == null) {
+      throw Exception('Car save failed');
+    }
+    final saved = _carModelToSaved(created);
+    _cars.removeWhere((c) => c.plate == saved.plate);
+    _cars.insert(0, saved);
+  }
+
+  Future<void> removeCar(SavedCar car) async {
+    if (_customerId != null && car.id.isNotEmpty) {
+      await SupabaseService.instance.removeCar(car.id);
+    }
+    _cars.removeWhere(
+        (c) => c.id == car.id || (c.id.isEmpty && c.plate == car.plate));
+    if (_customerId == null) {
+      await _persistCars();
+    }
   }
 
   Future<void> _persistCars() async {
@@ -163,6 +222,7 @@ class ClientSession {
 
 /// ── Saved Car model ────────────────────────────────────────
 class SavedCar {
+  final String id;        // backend UUID ('' = lokal/guest)
   final String plate;
   final String brand;
   final String model;
@@ -170,6 +230,7 @@ class SavedCar {
   final String color;
 
   const SavedCar({
+    this.id = '',
     required this.plate,
     required this.brand,
     required this.model,
@@ -186,9 +247,13 @@ class SavedCar {
     }
   }
 
-  String get displayName => '$brand $model'.trim().isEmpty ? plate : '$brand $model';
+  String get displayName {
+    final parts = [brand, model].where((s) => s.isNotEmpty).join(' ');
+    return parts.isEmpty ? plate : parts;
+  }
 
   Map<String, dynamic> toJson() => {
+    'id':        id,
     'plate':     plate,
     'brand':     brand,
     'model':     model,
@@ -197,6 +262,7 @@ class SavedCar {
   };
 
   factory SavedCar.fromJson(Map<String, dynamic> j) => SavedCar(
+    id:       j['id'] as String? ?? '',
     plate:    j['plate'] as String,
     brand:    j['brand'] as String? ?? '',
     model:    j['model'] as String? ?? '',

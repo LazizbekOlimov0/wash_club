@@ -316,6 +316,8 @@ class TranslationsAddCarRu extends TranslationsAddCarUz {
 	@override String get colorHint => 'Черный, Белый, Серебристый...';
 	@override String get brandHint => 'Chevrolet';
 	@override String get modelHint => 'Cobalt 2024';
+	@override String get carModel => 'Модель машины';
+	@override String get carModelHint => 'BMW e34';
 	@override String get secureSaving => 'Безопасное хранение';
 }
 

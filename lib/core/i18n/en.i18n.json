@@ -212,6 +212,8 @@
     "colorHint": "Black, White, Silver...",
     "brandHint": "Chevrolet",
     "modelHint": "Cobalt 2024",
+    "carModel": "Car model",
+    "carModelHint": "BMW e34",
     "secureSaving": "Secure storage"
   },
   "notification": {

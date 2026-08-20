@@ -212,6 +212,8 @@
     "colorHint": "Черный, Белый, Серебристый...",
     "brandHint": "Chevrolet",
     "modelHint": "Cobalt 2024",
+    "carModel": "Модель машины",
+    "carModelHint": "BMW e34",
     "secureSaving": "Безопасное хранение"
   },
   "notification": {

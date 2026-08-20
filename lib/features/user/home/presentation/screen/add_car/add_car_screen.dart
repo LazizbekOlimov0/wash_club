@@ -21,26 +21,16 @@ class AddCarScreen extends StatefulWidget {
 
 class _AddCarScreenState extends State<AddCarScreen>
     with SingleTickerProviderStateMixin {
-  String _selectedBodyType = 'Sedan';
-
   late AnimationController _animController;
   late Animation<double>   _fadeAnim;
   late Animation<Offset>   _slideAnim;
 
   final _plateController = TextEditingController();
-  final _brandController = TextEditingController();
   final _modelController = TextEditingController();
   final _colorController = TextEditingController();
 
   bool _saving = false;
   String? _error;
-
-  final List<Map<String, dynamic>> _bodyTypes = [
-    {'label': 'Sedan',   'icon': Icons.directions_car_rounded},
-    {'label': 'SUV',     'icon': Icons.directions_car_filled_rounded},
-    {'label': 'Minivan', 'icon': Icons.airport_shuttle_rounded},
-    {'label': 'Others',  'icon': Icons.commute_rounded},
-  ];
 
   @override
   void initState() {
@@ -61,7 +51,6 @@ class _AddCarScreenState extends State<AddCarScreen>
   void dispose() {
     _animController.dispose();
     _plateController.dispose();
-    _brandController.dispose();
     _modelController.dispose();
     _colorController.dispose();
     super.dispose();
@@ -81,9 +70,9 @@ class _AddCarScreenState extends State<AddCarScreen>
     try {
       final car = SavedCar(
         plate:    _plateController.text.trim().toUpperCase(),
-        brand:    _brandController.text.trim(),
+        brand:    '',
         model:    _modelController.text.trim(),
-        bodyType: _selectedBodyType,
+        bodyType: 'Sedan',
         color:    _colorController.text.trim(),
       );
 
@@ -181,39 +170,12 @@ class _AddCarScreenState extends State<AddCarScreen>
                         ),
                       ),
                       const SizedBox(height: 22),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _sectionLabel(t.addCar.brand, colors: colors),
-                                const SizedBox(height: 10),
-                                _buildField(
-                                    controller: _brandController,
-                                    hint: t.addCar.brandHint,
-                                    icon: Icons.directions_car_outlined,
-                                    colors: colors),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _sectionLabel(t.addCar.model, colors: colors),
-                                const SizedBox(height: 10),
-                                _buildField(
-                                    controller: _modelController,
-                                    hint: t.addCar.modelHint,
-                                    icon: Icons.calendar_today_outlined,
-                                    colors: colors),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                      _sectionLabel(t.addCar.carModel, colors: colors),
+                      const SizedBox(height: 10),
+                      _buildField(
+                          controller: _modelController,
+                          hint: t.addCar.carModelHint,
+                          colors: colors),
                       const SizedBox(height: 22),
                       _sectionLabel(t.addCar.color, colors: colors),
                       const SizedBox(height: 10),
@@ -222,11 +184,6 @@ class _AddCarScreenState extends State<AddCarScreen>
                           hint: t.addCar.colorHint,
                           icon: Icons.color_lens_outlined,
                           colors: colors),
-                      const SizedBox(height: 26),
-                      _sectionLabel(t.addCar.bodyType, colors: colors),
-                      const SizedBox(height: 14),
-                      _bodyTypeGrid(colors),
-                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
@@ -260,21 +217,6 @@ class _AddCarScreenState extends State<AddCarScreen>
       ),
       child: Row(
         children: [
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: colors.primary.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: colors.primary.withValues(alpha: 0.3), width: 1.5),
-            ),
-            child: Center(
-              child: Icon(Icons.directions_car_rounded,
-                  color: colors.primary, size: 40),
-            ),
-          ),
-          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -383,11 +325,6 @@ class _AddCarScreenState extends State<AddCarScreen>
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 14),
-            child: Icon(Icons.qr_code_scanner_rounded,
-                color: colors.grey2, size: 22),
-          ),
         ],
       ),
     );
@@ -396,8 +333,8 @@ class _AddCarScreenState extends State<AddCarScreen>
   Widget _buildField({
     required TextEditingController controller,
     required String hint,
-    required IconData icon,
     required ApparenceKitColors colors,
+    IconData? icon,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -415,72 +352,14 @@ class _AddCarScreenState extends State<AddCarScreen>
           hintText: hint,
           hintStyle:
               TextStyle(color: colors.disabledContent, fontSize: 15),
-          prefixIcon: Icon(icon, color: colors.grey2, size: 18),
+          prefixIcon: icon != null
+              ? Icon(icon, color: colors.grey2, size: 18)
+              : null,
           border: InputBorder.none,
           contentPadding:
               const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       ),
-    );
-  }
-
-  Widget _bodyTypeGrid(ApparenceKitColors colors) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      childAspectRatio: 2.4,
-      children: _bodyTypes.map((type) {
-        final isSelected = _selectedBodyType == type['label'];
-        return GestureDetector(
-          onTap: () => setState(() => _selectedBodyType = type['label']),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? colors.primary.withValues(alpha: 0.1)
-                  : colors.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isSelected ? colors.primary : colors.divider,
-                width: isSelected ? 1.8 : 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.all(7),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? colors.primary.withValues(alpha: 0.15)
-                        : colors.background,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(type['icon'] as IconData,
-                      size: 18,
-                      color: isSelected ? colors.primary : colors.grey2),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  type['label'] as String,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: isSelected
-                        ? FontWeight.w700
-                        : FontWeight.w500,
-                    color: isSelected ? colors.primary : colors.grey2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
     );
   }
 
@@ -514,29 +393,14 @@ class _AddCarScreenState extends State<AddCarScreen>
                     valueColor: AlwaysStoppedAnimation(colors.onPrimary),
                   ),
                 )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      t.addCar.continueButton,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.3,
-                        color: colors.onPrimary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: colors.onPrimary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(Icons.arrow_forward_rounded,
-                          size: 16, color: colors.onPrimary),
-                    ),
-                  ],
+              : Text(
+                  t.addCar.continueButton,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.3,
+                    color: colors.onPrimary,
+                  ),
                 ),
         ),
       ),

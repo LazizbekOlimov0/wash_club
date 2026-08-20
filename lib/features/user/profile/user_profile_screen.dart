@@ -142,13 +142,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 32),
-          Center(
-            child: Text(
-              'Wash Club · v1.0.0',
-              style: TextStyle(color: colors.grey2, fontSize: 12),
-            ),
-          ),
-          const SizedBox(height: 32),
         ],
       ),
       ),
@@ -268,8 +261,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             children: [
               Row(
                 children: [
-                  const Text('👑', style: TextStyle(fontSize: 22)),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,10 +332,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(Icons.workspace_premium,
-                      color: Colors.white.withValues(alpha: 0.9),
-                      size: 24),
-                  const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -443,23 +430,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isBest
-                    ? Colors.white.withValues(alpha: 0.25)
-                    : (isLight
-                    ? colors.primary.withValues(alpha: 0.08)
-                    : colors.grey1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child:
-                Text(plan.emoji, style: const TextStyle(fontSize: 20)),
-              ),
-            ),
-            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -699,7 +669,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await _session.removeCar(car.plate);
+              await _session.removeCar(car);
               if (mounted) setState(() {});
             },
             child: Text("O'chirish", style: TextStyle(color: colors.error)),
