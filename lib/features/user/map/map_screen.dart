@@ -7,6 +7,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../core/i18n/extensions/i18n_extension.dart';
+import '../../../../core/constants/map_constants.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/supabase_service.dart';
 import '../../../../config/router/router.dart';
@@ -185,19 +186,12 @@ class _MapScreenState extends State<MapScreen>
               onTap: (_, real) => _showList ? setState(() => _showList = false) : null,
             ),
             children: [
-              // Light tiles + dark filter — dark background with readable labels
-              ColorFiltered(
-                colorFilter: const ColorFilter.matrix(<double>[
-                  -0.75, 0, 0, 0, 220,
-                  0, -0.75, 0, 0, 220,
-                  0, 0, -0.75, 0, 225,
-                  0, 0, 0, 1, 0,
-                ]),
-                child: TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                  userAgentPackageName: 'com.wash_club.app',
-                  maxZoom: 19,
-                ),
+              // MapTiler Streets — och (light) fon
+              TileLayer(
+                urlTemplate: MapConstants.mapTilerStreetsUrl,
+                userAgentPackageName: 'com.washclub.app',
+                retinaMode: RetinaMode.isHighDensity(context),
+                maxZoom: 19,
               ),
               // Branch markers (teardrop style)
               MarkerLayer(
@@ -250,7 +244,7 @@ class _MapScreenState extends State<MapScreen>
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Text(t.map.title, style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                  Text(t.map.title, style: TextStyle(color: colors.onBackground, fontSize: 18, fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -394,9 +388,10 @@ class _MapScreenState extends State<MapScreen>
 
   // ── Controls ────────────────────────────────────────────────────
   BoxDecoration _btnDecoration(ApparenceKitColors colors) => BoxDecoration(
-    color: const Color(0xFF1C1C1E),
+    color: Colors.white,
     borderRadius: BorderRadius.circular(12),
-    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8)],
+    border: Border.all(color: const Color(0xFFD1D5DB), width: 1),
+    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 3))],
   );
 
   Widget _ctrlBtn(IconData icon, VoidCallback onTap, ApparenceKitColors colors, {Color? iconColor}) {
@@ -406,7 +401,7 @@ class _MapScreenState extends State<MapScreen>
         width: 42,
         height: 42,
         decoration: _btnDecoration(colors),
-        child: Icon(icon, color: iconColor ?? Colors.white, size: 20),
+        child: Icon(icon, color: iconColor ?? colors.onBackground, size: 20),
       ),
     );
   }
