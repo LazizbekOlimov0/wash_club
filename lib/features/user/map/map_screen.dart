@@ -2,6 +2,8 @@ import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/retry.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +22,7 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final _mapController = MapController();
   final _repo = BranchesRepository.instance;
   List<BranchModel> _branches = [];
@@ -28,9 +30,12 @@ class _MapScreenState extends State<MapScreen>
   bool _locating = false;
   LatLng? _userPosition;
   bool _showList = false;
+  bool _listPanelVisible = false;
 
   late AnimationController _pulseCtrl;
   late Animation<double> _pulseAnim;
+  late AnimationController _listCtrl;
+  late Animation<Offset> _listSlideAnim;
 
   static const _defaultCenter = LatLng(41.2995, 69.2401); // Toshkent
 
@@ -44,12 +49,23 @@ class _MapScreenState extends State<MapScreen>
     _pulseAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
       CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
     );
+    _listCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+    _listSlideAnim = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _listCtrl,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    ));
     _getBranches();
   }
 
   @override
   void dispose() {
     _pulseCtrl.dispose();
+    _listCtrl.dispose();
     _mapController.dispose();
     super.dispose();
   }
@@ -134,6 +150,23 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
+  void _setListVisible(bool visible) {
+    if (visible) {
+      setState(() {
+        _showList = true;
+        _listPanelVisible = true;
+      });
+      _listCtrl.forward();
+    } else {
+      setState(() => _showList = false);
+      _listCtrl.reverse().then((_) {
+        if (mounted) setState(() => _listPanelVisible = false);
+      });
+    }
+  }
+
+  void _toggleList() => _setListVisible(!_showList);
+
   double get _mapZoom => _userPosition != null ? 13.5 : 11.0;
   LatLng get _mapCenter => _userPosition ?? _defaultCenter;
 
@@ -182,8 +215,8 @@ class _MapScreenState extends State<MapScreen>
               initialCenter: _mapCenter,
               initialZoom: _mapZoom,
               minZoom: 5,
-              maxZoom: 18,
-              onTap: (_, real) => _showList ? setState(() => _showList = false) : null,
+              maxZoom: 22,
+              onTap: (_, real) => _showList ? _setListVisible(false) : null,
             ),
             children: [
               // MapTiler Streets — och (light) fon
@@ -191,7 +224,9 @@ class _MapScreenState extends State<MapScreen>
                 urlTemplate: MapConstants.mapTilerStreetsUrl,
                 userAgentPackageName: 'com.washclub.app',
                 retinaMode: RetinaMode.isHighDensity(context),
-                maxZoom: 19,
+                maxNativeZoom: 22,
+                maxZoom: 22,
+                tileProvider: _RetryingNetworkTileProvider(),
               ),
               // Branch markers (teardrop style)
               MarkerLayer(
@@ -239,8 +274,8 @@ class _MapScreenState extends State<MapScreen>
                     child: Container(
                       width: 42,
                       height: 42,
-                      decoration: _btnDecoration(colors),
-                      child: Icon(Icons.arrow_back_ios_new_rounded, color: colors.onSurface, size: 18),
+                      decoration: _btnDecoration(),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -256,11 +291,11 @@ class _MapScreenState extends State<MapScreen>
             bottom: 110,
             child: Column(
               children: [
-                _ctrlBtn(Icons.add, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1), colors),
+                _ctrlBtn(Icons.add, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1)),
                 const SizedBox(height: 6),
-                _ctrlBtn(Icons.remove, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom - 1), colors),
+                _ctrlBtn(Icons.remove, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom - 1)),
                 const SizedBox(height: 10),
-                _ctrlBtn(Icons.my_location, _goToMyLocation, colors, iconColor: colors.info),
+                _ctrlBtn(Icons.my_location, _goToMyLocation),
               ],
             ),
           ),
@@ -272,7 +307,7 @@ class _MapScreenState extends State<MapScreen>
             bottom: 36,
             child: Center(
               child: GestureDetector(
-                onTap: () => setState(() => _showList = !_showList),
+                onTap: _toggleList,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
@@ -296,7 +331,7 @@ class _MapScreenState extends State<MapScreen>
           ),
 
           // Branch list panel
-          if (_showList) _buildBranchListPanel(colors),
+          if (_listPanelVisible) _buildBranchListPanel(colors, _listSlideAnim),
 
           // Loading
           if (_loading || _locating)
@@ -387,36 +422,44 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // ── Controls ────────────────────────────────────────────────────
-  BoxDecoration _btnDecoration(ApparenceKitColors colors) => BoxDecoration(
-    color: Colors.white,
+  BoxDecoration _btnDecoration() => BoxDecoration(
+    color: const Color(0xFF1E293B),
     borderRadius: BorderRadius.circular(12),
-    border: Border.all(color: const Color(0xFFD1D5DB), width: 1),
-    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 3))],
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withValues(alpha: 0.35),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
   );
 
-  Widget _ctrlBtn(IconData icon, VoidCallback onTap, ApparenceKitColors colors, {Color? iconColor}) {
+  Widget _ctrlBtn(IconData icon, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 42,
         height: 42,
-        decoration: _btnDecoration(colors),
-        child: Icon(icon, color: iconColor ?? colors.onBackground, size: 20),
+        decoration: _btnDecoration(),
+        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }
 
   // ── Branch list panel ───────────────────────────────────────────
-  Widget _buildBranchListPanel(ApparenceKitColors colors) {
+  Widget _buildBranchListPanel(
+      ApparenceKitColors colors, Animation<Offset> slide) {
     final withCoords = _branches.where((b) => b.latitude != null && b.longitude != null).toList();
     return Positioned(
       left: 0,
       right: 0,
       bottom: 0,
       top: MediaQuery.of(context).size.height * 0.4,
-      child: GestureDetector(
-        onTap: () {}, // block taps through
-        child: Container(
+      child: SlideTransition(
+        position: slide,
+        child: GestureDetector(
+          onTap: () {}, // block taps through
+          child: Container(
           decoration: BoxDecoration(
             color: const Color(0xFF1C1C1E),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -439,7 +482,7 @@ class _MapScreenState extends State<MapScreen>
                   itemBuilder: (_, i) {
                     final b = withCoords[i];
                     return GestureDetector(
-                      onTap: () { _showList = false; _mapController.move(LatLng(b.latitude!, b.longitude!), 15.0); },
+                      onTap: () { _setListVisible(false); _mapController.move(LatLng(b.latitude!, b.longitude!), 15.0); },
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(14),
@@ -499,8 +542,9 @@ class _MapScreenState extends State<MapScreen>
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ── Branch info bottom sheet ────────────────────────────────────
   void _showBranchInfo(BranchModel branch, ApparenceKitColors colors) {
@@ -572,6 +616,20 @@ class _MapScreenState extends State<MapScreen>
       },
     );
   }
+}
+
+/// Retries tile downloads on transient network errors (e.g. dropped
+/// connections) and fails silently so a single bad tile doesn't spam errors.
+class _RetryingNetworkTileProvider extends NetworkTileProvider {
+  _RetryingNetworkTileProvider()
+      : super(
+          httpClient: RetryClient(
+            http.Client(),
+            retries: 3,
+            whenError: (error, _) => error is http.ClientException,
+          ),
+          silenceExceptions: true,
+        );
 }
 
 // ── Data classes ──────────────────────────────────────────────────
