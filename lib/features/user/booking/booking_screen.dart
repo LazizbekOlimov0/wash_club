@@ -87,6 +87,15 @@ class _BookingScreenState extends State<BookingScreen> {
     }
   }
 
+  @override
+  void didUpdateWidget(covariant BookingScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final newBranchId = widget.presetBranchId;
+    if (newBranchId != null && newBranchId != oldWidget.presetBranchId) {
+      _preselectBranch(newBranchId);
+    }
+  }
+
   void _preselectBranch(String branchId) async {
     setState(() { _loadingBranches = true; });
     try {
@@ -734,19 +743,19 @@ class _BookingScreenState extends State<BookingScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFFDF0E1),
+          color: colors.accent.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF5C88A), width: 1),
+          border: Border.all(color: colors.accent.withValues(alpha: 0.35), width: 1),
         ),
         child: Row(
           children: [
-            const Icon(Icons.info_outline, color: Color(0xFFB8650E), size: 18),
+            Icon(Icons.info_outline, color: colors.accent, size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Text(
                 context.t.booking.activeBookingExists,
-                style: const TextStyle(
-                  color: Color(0xFF8A4F0C),
+                style: TextStyle(
+                  color: colors.accent,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -1041,11 +1050,11 @@ class _BranchStep extends StatelessWidget {
   static Widget _buildPlaceholder(ApparenceKitColors colors) {
     return Container(
       height: 140,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1A3A6B), Color(0xFF2D5AA0)],
+          colors: [colors.branchGradientStart, colors.branchGradientEnd],
         ),
       ),
       child: Center(
@@ -1186,10 +1195,10 @@ class _ServiceStep extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
                 horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFFF8C00).withValues(alpha: 0.12),
+              color: colors.accent.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: const Color(0xFFFF8C00).withValues(alpha: 0.35),
+                color: colors.accent.withValues(alpha: 0.35),
                 width: 1,
               ),
             ),
@@ -1207,7 +1216,7 @@ class _ServiceStep extends StatelessWidget {
                           text:
                           context.t.booking.anyServicePromo,
                           style: TextStyle(
-                            color: const Color(0xFFFF8C00),
+                            color: colors.accent,
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                           ),
@@ -1384,13 +1393,13 @@ class _ServiceCard extends StatelessWidget {
     // Emoji icon'ga qarab rang tanlash
     final icon = service.icon;
     if (icon.contains('⚡') || icon.contains('🔥') || icon.contains('⚡️')) {
-      return const Color(0xFFFF8C00).withValues(alpha: 0.18);
+      return colors.accent.withValues(alpha: 0.18);
     }
     if (icon.contains('💧') || icon.contains('🌊') || icon.contains('✨')) {
       return colors.info.withValues(alpha: 0.15);
     }
     if (icon.contains('💎') || icon.contains('👑')) {
-      return const Color(0xFF22C55E).withValues(alpha: 0.18);
+      return colors.success.withValues(alpha: 0.18);
     }
     return colors.primary.withValues(alpha: 0.15);
   }
@@ -1480,8 +1489,8 @@ class _ServiceCard extends StatelessWidget {
                     children: [
                       Text(
                         _formatPrice(membershipPrice),
-                        style: const TextStyle(
-                          color: Color(0xFFFF8C00),
+                        style: TextStyle(
+                          color: colors.accent,
                           fontSize: 15,
                           fontWeight: FontWeight.w800,
                         ),
@@ -1491,8 +1500,8 @@ class _ServiceCard extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     context.t.booking.savedAmount.replaceAll('{amount}', _formatPrice(discountAmount)),
-                    style: const TextStyle(
-                      color: Color(0xFFFF8C00),
+                    style: TextStyle(
+                      color: colors.accent,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
                     ),
@@ -1548,7 +1557,7 @@ class _ServiceCard extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFF8C00),
+                    color: colors.accent,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -1964,13 +1973,13 @@ class _PaymentStep extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFFFF3E0),
+                        color: colors.accentSurface,
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         context.t.booking.unpaidLabel,
-                        style: const TextStyle(
-                          color: Color(0xFFE65100),
+                        style: TextStyle(
+                          color: colors.accent,
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),

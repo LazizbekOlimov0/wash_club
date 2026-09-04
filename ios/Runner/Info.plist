@@ -37,6 +37,8 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Darvozani ochish uchun QR kodni skanerlash uchun kameraga ruxsat kerak</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Filiallar ro&apos;yxatini joylashuvingizga qarab saralash uchun</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

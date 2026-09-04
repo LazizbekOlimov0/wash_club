@@ -38,6 +38,7 @@ class TranslationsRu extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsNavRu nav = TranslationsNavRu._(_root);
 	@override late final TranslationsMapRu map = TranslationsMapRu._(_root);
 	@override late final TranslationsHomeRu home = TranslationsHomeRu._(_root);
+	@override late final TranslationsQrScanRu qrScan = TranslationsQrScanRu._(_root);
 	@override late final TranslationsBookingRu booking = TranslationsBookingRu._(_root);
 	@override late final TranslationsOrdersRu orders = TranslationsOrdersRu._(_root);
 	@override late final TranslationsAddCarRu addCar = TranslationsAddCarRu._(_root);
@@ -190,6 +191,38 @@ class TranslationsHomeRu extends TranslationsHomeUz {
 	@override String get bookingPromoTitle => 'Сделайте первую бронь';
 	@override String get bookingPromoDesc => 'Запланируйте мойку в несколько шагов';
 	@override String get bookingPromoButton => 'Забронировать';
+	@override String get activeBooking => 'АКТИВНАЯ БРОНЬ';
+	@override String get qrScan => 'QR Scan';
+	@override String get guaranteed => 'Гарантировано';
+	@override String get gateInstruction => 'Когда подъедете к боксу, откройте ворота через QR Scan';
+	@override String get vipPassTitle => 'Подписка VIP Pass';
+	@override String get vipPassDesc => 'Безлимитные мойки и проход без очереди';
+	@override String get view => 'Смотреть';
+	@override String get select => 'Выбрать';
+	@override String freeBoxes({required Object count}) => 'Свободно ${count} бокса';
+	@override String get qualityGuarantee => 'Гарантия качества';
+	@override String get noQueueEntry => 'Проход без очереди';
+}
+
+// Path: qrScan
+class TranslationsQrScanRu extends TranslationsQrScanUz {
+	TranslationsQrScanRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Сканирование QR';
+	@override String get hint => 'Поместите QR-код ворот в рамку';
+	@override String get cancel => 'Отмена';
+	@override String get gateOpened => 'Ворота открыты';
+	@override String get gateOpenedDesc => 'Ворота успешно открыты';
+	@override String get invalidQr => 'Неверный QR-код. Попробуйте ещё раз.';
+	@override String get error => 'Произошла ошибка';
+	@override String get tryAgain => 'Повторить';
+	@override String get cameraPermission => 'Нужен доступ к камере';
+	@override String get cameraPermissionDesc => 'Разрешите доступ к камере для сканирования QR-кода';
+	@override String get openSettings => 'Настройки';
+	@override String get unsupported => 'Сканирование QR доступно только на мобильных устройствах';
 }
 
 // Path: booking
@@ -280,8 +313,12 @@ class TranslationsOrdersRu extends TranslationsOrdersUz {
 	@override String get emptySubtitle => 'Нет забронированных заказов';
 	@override String get active => 'Активные';
 	@override String get history => 'История';
+	@override String get activeTab => 'Активные брони';
 	@override String get searchHint => 'Поиск по номеру машины';
-	@override String get summary => '{active} активных · {history} истории';
+	@override String get summary => '{active} активных • {history} архивировано';
+	@override String get gateTitle => 'ПРИБЫЛИ В ФИЛИАЛ?';
+	@override String get gateSubtitle => 'Открыть ворота бокса';
+	@override String get summa => 'Сумма:';
 	@override String get emptyActive => 'Нет активных заказов';
 	@override String get emptyHistory => 'История пуста';
 	@override String get bookNow => 'Забронировать';
@@ -381,6 +418,21 @@ class TranslationsProfileRu extends TranslationsProfileUz {
 	@override String get languageUz => 'Узбекский';
 	@override String get languageRu => 'Русский';
 	@override String get languageEn => 'Английский';
+	@override String get customerLevel => 'Обычный клиент';
+	@override String get vipPassTitle => 'ПОДПИСКА VIP PASS';
+	@override String get vipPassSave => 'Экономия до 70%';
+	@override String get bestBadge => 'ЛУЧШИЙ';
+	@override String get monthShort => '{months} мес';
+	@override String get perMonth => 'мес';
+	@override String get totalPriceLabel => 'Полная цена за {months} мес:';
+	@override String get monthlyPriceLabel => 'Ежемесячный платёж:';
+	@override String get savingLabel => 'ЭКОНОМИЯ:';
+	@override String get featureUnlimited => 'Безлимитная мойка';
+	@override String get featureAllBranches => 'Во всех филиалах';
+	@override String get featureNoQueue => 'Без очереди';
+	@override String get featureFreeWax => 'Бесплатный воск';
+	@override String get activateVip => 'Активировать VIP Pass ({months} мес)';
+	@override String get comingSoon => 'Скоро';
 }
 
 // Path: settings

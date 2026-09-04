@@ -91,8 +91,8 @@ final GoRouter generateRouter = GoRouter(
             GoRoute(
               path: UserRoutePath.booking,
               builder: (context, state) {
-                final extra = state.extra as Map<String, dynamic>?;
-                return BookingScreen(presetBranchId: extra?['branchId'] as String?);
+                final branchId = state.uri.queryParameters['branchId'];
+                return BookingScreen(presetBranchId: branchId);
               },
             ),
           ],

@@ -241,11 +241,11 @@ class _OtpLoginScreenState extends State<OtpLoginScreen>
                       inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(9)],
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600, color: _c.onBackground),
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '90 123 45 67',
-                        hintStyle: TextStyle(color: Color(0xFFB0B0B0), fontSize: 16),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                        hintStyle: TextStyle(color: _c.grey2, fontSize: 16),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                       ),
                       onChanged: (_) => setState(() => _errorText = ''),
                     ),

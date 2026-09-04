@@ -17,6 +17,8 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
   final Color warning;
   final Color info;
   final Color error;
+  final Color accent; // flame/orange urg'u rangi
+
   final Color disabled;
   final Color disabledContent;
 
@@ -28,6 +30,15 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
   // Additional
   final Color divider;
   final Color shadow;
+
+  // Brand gradient & map overlay tokens
+  final Color premiumGradientStart;
+  final Color premiumGradientEnd;
+  final Color branchGradientStart;
+  final Color branchGradientEnd;
+  final Color mapBackground;
+  final Color mapSurface;
+  final Color mapBadge;
 
   const ApparenceKitColors({
     required this.primary,
@@ -42,6 +53,7 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     required this.warning,
     required this.info,
     required this.error,
+    required this.accent,
     required this.disabled,
     required this.disabledContent,
     required this.grey1,
@@ -49,6 +61,13 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     required this.grey3,
     required this.divider,
     required this.shadow,
+    required this.premiumGradientStart,
+    required this.premiumGradientEnd,
+    required this.branchGradientStart,
+    required this.branchGradientEnd,
+    required this.mapBackground,
+    required this.mapSurface,
+    required this.mapBadge,
   });
 
   // ── DARK (navy blue — asosiy tema) ────────────────────────────────
@@ -65,6 +84,7 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     warning: const Color(0xFFFFB547),
     info: const Color(0xFF4E85F0),
     error: const Color(0xFFFF5C6A),
+    accent: const Color(0xFFFF6B1A),
     disabled: const Color(0xFF253552),
     disabledContent: const Color(0xFF4A5E80),
     grey1: const Color(0xFF253552),
@@ -72,6 +92,13 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     grey3: const Color(0xFF8B9FC4),
     divider: const Color(0xFF1E2F50),
     shadow: const Color(0xFF000000),
+    premiumGradientStart: const Color(0xFF2D5AA0),
+    premiumGradientEnd: const Color(0xFF7B5EEA),
+    branchGradientStart: const Color(0xFF1A3A6B),
+    branchGradientEnd: const Color(0xFF2D5AA0),
+    mapBackground: const Color(0xFF1C1C1E),
+    mapSurface: const Color(0xFF2C2C2E),
+    mapBadge: const Color(0xFF1E293B),
   );
 
   // ── LIGHT ─────────────────────────────────────────────────────────
@@ -88,6 +115,7 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     warning: Color(0xFFF39C12),
     info: Color(0xFF2980B9),
     error: Color(0xFFE74C3C),
+    accent: Color(0xFFE65100),
     disabled: Color(0xFFE2E6EF),
     disabledContent: Color(0xFFBCC0CC),
     grey1: Color(0xFFE2E6EF),
@@ -95,6 +123,13 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     grey3: Color(0xFF5A6B8A),
     divider: Color(0xFFEAEDF3),
     shadow: Color(0xFF000000),
+    premiumGradientStart: Color(0xFF2D5AA0),
+    premiumGradientEnd: Color(0xFF7B5EEA),
+    branchGradientStart: Color(0xFF1A3A6B),
+    branchGradientEnd: Color(0xFF2D5AA0),
+    mapBackground: Color(0xFF1C1C1E),
+    mapSurface: Color(0xFF2C2C2E),
+    mapBadge: Color(0xFF1E293B),
   );
 
   // ── Helpers ───────────────────────────────────────────────────────
@@ -105,6 +140,7 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
   Color get errorSurface => error.withValues(alpha: 0.15);
   Color get warningSurface => warning.withValues(alpha: 0.15);
   Color get infoSurface => info.withValues(alpha: 0.15);
+  Color get accentSurface => accent.withValues(alpha: 0.15);
 
   @override
   ApparenceKitColors copyWith({
@@ -120,6 +156,7 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     Color? warning,
     Color? info,
     Color? error,
+    Color? accent,
     Color? disabled,
     Color? disabledContent,
     Color? grey1,
@@ -127,6 +164,13 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     Color? grey3,
     Color? divider,
     Color? shadow,
+    Color? premiumGradientStart,
+    Color? premiumGradientEnd,
+    Color? branchGradientStart,
+    Color? branchGradientEnd,
+    Color? mapBackground,
+    Color? mapSurface,
+    Color? mapBadge,
   }) {
     return ApparenceKitColors(
       primary: primary ?? this.primary,
@@ -141,6 +185,7 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
       warning: warning ?? this.warning,
       info: info ?? this.info,
       error: error ?? this.error,
+      accent: accent ?? this.accent,
       disabled: disabled ?? this.disabled,
       disabledContent: disabledContent ?? this.disabledContent,
       grey1: grey1 ?? this.grey1,
@@ -148,6 +193,13 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
       grey3: grey3 ?? this.grey3,
       divider: divider ?? this.divider,
       shadow: shadow ?? this.shadow,
+      premiumGradientStart: premiumGradientStart ?? this.premiumGradientStart,
+      premiumGradientEnd: premiumGradientEnd ?? this.premiumGradientEnd,
+      branchGradientStart: branchGradientStart ?? this.branchGradientStart,
+      branchGradientEnd: branchGradientEnd ?? this.branchGradientEnd,
+      mapBackground: mapBackground ?? this.mapBackground,
+      mapSurface: mapSurface ?? this.mapSurface,
+      mapBadge: mapBadge ?? this.mapBadge,
     );
   }
 
@@ -171,6 +223,7 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
       warning: Color.lerp(warning, other.warning, t)!,
       info: Color.lerp(info, other.info, t)!,
       error: Color.lerp(error, other.error, t)!,
+      accent: Color.lerp(accent, other.accent, t)!,
       disabled: Color.lerp(disabled, other.disabled, t)!,
       disabledContent: Color.lerp(disabledContent, other.disabledContent, t)!,
       grey1: Color.lerp(grey1, other.grey1, t)!,
@@ -178,6 +231,17 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
       grey3: Color.lerp(grey3, other.grey3, t)!,
       divider: Color.lerp(divider, other.divider, t)!,
       shadow: Color.lerp(shadow, other.shadow, t)!,
+      premiumGradientStart:
+      Color.lerp(premiumGradientStart, other.premiumGradientStart, t)!,
+      premiumGradientEnd:
+      Color.lerp(premiumGradientEnd, other.premiumGradientEnd, t)!,
+      branchGradientStart:
+      Color.lerp(branchGradientStart, other.branchGradientStart, t)!,
+      branchGradientEnd:
+      Color.lerp(branchGradientEnd, other.branchGradientEnd, t)!,
+      mapBackground: Color.lerp(mapBackground, other.mapBackground, t)!,
+      mapSurface: Color.lerp(mapSurface, other.mapSurface, t)!,
+      mapBadge: Color.lerp(mapBadge, other.mapBadge, t)!,
     );
   }
 }

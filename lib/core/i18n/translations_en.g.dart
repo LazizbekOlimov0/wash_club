@@ -38,6 +38,7 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsNavEn nav = TranslationsNavEn._(_root);
 	@override late final TranslationsMapEn map = TranslationsMapEn._(_root);
 	@override late final TranslationsHomeEn home = TranslationsHomeEn._(_root);
+	@override late final TranslationsQrScanEn qrScan = TranslationsQrScanEn._(_root);
 	@override late final TranslationsBookingEn booking = TranslationsBookingEn._(_root);
 	@override late final TranslationsOrdersEn orders = TranslationsOrdersEn._(_root);
 	@override late final TranslationsAddCarEn addCar = TranslationsAddCarEn._(_root);
@@ -190,6 +191,38 @@ class TranslationsHomeEn extends TranslationsHomeUz {
 	@override String get bookingPromoTitle => 'Make your first booking';
 	@override String get bookingPromoDesc => 'Schedule a wash in a few steps';
 	@override String get bookingPromoButton => 'Book now';
+	@override String get activeBooking => 'ACTIVE BOOKING';
+	@override String get qrScan => 'QR Scan';
+	@override String get guaranteed => 'Guaranteed';
+	@override String get gateInstruction => 'Scan QR to open the gate when you reach the box';
+	@override String get vipPassTitle => 'VIP Pass Subscription';
+	@override String get vipPassDesc => 'Unlimited washes and no-queue entry';
+	@override String get view => 'View';
+	@override String get select => 'Select';
+	@override String freeBoxes({required Object count}) => '${count} boxes free';
+	@override String get qualityGuarantee => 'Quality guarantee';
+	@override String get noQueueEntry => 'No-queue entry';
+}
+
+// Path: qrScan
+class TranslationsQrScanEn extends TranslationsQrScanUz {
+	TranslationsQrScanEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Scan QR code';
+	@override String get hint => 'Place the gate QR code inside the frame';
+	@override String get cancel => 'Cancel';
+	@override String get gateOpened => 'Gate opened';
+	@override String get gateOpenedDesc => 'Gate opened successfully';
+	@override String get invalidQr => 'Invalid QR code. Please try again.';
+	@override String get error => 'An error occurred';
+	@override String get tryAgain => 'Try again';
+	@override String get cameraPermission => 'Camera permission required';
+	@override String get cameraPermissionDesc => 'Allow camera access to scan the QR code';
+	@override String get openSettings => 'Settings';
+	@override String get unsupported => 'QR scanning is only available on mobile devices';
 }
 
 // Path: booking
@@ -280,8 +313,12 @@ class TranslationsOrdersEn extends TranslationsOrdersUz {
 	@override String get emptySubtitle => 'You have no booked orders';
 	@override String get active => 'Active';
 	@override String get history => 'History';
+	@override String get activeTab => 'Active bookings';
 	@override String get searchHint => 'Search by plate number';
-	@override String get summary => '{active} active · {history} history';
+	@override String get summary => '{active} active • {history} archived';
+	@override String get gateTitle => 'ARRIVED AT THE BRANCH?';
+	@override String get gateSubtitle => 'Open the box gate';
+	@override String get summa => 'Total:';
 	@override String get emptyActive => 'No active orders';
 	@override String get emptyHistory => 'History empty';
 	@override String get bookNow => 'Book now';
@@ -381,6 +418,21 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	@override String get languageUz => 'Uzbek';
 	@override String get languageRu => 'Russian';
 	@override String get languageEn => 'English';
+	@override String get customerLevel => 'Regular customer';
+	@override String get vipPassTitle => 'VIP PASS SUBSCRIPTION';
+	@override String get vipPassSave => 'Save up to 70%';
+	@override String get bestBadge => 'BEST';
+	@override String get monthShort => '{months} mo';
+	@override String get perMonth => 'mo';
+	@override String get totalPriceLabel => 'Total price for {months} mo:';
+	@override String get monthlyPriceLabel => 'Monthly payment:';
+	@override String get savingLabel => 'SAVINGS:';
+	@override String get featureUnlimited => 'Unlimited washes';
+	@override String get featureAllBranches => 'All branches';
+	@override String get featureNoQueue => 'No-queue entry';
+	@override String get featureFreeWax => 'Free wax';
+	@override String get activateVip => 'Activate VIP Pass ({months} mo)';
+	@override String get comingSoon => 'Coming soon';
 }
 
 // Path: settings

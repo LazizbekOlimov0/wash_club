@@ -609,6 +609,33 @@ class SupabaseService {
   }
 
   // ─────────────────────────────────────────────────────────
+  // GATE OPEN (QR scan — darvoza ochish)
+  // ─────────────────────────────────────────────────────────
+
+  /// Foydalanuvchi filialdagi darvoza/boks QR kodini skanerlagach,
+  /// kodni backend (edge function)ga yuborib darvozani ochadi.
+  /// Edge function nomi: 'open-gate'. Body: { order_id, scanned_code }.
+  /// Javobda `success` (bool) qaytadi.
+  Future<bool> openGate({
+    required String orderId,
+    required String scannedCode,
+  }) async {
+    final response = await _client.functions.invoke(
+      'open-gate',
+      body: {
+        'order_id': orderId,
+        'scanned_code': scannedCode,
+      },
+    );
+
+    final data = response.data;
+    if (data is Map) {
+      return data['success'] == true || data['ok'] == true || data['opened'] == true;
+    }
+    return false;
+  }
+
+  // ─────────────────────────────────────────────────────────
   // CARS (customer_cars)
   // ─────────────────────────────────────────────────────────
 
@@ -721,6 +748,8 @@ class BranchModel {
   final String closeTime;
   final bool is24_7;
   final bool isTemporarilyClosed;
+  final double? rating;
+  final int? availableBoxes;
 
   const BranchModel({
     required this.id,
@@ -735,6 +764,8 @@ class BranchModel {
     this.is24_7 = false,
     this.isTemporarilyClosed = false,
     this.imageUrl,
+    this.rating,
+    this.availableBoxes,
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> j) {
@@ -756,6 +787,8 @@ class BranchModel {
       is24_7:     j['is_24_7'] as bool? ?? false,
       isTemporarilyClosed: j['is_temporarily_closed'] as bool? ?? false,
       imageUrl:     j['image_url'] as String?,
+      rating:       (j['rating'] as num?)?.toDouble(),
+      availableBoxes: j['available_boxes'] as int?,
     );
   }
   /// Hozir ochiqmi?

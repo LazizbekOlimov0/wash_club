@@ -6,7 +6,6 @@ import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
-import '../../../../shared/services/supabase_service.dart';
 import '../../../../shared/services/orders_repository.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -19,11 +18,14 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final _session = ClientSession.instance;
   final _ordersRepo = OrdersRepository.instance;
-  final _api = SupabaseService.instance;
 
-  SubscriptionModel? _subscription;
-  List<TariffPlanModel> _tariffPlans = [];
-  bool _subLoading = true;
+  int _selectedPlanIndex = 1; // "3 Oy" default tanlangan
+
+  static const List<_VipPlan> _plans = [
+    _VipPlan(months: 6, perMonthK: 499, isBest: true),
+    _VipPlan(months: 3, perMonthK: 699),
+    _VipPlan(months: 1, perMonthK: 1190),
+  ];
 
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
@@ -35,39 +37,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _refresh() async {
-    await Future.wait([
-      _ordersRepo.loadOrders(),
-      _loadSubscription(),
-    ]);
+    await _ordersRepo.loadOrders();
     if (mounted) setState(() {});
-  }
-
-  Future<void> _loadSubscription() async {
-    final customerId = _session.customerId;
-    if (customerId == null) {
-      _subLoading = false;
-      return;
-    }
-    try {
-      final results = await Future.wait([
-        _api.getActiveSubscription(customerId),
-        _api.getTariffPlans(),
-      ]);
-      _subscription = results[0] as SubscriptionModel?;
-      _tariffPlans = results[1] as List<TariffPlanModel>;
-    } catch (_) {
-      _subscription = null;
-      _tariffPlans = [];
-    } finally {
-      _subLoading = false;
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t;
     final colors = _c;
-    final name  = _session.name  ?? context.t.profile.guest;
+    final name = _session.name ?? context.t.profile.guest;
     final phone = _session.phone ?? '—';
 
     return Scaffold(
@@ -96,121 +73,141 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onRefresh: _refresh,
         color: colors.info,
         child: ListView(
-        padding: const EdgeInsets.only(bottom: 100),
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          _buildHeader(colors, name, phone),
-          _buildHeaderDivider(colors),
-          const SizedBox(height: 20),
-          _buildSubscriptionBanner(colors),
-          const SizedBox(height: 24),
-          _buildSectionLabel(context.t.profile.myCarsLabel, colors),
-          _buildMyCars(context, colors),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: GestureDetector(
-              onTap: () => context.push(UserRoutePath.settings),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: colors.onPrimaryContainer,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: colors.grey1, width: 1),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.settings_outlined,
-                        color: colors.grey2, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        context.t.settings.title,
-                        style: TextStyle(
-                          color: colors.onBackground,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                    Icon(Icons.chevron_right,
-                        color: colors.grey2, size: 18),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 32),
-        ],
-      ),
+          padding: const EdgeInsets.only(bottom: 100),
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            _buildProfileCard(colors, name, phone),
+            _buildHeaderDivider(colors),
+            const SizedBox(height: 20),
+            _buildVipPassSection(colors),
+            const SizedBox(height: 24),
+            _buildSectionLabel(context.t.profile.myCarsLabel, colors),
+            _buildMyCars(context, colors),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeader(
+  // ── Profil kartasi ──────────────────────────────────────────────
+  Widget _buildProfileCard(
       ApparenceKitColors colors, String name, String phone) {
+    final t = context.t;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => context.push(UserRoutePath.editProfile),
-            child: Container(
-              width: 88,
-              height: 88,
-              decoration: BoxDecoration(
-                color: colors.primary,
-                shape: BoxShape.circle,
-                image: _session.profileImage != null
-                    ? DecorationImage(
-                        image: MemoryImage(
-                            base64Decode(_session.profileImage!)),
-                        fit: BoxFit.cover,
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: _session.profileImage == null
+                      ? LinearGradient(
+                          colors: [
+                            colors.premiumGradientStart,
+                            colors.premiumGradientEnd,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
+                  image: _session.profileImage != null
+                      ? DecorationImage(
+                          image: MemoryImage(
+                              base64Decode(_session.profileImage!)),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                ),
+                child: _session.profileImage == null
+                    ? Center(
+                        child: Text(
+                          name.isNotEmpty ? name[0].toUpperCase() : 'M',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 30,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       )
                     : null,
               ),
-              child: _session.profileImage == null
-                  ? Center(
-                      child: Text(
-                        name.isNotEmpty ? name[0].toUpperCase() : 'M',
-                        style: TextStyle(
-                          color: colors.onPrimary,
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                  : null,
-            ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  width: 16,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: colors.success,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                        color: colors.background, width: 2),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.onBackground,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    Icon(Icons.auto_awesome,
+                        color: colors.warning, size: 16),
+                  ],
                 ),
                 const SizedBox(height: 4),
                 Text(phone,
                     style: TextStyle(color: colors.grey2, fontSize: 14)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colors.grey1.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    t.profile.customerLevel,
+                    style: TextStyle(
+                      color: colors.grey3,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
           GestureDetector(
             onTap: () => context.push(UserRoutePath.editProfile),
             child: Container(
-              width: 36,
-              height: 36,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 color: colors.onPrimaryContainer,
-                borderRadius: BorderRadius.circular(10),
+                shape: BoxShape.circle,
                 border: Border.all(color: colors.grey1, width: 1),
               ),
               child: Icon(Icons.edit_outlined,
@@ -229,161 +226,322 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSubscriptionBanner(ApparenceKitColors colors) {
-    final sub = _subscription;
-    if (_subLoading) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: SizedBox(
-          height: 64,
-          child: Center(
-            child: CircularProgressIndicator(strokeWidth: 2, color: colors.info),
-          ),
-        ),
-      );
-    }
-
-    if (sub != null && sub.isValid) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [colors.info, colors.primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(14),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          sub.name,
-                          style: TextStyle(
-                            color: colors.onPrimary,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          context.t.profile.remainsLabel.replaceAll('{count}', '${sub.washesRemaining}'),
-                          style: TextStyle(
-                            color: colors.onPrimary.withValues(alpha: 0.8),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: sub.progress,
-                  backgroundColor: colors.onPrimary.withValues(alpha: 0.3),
-                  valueColor: AlwaysStoppedAnimation(colors.onPrimary),
-                  minHeight: 4,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                '${context.t.profile.expiresLabel.replaceAll('{date}', _formatDate(sub.expiresAt))}',
-                style: TextStyle(
-                  color: colors.onPrimary.withValues(alpha: 0.7),
-                  fontSize: 11,
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
+  // ── VIP Pass obunasi bo'limi ────────────────────────────────────
+  Widget _buildVipPassSection(ApparenceKitColors colors) {
+    final t = context.t;
+    final selected = _plans[_selectedPlanIndex];
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: GestureDetector(
-            onTap: () {
-              // TODO: membership sahifasiga
-            },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 18, vertical: 16),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF7B5EEA), Color(0xFF9B7BF5)],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isLight ? colors.surface : colors.onPrimaryContainer,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: colors.divider, width: 1),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.workspace_premium,
+                        color: colors.warning, size: 18),
+                    const SizedBox(width: 6),
+                    Text(
+                      t.profile.vipPassTitle,
+                      style: TextStyle(
+                        color: colors.onBackground,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      t.profile.vipPassSave,
+                      style: TextStyle(
+                        color: colors.success,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(18),
+                const SizedBox(height: 16),
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: colors.grey1.withValues(alpha: 0.55),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          for (int i = 0; i < _plans.length; i++) ...[
+                            if (i > 0) const SizedBox(width: 4),
+                            Expanded(child: _buildPlanOption(colors, i)),
+                          ],
+                        ],
+                      ),
+                    ),
+                    Positioned(
+                      top: -9,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: colors.warning,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  t.profile.bestBadge,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Expanded(child: SizedBox()),
+                          const Expanded(child: SizedBox()),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Divider(color: colors.divider, height: 1),
+                const SizedBox(height: 16),
+                _buildPlanDetailsContent(colors, selected),
+                const SizedBox(height: 12),
+                Divider(color: colors.divider, height: 1),
+                const SizedBox(height: 12),
+                GestureDetector(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(t.profile.comingSoon),
+                        backgroundColor: colors.grey3,
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 54,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [colors.warning, colors.accent],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.bolt, color: Colors.white, size: 20),
+                        const SizedBox(width: 6),
+                        Text(
+                          t.profile.activateVip.replaceAll(
+                              '{months}', '${selected.months}'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPlanOption(ApparenceKitColors colors, int index) {
+    final t = context.t;
+    final plan = _plans[index];
+    final isSelected = index == _selectedPlanIndex;
+
+    return GestureDetector(
+      onTap: () => setState(() => _selectedPlanIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? colors.primary : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              t.profile.monthShort
+                  .replaceAll('{months}', '${plan.months}'),
+              style: TextStyle(
+                color: isSelected ? colors.onPrimary : colors.onBackground,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
               ),
-              child: Row(
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${plan.perMonthK}k / ${t.profile.perMonth}',
+              style: TextStyle(
+                color: isSelected
+                    ? colors.onPrimary.withValues(alpha: 0.85)
+                    : colors.grey2,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPlanDetailsContent(ApparenceKitColors colors, _VipPlan plan) {
+    final t = context.t;
+    final savingsText = plan.savings > 0
+        ? '+${_formatPrice(plan.savings)} UZS'
+        : '—';
+
+    final features = [
+      t.profile.featureUnlimited,
+      t.profile.featureAllBranches,
+      t.profile.featureNoQueue,
+      t.profile.featureFreeWax,
+    ];
+
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        context.t.profile.premiumOffer,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
+                  Text(
+                    t.profile.monthlyPriceLabel,
+                    style: TextStyle(color: colors.grey2, fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${_formatPrice(plan.perMonthK * 1000)} UZS',
+                      style: TextStyle(
+                        color: colors.onBackground,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        context.t.profile.inactiveSubtitle,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.8),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
             ),
-          ),
-        ),
-        if (_tariffPlans.isNotEmpty) ...[
-          const SizedBox(height: 20),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              context.t.profile.subscribeNow,
-              style: TextStyle(
-                color: colors.onBackground,
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 2,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    t.profile.savingLabel,
+                    style: TextStyle(color: colors.grey2, fontSize: 12),
+                  ),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      savingsText,
+                      style: TextStyle(
+                        color: plan.savings > 0
+                            ? colors.success
+                            : colors.grey2,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Divider(color: colors.divider, height: 1),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(child: _buildFeatureItem(colors, features[0])),
+            const SizedBox(width: 12),
+            Expanded(child: _buildFeatureItem(colors, features[1])),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(child: _buildFeatureItem(colors, features[2])),
+            const SizedBox(width: 12),
+            Expanded(child: _buildFeatureItem(colors, features[3])),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFeatureItem(ApparenceKitColors colors, String label) {
+    return Row(
+      children: [
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: colors.successSurface,
+            shape: BoxShape.circle,
           ),
-          const SizedBox(height: 12),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Column(
-              children: [
-                for (int i = 0; i < _tariffPlans.length; i++) ...[
-                  if (i > 0) const SizedBox(height: 10),
-                  _buildTariffCard(colors: colors, plan: _tariffPlans[i]),
-                ],
-              ],
+          child: Icon(Icons.check, color: colors.success, size: 14),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: colors.onBackground,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
           ),
-        ],
+        ),
       ],
     );
   }
@@ -403,135 +561,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  String _formatDate(DateTime d) =>
-      '${d.day}.${d.month.toString().padLeft(2, '0')}.${d.year}';
-
-  Widget _buildTariffCard({
-    required ApparenceKitColors colors,
-    required TariffPlanModel plan,
-  }) {
-    final bool isLight = Theme.of(context).brightness == Brightness.light;
-    final isBest = plan.isPopular;
-
-    return GestureDetector(
-      onTap: () {
-        // TODO: shu tarif bilan obuna qilish
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: isBest
-              ? const Color(0xFFFFA500)
-              : (isLight ? colors.surface : colors.onPrimaryContainer),
-          borderRadius: BorderRadius.circular(16),
-          border: isBest
-              ? null
-              : Border.all(color: colors.divider, width: 1),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    context.t.profile.monthsDuration.replaceAll('{months}', '${plan.durationMonths}'),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isBest
-                          ? Colors.white
-                          : colors.onBackground,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  if (isBest) ...[
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        context.t.profile.bestPrice,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Limitless yuvish · ${_formatPriceShort(plan.perMonthPrice)} / oy',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 11,
-                      ),
-                    ),
-                  ]
-                  else ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      'Limitless yuvish · ${_formatPriceShort(plan.perMonthPrice)} / oy',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: isBest
-                            ? Colors.white.withValues(alpha: 0.8)
-                            : colors.grey2,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  _formatPriceShort(plan.price),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isBest ? Colors.white : colors.onBackground,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                Text(
-                  context.t.profile.totalLabel,
-                  style: TextStyle(
-                    color: isBest
-                        ? Colors.white.withValues(alpha: 0.7)
-                        : colors.grey2,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatPriceShort(int sum) {
+  String _formatPrice(int sum) {
     final s = sum.toString();
     final buf = StringBuffer();
     for (int i = 0; i < s.length; i++) {
       if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
       buf.write(s[i]);
     }
-    return "${buf.toString()} UZS";
+    return buf.toString();
   }
 
   Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
@@ -601,17 +638,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   child: Row(
                     children: [
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: colors.grey1,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(Icons.directions_car_outlined,
-                            color: colors.info, size: 22),
-                      ),
-                      const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,4 +704,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
+}
+
+class _VipPlan {
+  final int months;
+  final int perMonthK; // ming so'mda (499 → 499k)
+  final bool isBest;
+
+  const _VipPlan({
+    required this.months,
+    required this.perMonthK,
+    this.isBest = false,
+  });
+
+  int get totalPrice => perMonthK * 1000 * months;
+  int get savings => (1190 - perMonthK) * 1000 * months;
 }

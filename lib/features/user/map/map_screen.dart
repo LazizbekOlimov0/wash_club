@@ -274,7 +274,7 @@ class _MapScreenState extends State<MapScreen>
                     child: Container(
                       width: 42,
                       height: 42,
-                      decoration: _btnDecoration(),
+                      decoration: _btnDecoration(colors),
                       child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
                     ),
                   ),
@@ -291,11 +291,11 @@ class _MapScreenState extends State<MapScreen>
             bottom: 110,
             child: Column(
               children: [
-                _ctrlBtn(Icons.add, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1)),
+                _ctrlBtn(Icons.add, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1), colors),
                 const SizedBox(height: 6),
-                _ctrlBtn(Icons.remove, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom - 1)),
+                _ctrlBtn(Icons.remove, () => _mapController.move(_mapController.camera.center, _mapController.camera.zoom - 1), colors),
                 const SizedBox(height: 10),
-                _ctrlBtn(Icons.my_location, _goToMyLocation),
+                _ctrlBtn(Icons.my_location, _goToMyLocation, colors),
               ],
             ),
           ),
@@ -311,7 +311,7 @@ class _MapScreenState extends State<MapScreen>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1C1C1E),
+                    color: colors.mapBackground,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 12)]),
                   child: Row(
@@ -422,8 +422,8 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // ── Controls ────────────────────────────────────────────────────
-  BoxDecoration _btnDecoration() => BoxDecoration(
-    color: const Color(0xFF1E293B),
+  BoxDecoration _btnDecoration(ApparenceKitColors colors) => BoxDecoration(
+    color: colors.mapBadge,
     borderRadius: BorderRadius.circular(12),
     boxShadow: [
       BoxShadow(
@@ -434,13 +434,13 @@ class _MapScreenState extends State<MapScreen>
     ],
   );
 
-  Widget _ctrlBtn(IconData icon, VoidCallback onTap) {
+  Widget _ctrlBtn(IconData icon, VoidCallback onTap, ApparenceKitColors colors) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 42,
         height: 42,
-        decoration: _btnDecoration(),
+        decoration: _btnDecoration(colors),
         child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
@@ -461,7 +461,7 @@ class _MapScreenState extends State<MapScreen>
           onTap: () {}, // block taps through
           child: Container(
           decoration: BoxDecoration(
-            color: const Color(0xFF1C1C1E),
+            color: colors.mapBackground,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 20)],
           ),
@@ -487,7 +487,7 @@ class _MapScreenState extends State<MapScreen>
                         margin: const EdgeInsets.only(bottom: 8),
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2C2C2E),
+                          color: colors.mapSurface,
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Row(
@@ -511,13 +511,13 @@ class _MapScreenState extends State<MapScreen>
                                       Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: b.isOpenNow ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                                          color: b.isOpenNow ? colors.success.withValues(alpha: 0.2) : colors.error.withValues(alpha: 0.2),
                                           borderRadius: BorderRadius.circular(10),
                                         ),
                                         child: Text(
                                           b.isOpenNow ? 'Ochiq' : 'Yopiq',
                                           style: TextStyle(
-                                            color: b.isOpenNow ? Colors.green : Colors.red,
+                                            color: b.isOpenNow ? colors.success : colors.error,
                                             fontSize: 11,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -550,7 +550,7 @@ class _MapScreenState extends State<MapScreen>
   void _showBranchInfo(BranchModel branch, ApparenceKitColors colors) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1C1C1E),
+      backgroundColor: colors.mapBackground,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (_) {
         return Padding(
@@ -570,13 +570,13 @@ class _MapScreenState extends State<MapScreen>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
                     decoration: BoxDecoration(
-                      color: branch.isOpenNow ? Colors.green.withValues(alpha: 0.2) : Colors.red.withValues(alpha: 0.2),
+                      color: branch.isOpenNow ? colors.success.withValues(alpha: 0.2) : colors.error.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       branch.isOpenNow ? 'Ochiq' : 'Yopiq',
                       style: TextStyle(
-                        color: branch.isOpenNow ? Colors.green : Colors.red,
+                        color: branch.isOpenNow ? colors.success : colors.error,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -598,7 +598,7 @@ class _MapScreenState extends State<MapScreen>
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pop(context);
-                    context.push(UserRoutePath.booking, extra: {'branchId': branch.id});
+                    context.go('${UserRoutePath.booking}?branchId=${branch.id}');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: colors.info,

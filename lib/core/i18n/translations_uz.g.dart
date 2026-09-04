@@ -41,6 +41,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsNavUz nav = TranslationsNavUz.internal(_root);
 	late final TranslationsMapUz map = TranslationsMapUz.internal(_root);
 	late final TranslationsHomeUz home = TranslationsHomeUz.internal(_root);
+	late final TranslationsQrScanUz qrScan = TranslationsQrScanUz.internal(_root);
 	late final TranslationsBookingUz booking = TranslationsBookingUz.internal(_root);
 	late final TranslationsOrdersUz orders = TranslationsOrdersUz.internal(_root);
 	late final TranslationsAddCarUz addCar = TranslationsAddCarUz.internal(_root);
@@ -463,6 +464,84 @@ class TranslationsHomeUz {
 
 	/// uz: 'Bron qilish'
 	String get bookingPromoButton => 'Bron qilish';
+
+	/// uz: 'FAOL BRON'
+	String get activeBooking => 'FAOL BRON';
+
+	/// uz: 'QR Scan'
+	String get qrScan => 'QR Scan';
+
+	/// uz: 'Kafolatlangan'
+	String get guaranteed => 'Kafolatlangan';
+
+	/// uz: 'Boksga yetib borganda QR Scan orqali darvozani oching'
+	String get gateInstruction => 'Boksga yetib borganda QR Scan orqali darvozani oching';
+
+	/// uz: 'VIP Pass Obunasi'
+	String get vipPassTitle => 'VIP Pass Obunasi';
+
+	/// uz: 'Cheksiz yuvish va navbatsiz kirish'
+	String get vipPassDesc => 'Cheksiz yuvish va navbatsiz kirish';
+
+	/// uz: 'Ko'rish'
+	String get view => 'Ko\'rish';
+
+	/// uz: 'Tanlash'
+	String get select => 'Tanlash';
+
+	/// uz: '${count} ta boks bo'sh'
+	String freeBoxes({required Object count}) => '${count} ta boks bo\'sh';
+
+	/// uz: 'Sifat kafolati'
+	String get qualityGuarantee => 'Sifat kafolati';
+
+	/// uz: 'Navbatsiz kirish'
+	String get noQueueEntry => 'Navbatsiz kirish';
+}
+
+// Path: qrScan
+class TranslationsQrScanUz {
+	TranslationsQrScanUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'QR kodni skanerlash'
+	String get title => 'QR kodni skanerlash';
+
+	/// uz: 'Darvozadagi QR kodni ramkaga joylashtiring'
+	String get hint => 'Darvozadagi QR kodni ramkaga joylashtiring';
+
+	/// uz: 'Bekor qilish'
+	String get cancel => 'Bekor qilish';
+
+	/// uz: 'Darvoza ochildi'
+	String get gateOpened => 'Darvoza ochildi';
+
+	/// uz: 'Darvoza muvaffaqiyatli ochildi'
+	String get gateOpenedDesc => 'Darvoza muvaffaqiyatli ochildi';
+
+	/// uz: 'Noto'g'ri QR kod. Qayta urinib ko'ring.'
+	String get invalidQr => 'Noto\'g\'ri QR kod. Qayta urinib ko\'ring.';
+
+	/// uz: 'Xatolik yuz berdi'
+	String get error => 'Xatolik yuz berdi';
+
+	/// uz: 'Qayta urinish'
+	String get tryAgain => 'Qayta urinish';
+
+	/// uz: 'Kameraga ruxsat kerak'
+	String get cameraPermission => 'Kameraga ruxsat kerak';
+
+	/// uz: 'Darvozani ochish uchun QR kodni skanerlash uchun kameraga ruxsat bering'
+	String get cameraPermissionDesc => 'Darvozani ochish uchun QR kodni skanerlash uchun kameraga ruxsat bering';
+
+	/// uz: 'Sozlamalar'
+	String get openSettings => 'Sozlamalar';
+
+	/// uz: 'QR skanerlash faqat mobil qurilmalarda ishlaydi'
+	String get unsupported => 'QR skanerlash faqat mobil qurilmalarda ishlaydi';
 }
 
 // Path: booking
@@ -698,11 +777,23 @@ class TranslationsOrdersUz {
 	/// uz: 'Tarix'
 	String get history => 'Tarix';
 
+	/// uz: 'Faol bronlar'
+	String get activeTab => 'Faol bronlar';
+
 	/// uz: 'Mashina raqami bo'yicha qidirish'
 	String get searchHint => 'Mashina raqami bo\'yicha qidirish';
 
-	/// uz: '{active} faol · {history} tarix'
-	String get summary => '{active} faol · {history} tarix';
+	/// uz: '{active} faol • {history} arxivlangan'
+	String get summary => '{active} faol • {history} arxivlangan';
+
+	/// uz: 'FILIALGA YETIB KELDINGIZMI?'
+	String get gateTitle => 'FILIALGA YETIB KELDINGIZMI?';
+
+	/// uz: 'Boks darvozasini ochish'
+	String get gateSubtitle => 'Boks darvozasini ochish';
+
+	/// uz: 'Summa:'
+	String get summa => 'Summa:';
 
 	/// uz: 'Faol buyurtmalar yo'q'
 	String get emptyActive => 'Faol buyurtmalar yo\'q';
@@ -946,6 +1037,51 @@ class TranslationsProfileUz {
 
 	/// uz: 'English'
 	String get languageEn => 'English';
+
+	/// uz: 'Oddiy mijoz'
+	String get customerLevel => 'Oddiy mijoz';
+
+	/// uz: 'VIP PASS OBUNASI'
+	String get vipPassTitle => 'VIP PASS OBUNASI';
+
+	/// uz: '70% gacha tejamkorlik'
+	String get vipPassSave => '70% gacha tejamkorlik';
+
+	/// uz: 'ENG ZO'R'
+	String get bestBadge => 'ENG ZO\'R';
+
+	/// uz: '{months} Oy'
+	String get monthShort => '{months} Oy';
+
+	/// uz: 'oy'
+	String get perMonth => 'oy';
+
+	/// uz: '{months} oylik to'liq narx:'
+	String get totalPriceLabel => '{months} oylik to\'liq narx:';
+
+	/// uz: 'Oylik to'lov:'
+	String get monthlyPriceLabel => 'Oylik to\'lov:';
+
+	/// uz: 'TEJASH:'
+	String get savingLabel => 'TEJASH:';
+
+	/// uz: 'Cheksiz yuvish'
+	String get featureUnlimited => 'Cheksiz yuvish';
+
+	/// uz: 'Barcha filiallarda'
+	String get featureAllBranches => 'Barcha filiallarda';
+
+	/// uz: 'Navbatsiz kirish'
+	String get featureNoQueue => 'Navbatsiz kirish';
+
+	/// uz: 'Bepul vaks'
+	String get featureFreeWax => 'Bepul vaks';
+
+	/// uz: 'VIP Passni faollashtirish ({months} Oy)'
+	String get activateVip => 'VIP Passni faollashtirish ({months} Oy)';
+
+	/// uz: 'Tez orada'
+	String get comingSoon => 'Tez orada';
 }
 
 // Path: settings
