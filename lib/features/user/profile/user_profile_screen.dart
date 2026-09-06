@@ -22,9 +22,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _selectedPlanIndex = 1; // "3 Oy" default tanlangan
 
   static const List<_VipPlan> _plans = [
-    _VipPlan(months: 6, perMonthK: 499, isBest: true),
-    _VipPlan(months: 3, perMonthK: 699),
-    _VipPlan(months: 1, perMonthK: 1190),
+    _VipPlan(months: 6, perMonthK: 599, isBest: true),
+    _VipPlan(months: 3, perMonthK: 839),
+    _VipPlan(months: 1, perMonthK: _VipPlan.baseMonthlyPriceK),
   ];
 
   ApparenceKitColors get _c =>
@@ -83,6 +83,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
             _buildSectionLabel(context.t.profile.myCarsLabel, colors),
             _buildMyCars(context, colors),
+            const SizedBox(height: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: GestureDetector(
+                onTap: () => context.push(UserRoutePath.settings),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 14),
+                  decoration: BoxDecoration(
+                    color: colors.onPrimaryContainer,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: colors.grey1, width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.settings_outlined,
+                          color: colors.grey2, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          context.t.settings.title,
+                          style: TextStyle(
+                            color: colors.onBackground,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      Icon(Icons.chevron_right,
+                          color: colors.grey2, size: 18),
+                    ],
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 32),
           ],
         ),
@@ -247,32 +282,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.workspace_premium,
-                        color: colors.warning, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      t.profile.vipPassTitle,
-                      style: TextStyle(
-                        color: colors.onBackground,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.6,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      t.profile.vipPassSave,
-                      style: TextStyle(
-                        color: colors.success,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
@@ -428,13 +437,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? '+${_formatPrice(plan.savings)} UZS'
         : '—';
 
-    final features = [
-      t.profile.featureUnlimited,
-      t.profile.featureAllBranches,
-      t.profile.featureNoQueue,
-      t.profile.featureFreeWax,
-    ];
-
     return Column(
       children: [
         Row(
@@ -494,53 +496,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
           ],
-        ),
-        const SizedBox(height: 14),
-        Divider(color: colors.divider, height: 1),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(child: _buildFeatureItem(colors, features[0])),
-            const SizedBox(width: 12),
-            Expanded(child: _buildFeatureItem(colors, features[1])),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: [
-            Expanded(child: _buildFeatureItem(colors, features[2])),
-            const SizedBox(width: 12),
-            Expanded(child: _buildFeatureItem(colors, features[3])),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFeatureItem(ApparenceKitColors colors, String label) {
-    return Row(
-      children: [
-        Container(
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            color: colors.successSurface,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(Icons.check, color: colors.success, size: 14),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: colors.onBackground,
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
         ),
       ],
     );
@@ -707,8 +662,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 class _VipPlan {
+  static const int baseMonthlyPriceK = 1190; // 1 oylik narx (ming so'mda)
+
   final int months;
-  final int perMonthK; // ming so'mda (499 → 499k)
+  final int perMonthK; // ming so'mda (599 → 599k)
   final bool isBest;
 
   const _VipPlan({
@@ -718,5 +675,5 @@ class _VipPlan {
   });
 
   int get totalPrice => perMonthK * 1000 * months;
-  int get savings => (1190 - perMonthK) * 1000 * months;
+  int get savings => (baseMonthlyPriceK - perMonthK) * 1000 * months;
 }

@@ -149,8 +149,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             _buildQuickActions(context, colors),
             const SizedBox(height: 24),
             _buildMyCars(context, colors),
-            const SizedBox(height: 24),
-            _buildTrustBadges(context, colors),
             const SizedBox(height: 32),
           ],
         ),
@@ -297,23 +295,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
-                    color: colors.grey1.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '#${order.id.substring(0, order.id.length < 8 ? order.id.length : 8).toUpperCase()}',
-                    style: TextStyle(
-                      color: colors.grey3,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
                     color: _statusColor(order.status, colors)
                         .withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
@@ -361,8 +342,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => context.go(
-                      '${UserRoutePath.booking}?branchId=${order.branchId}',
+                    onTap: () => context.push(
+                      '${UserRoutePath.map}?branchId=${order.branchId}',
                     ),
                     behavior: HitTestBehavior.opaque,
                     child: Row(
@@ -409,17 +390,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   onTap: _scanningGate ? null : () => _openScanner(order),
                   child: Container(
                     width: 96,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: colors.primary,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(Icons.qr_code_scanner,
                             color: colors.onPrimary, size: 24),
-                        const SizedBox(height: 4),
+                        const SizedBox(width: 6),
                         Text(
                           t.home.qrScan,
                           style: TextStyle(
@@ -498,23 +479,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     t.home.gateInstruction,
                     style: TextStyle(color: colors.grey2, fontSize: 11),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.verified_outlined,
-                        color: colors.success, size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      t.home.guaranteed,
-                      style: TextStyle(
-                        color: colors.success,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
                 ),
               ],
             ),
@@ -1147,71 +1111,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ),
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Ishonch badge'lari qatori ────────────────────────────────────
-  Widget _buildTrustBadges(BuildContext context, ApparenceKitColors colors) {
-    final t = context.t;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        decoration: BoxDecoration(
-          color: _cardBg(colors),
-          borderRadius: BorderRadius.circular(18),
-          border: _cardBorder(colors),
-          boxShadow: _cardShadow(colors),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.verified_user_outlined,
-                      color: colors.info, size: 18),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      t.home.qualityGuarantee,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: colors.onBackground,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(width: 1, height: 20, color: colors.divider),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.bolt_outlined, color: colors.info, size: 18),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      t.home.noQueueEntry,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: colors.onBackground,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),

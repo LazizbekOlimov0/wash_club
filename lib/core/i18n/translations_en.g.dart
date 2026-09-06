@@ -194,12 +194,12 @@ class TranslationsHomeEn extends TranslationsHomeUz {
 	@override String get activeBooking => 'ACTIVE BOOKING';
 	@override String get qrScan => 'QR Scan';
 	@override String get guaranteed => 'Guaranteed';
-	@override String get gateInstruction => 'Scan QR to open the gate when you reach the box';
+	@override String get gateInstruction => 'Scan the QR code when you reach the box';
 	@override String get vipPassTitle => 'VIP Pass Subscription';
 	@override String get vipPassDesc => 'Unlimited washes and no-queue entry';
 	@override String get view => 'View';
 	@override String get select => 'Select';
-	@override String freeBoxes({required Object count}) => '${count} boxes free';
+	@override String freeBoxes({required Object count}) => '${count} boxes';
 	@override String get qualityGuarantee => 'Quality guarantee';
 	@override String get noQueueEntry => 'No-queue entry';
 }

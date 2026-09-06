@@ -70,7 +70,10 @@ final GoRouter generateRouter = GoRouter(
     ),
     GoRoute(
       path: UserRoutePath.map,
-      builder: (context, state) => const MapScreen(),
+      builder: (context, state) {
+        final branchId = state.uri.queryParameters['branchId'];
+        return MapScreen(focusBranchId: branchId);
+      },
     ),
     StatefulShellRoute.indexedStack(
       parentNavigatorKey: navigatorKey,

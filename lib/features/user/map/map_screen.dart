@@ -15,7 +15,9 @@ import '../../../../shared/services/supabase_service.dart';
 import '../../../../config/router/router.dart';
 
 class MapScreen extends StatefulWidget {
-  const MapScreen({super.key});
+  final String? focusBranchId;
+
+  const MapScreen({super.key, this.focusBranchId});
 
   @override
   State<MapScreen> createState() => _MapScreenState();
@@ -73,9 +75,22 @@ class _MapScreenState extends State<MapScreen>
   Future<void> _getBranches() async {
     try {
       _branches = await _repo.getBranches();
+      if (mounted && widget.focusBranchId != null) {
+        _focusOnBranch(widget.focusBranchId!);
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  void _focusOnBranch(String branchId) {
+    final b = _branches.where((x) => x.id == branchId).firstOrNull;
+    if (b == null || b.latitude == null || b.longitude == null) return;
+    final latLng = LatLng(b.latitude!, b.longitude!);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _mapController.move(latLng, 15.0);
+    });
   }
 
   Future<void> _goToMyLocation() async {
@@ -232,15 +247,16 @@ class _MapScreenState extends State<MapScreen>
               MarkerLayer(
                 markers: clusters.map((cluster) {
                   final isCluster = cluster.branches.length > 1;
+                  final b = cluster.branches.first;
                   return Marker(
                     point: cluster.center,
-                    width: isCluster ? 48 : 36,
-                    height: isCluster ? 48 : 42,
+                    width: isCluster ? 48 : 140,
+                    height: isCluster ? 48 : 70,
                     child: GestureDetector(
                       onTap: () => _onClusterTap(cluster, colors),
                       child: isCluster
                           ? _buildClusterWidget(cluster.branches.length, colors)
-                          : _buildTeardropMarker(colors),
+                          : _buildBranchMarker(b, colors),
                     ),
                   );
                 }).toList(),
@@ -370,11 +386,37 @@ class _MapScreenState extends State<MapScreen>
   }
 
   // ── Markers ─────────────────────────────────────────────────────
+  Widget _buildBranchMarker(BranchModel b, ApparenceKitColors colors) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildTeardropMarker(colors),
+        const SizedBox(height: 3),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.72),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            b.name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTeardropMarker(ApparenceKitColors colors) {
     return CustomPaint(
       painter: _TeardropPainter(colors.info),
       size: const Size(36, 42),
-      child: const SizedBox.expand(),
     );
   }
 

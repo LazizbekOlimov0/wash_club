@@ -194,12 +194,12 @@ class TranslationsHomeRu extends TranslationsHomeUz {
 	@override String get activeBooking => 'АКТИВНАЯ БРОНЬ';
 	@override String get qrScan => 'QR Scan';
 	@override String get guaranteed => 'Гарантировано';
-	@override String get gateInstruction => 'Когда подъедете к боксу, откройте ворота через QR Scan';
+	@override String get gateInstruction => 'Подъехав к боксу, отсканируйте QR-код';
 	@override String get vipPassTitle => 'Подписка VIP Pass';
 	@override String get vipPassDesc => 'Безлимитные мойки и проход без очереди';
 	@override String get view => 'Смотреть';
 	@override String get select => 'Выбрать';
-	@override String freeBoxes({required Object count}) => 'Свободно ${count} бокса';
+	@override String freeBoxes({required Object count}) => '${count} бокса';
 	@override String get qualityGuarantee => 'Гарантия качества';
 	@override String get noQueueEntry => 'Проход без очереди';
 }

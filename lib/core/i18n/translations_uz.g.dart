@@ -474,8 +474,8 @@ class TranslationsHomeUz {
 	/// uz: 'Kafolatlangan'
 	String get guaranteed => 'Kafolatlangan';
 
-	/// uz: 'Boksga yetib borganda QR Scan orqali darvozani oching'
-	String get gateInstruction => 'Boksga yetib borganda QR Scan orqali darvozani oching';
+	/// uz: 'Boksga borganda QR skaner qiling'
+	String get gateInstruction => 'Boksga borganda QR skaner qiling';
 
 	/// uz: 'VIP Pass Obunasi'
 	String get vipPassTitle => 'VIP Pass Obunasi';
@@ -489,8 +489,8 @@ class TranslationsHomeUz {
 	/// uz: 'Tanlash'
 	String get select => 'Tanlash';
 
-	/// uz: '${count} ta boks bo'sh'
-	String freeBoxes({required Object count}) => '${count} ta boks bo\'sh';
+	/// uz: '${count} ta boks'
+	String freeBoxes({required Object count}) => '${count} ta boks';
 
 	/// uz: 'Sifat kafolati'
 	String get qualityGuarantee => 'Sifat kafolati';
