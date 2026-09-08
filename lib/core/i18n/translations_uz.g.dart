@@ -299,6 +299,36 @@ class TranslationsMapUz {
 
 	/// uz: 'Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing.'
 	String get locationServiceOffDesc => 'Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing.';
+
+	/// uz: 'Barcha'
+	String get filterAll => 'Barcha';
+
+	/// uz: 'Premium'
+	String get filterPremium => 'Premium';
+
+	/// uz: '24/7'
+	String get filter247 => '24/7';
+
+	/// uz: 'Avtomoyka'
+	String get filterCarWash => 'Avtomoyka';
+
+	/// uz: 'Marshrut'
+	String get route => 'Marshrut';
+
+	/// uz: 'Ochiq hozir'
+	String get openNow => 'Ochiq hozir';
+
+	/// uz: 'Yopiq'
+	String get closedNow => 'Yopiq';
+
+	/// uz: '{count} sharh'
+	String get reviews => '{count} sharh';
+
+	/// uz: 'daq'
+	String get minuteShort => 'daq';
+
+	/// uz: 'Aniq marshrut yuklab bo'lmadi'
+	String get routeFailed => 'Aniq marshrut yuklab bo\'lmadi';
 }
 
 // Path: home

@@ -52,7 +52,17 @@
     "bookButton": "Забронировать",
     "locationError": "Не удалось определить местоположение",
     "locationServiceOff": "Служба геолокации отключена",
-    "locationServiceOffDesc": "Пожалуйста, включите службу геолокации в настройках устройства."
+    "locationServiceOffDesc": "Пожалуйста, включите службу геолокации в настройках устройства.",
+    "filterAll": "Все",
+    "filterPremium": "Премиум",
+    "filter247": "24/7",
+    "filterCarWash": "Автомойка",
+    "route": "Маршрут",
+    "openNow": "Открыто сейчас",
+    "closedNow": "Закрыто",
+    "reviews": "{count} отзывов",
+    "minuteShort": "мин",
+    "routeFailed": "Точный маршрут не загрузился"
   },
   "home": {
     "welcome": "Добро пожаловать",

@@ -3,7 +3,7 @@ description: "A new Flutter project."
 
 publish_to: 'none'
 
-version: 1.0.2+13
+version: 1.0.3+15
 
 environment:
   sdk: ^3.11.0
@@ -37,6 +37,7 @@ dependencies:
   webview_flutter: ^4.14.1
   http: ^1.6.0
   mobile_scanner: ^7.4.0
+  flutter_svg: ^2.0.10
 
 dev_dependencies:
   flutter_test:

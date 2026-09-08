@@ -339,15 +339,20 @@ class _OrdersScreenState extends State<OrdersScreen>
     required ApparenceKitColors colors,
   }) {
     if (orders.isEmpty) {
-      return ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: _buildEmpty(emptyLabel,
-                showBookButton: showBookButton, colors: colors),
-          ),
-        ],
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: _buildEmpty(emptyLabel,
+                    showBookButton: showBookButton, colors: colors),
+              ),
+            ),
+          );
+        },
       );
     }
     return ListView.builder(
@@ -377,19 +382,19 @@ class _OrdersScreenState extends State<OrdersScreen>
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
               color: _isDark ? colors.onPrimaryContainer : colors.grey1,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(Icons.calendar_today_outlined,
-                color: colors.grey2, size: 28),
+                color: colors.grey2, size: 24),
           ),
-          const SizedBox(height: 16),
-          Text(label, style: TextStyle(color: colors.grey2, fontSize: 15)),
+          const SizedBox(height: 12),
+          Text(label, style: TextStyle(color: colors.grey2, fontSize: 14)),
           if (showBookButton) ...[
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => context.go(UserRoutePath.booking),
               icon: const Icon(Icons.add, size: 18),
@@ -399,7 +404,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                 foregroundColor: colors.onPrimary,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 24, vertical: 12),
+                    horizontal: 20, vertical: 10),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),

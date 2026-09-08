@@ -75,7 +75,17 @@
     "bookButton": "Bron qilish",
     "locationError": "Joylashuvni aniqlab bo'lmadi",
     "locationServiceOff": "Joylashuv xizmati o'chirilgan",
-    "locationServiceOffDesc": "Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing."
+    "locationServiceOffDesc": "Iltimos, qurilmangiz sozlamalarida joylashuv xizmatini yoqing.",
+    "filterAll": "Barcha",
+    "filterPremium": "Premium",
+    "filter247": "24/7",
+    "filterCarWash": "Avtomoyka",
+    "route": "Marshrut",
+    "openNow": "Ochiq hozir",
+    "closedNow": "Yopiq",
+    "reviews": "{count} sharh",
+    "minuteShort": "daq",
+    "routeFailed": "Aniq marshrut yuklab bo'lmadi"
   },
   "home": {
     "welcome": "Xush kelibsiz",

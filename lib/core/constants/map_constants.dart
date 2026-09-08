@@ -8,10 +8,11 @@ class MapConstants {
 
   static const String mapTilerApiKey = 'OozcOHMmFCfDBZyUTIYl';
 
-  /// MapTiler "Streets" uslubi (och / light fon).
+  /// MapTiler "Bright" uslubi (och / light fon, Google Maps'ga o'xshash).
   ///
-  /// `{r}` placeholder'i retina (@2x) displeylarda yuqori aniqlikdagi
-  /// tile'larni so'raydi — yozuvlar kichkina/qirrali ko'rinmasligi uchun.
+  /// `streets-v2` ga qaraganda kamroq mayda label/yo'l kodi ko'rsatadi —
+  /// ko'chalar/mahallalar tozaroq o'qiladi. `{r}` placeholder'i retina (@2x)
+  /// displeylarda yuqori aniqlikdagi tile'larni so'raydi.
   static const String mapTilerStreetsUrl =
-      'https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}{r}.png?key=$mapTilerApiKey';
+      'https://api.maptiler.com/maps/bright-v2/{z}/{x}/{y}{r}.png?key=$mapTilerApiKey';
 }

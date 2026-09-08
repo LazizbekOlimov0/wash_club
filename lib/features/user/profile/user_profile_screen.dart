@@ -64,7 +64,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             onPressed: () => context.push(UserRoutePath.settings),
-            icon: Icon(Icons.more_horiz,
+            icon: Icon(Icons.settings_outlined,
                 color: colors.onBackground, size: 24),
           ),
         ],

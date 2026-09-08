@@ -130,6 +130,16 @@ class TranslationsMapEn extends TranslationsMapUz {
 	@override String get locationError => 'Could not detect location';
 	@override String get locationServiceOff => 'Location service is off';
 	@override String get locationServiceOffDesc => 'Please enable location services in your device settings.';
+	@override String get filterAll => 'All';
+	@override String get filterPremium => 'Premium';
+	@override String get filter247 => '24/7';
+	@override String get filterCarWash => 'Car wash';
+	@override String get route => 'Route';
+	@override String get openNow => 'Open now';
+	@override String get closedNow => 'Closed';
+	@override String get reviews => '{count} reviews';
+	@override String get minuteShort => 'min';
+	@override String get routeFailed => 'Could not load exact route';
 }
 
 // Path: home

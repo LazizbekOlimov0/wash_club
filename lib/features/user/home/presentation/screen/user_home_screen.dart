@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../../core/theme/colors.dart';
@@ -30,11 +31,13 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   bool _scanningGate = false;
   String? _error;
   int _unreadNotifCount = 0;
+  LatLng? _userPosition;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _fetchUserLocationSilently();
 
     // Orders stream kuzatish
     _ordersRepo.ordersStream.listen((orders) {
@@ -69,6 +72,29 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       }
     } catch (e) {
       if (mounted) setState(() { _loading = false; _error = e.toString(); });
+    }
+  }
+
+  Future<void> _fetchUserLocationSilently() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+      );
+      if (mounted) {
+        setState(() => _userPosition = LatLng(pos.latitude, pos.longitude));
+      }
+    } catch (_) {
+      // Joylashuv olinmadi — masofa Toshkent markaziga nisbatan ko'rsatiladi.
     }
   }
 
@@ -145,8 +171,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             _buildMembershipCard(context, colors),
             const SizedBox(height: 24),
             _buildBranches(context, colors),
-            const SizedBox(height: 24),
-            _buildQuickActions(context, colors),
             const SizedBox(height: 24),
             _buildMyCars(context, colors),
             const SizedBox(height: 32),
@@ -632,67 +656,6 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     }
   }
 
-  // ── Quick actions ─────────────────────────────────────────────────
-  Widget _buildQuickActions(BuildContext context, ApparenceKitColors colors) {
-    final t = context.t;
-    final actions = [
-      {'icon': Icons.calendar_today_outlined, 'label': t.home.book,
-        'route': UserRoutePath.booking, 'push': false},
-      {'icon': Icons.history_outlined, 'label': t.home.history,
-        'route': UserRoutePath.orders, 'push': false},
-      {'icon': Icons.person_outline, 'label': t.profile.title,
-        'route': UserRoutePath.profile, 'push': false},
-      {'icon': Icons.map_outlined, 'label': t.home.map,
-        'route': UserRoutePath.map, 'push': true},
-    ];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: actions.map((a) {
-          return GestureDetector(
-            onTap: () {
-              final route = a['route'] as String?;
-              if (route == null) return;
-              if (a['push'] == true) {
-                context.push(route);
-              } else {
-                context.go(route);
-              }
-            },
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    color: _cardBg(colors),
-                    borderRadius: BorderRadius.circular(18),
-                    border: _cardBorder(colors),
-                    boxShadow: _cardShadow(colors),
-                  ),
-                  child: Icon(a['icon'] as IconData,
-                      color: colors.info, size: 24),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  a['label'] as String,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: colors.grey3,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
-    );
-  }
-
   // ── Branches ──────────────────────────────────────────────────────
   Widget _buildBranches(BuildContext context, ApparenceKitColors colors) {
     final t = context.t;
@@ -979,10 +942,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   String _distanceLabel(BranchModel b) {
     if (b.latitude == null || b.longitude == null) return '';
-    const center = LatLng(41.2995, 69.2401);
+    // Foydalanuvchi joylashuvi bo'lsa unga nisbatan, aks holda Toshkent markaziga.
+    final origin = _userPosition ?? const LatLng(41.2995, 69.2401);
     final km = const Distance().as(
       LengthUnit.Kilometer,
-      center,
+      origin,
       LatLng(b.latitude!, b.longitude!),
     );
     return '${km.toStringAsFixed(1)} km';

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:wash_club/core/i18n/translations.g.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/common/auth/presentation/widgets/water_background.dart';
@@ -175,7 +176,11 @@ class _TelegramWaitingScreenState extends State<TelegramWaitingScreen>
                         ),
                       ),
                       const Spacer(flex: 1),
-                      _buildPhoneIllustration(),
+                      SvgPicture.asset(
+                        'assets/image/group2.svg',
+                        width: 240,
+                        fit: BoxFit.contain,
+                      ),
                       const SizedBox(height: 28),
                       Text(
                         t.login.telegramWaitTitle,
@@ -276,76 +281,6 @@ class _TelegramWaitingScreenState extends State<TelegramWaitingScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPhoneIllustration() {
-    return Container(
-      width: 140,
-      height: 140,
-      decoration: BoxDecoration(
-        color: _c.primary.withValues(alpha: 0.08),
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Container(
-          width: 64,
-          height: 110,
-          decoration: BoxDecoration(
-            color: _c.surface,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: _c.divider,
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: _c.shadow.withValues(alpha: 0.15),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF229ED9),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.send,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 6),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: _c.onBackground.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 3),
-              Container(
-                width: 30,
-                height: 3,
-                decoration: BoxDecoration(
-                  color: _c.grey2.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

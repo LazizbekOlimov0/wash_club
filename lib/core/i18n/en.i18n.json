@@ -52,7 +52,17 @@
     "bookButton": "Book now",
     "locationError": "Could not detect location",
     "locationServiceOff": "Location service is off",
-    "locationServiceOffDesc": "Please enable location services in your device settings."
+    "locationServiceOffDesc": "Please enable location services in your device settings.",
+    "filterAll": "All",
+    "filterPremium": "Premium",
+    "filter247": "24/7",
+    "filterCarWash": "Car wash",
+    "route": "Route",
+    "openNow": "Open now",
+    "closedNow": "Closed",
+    "reviews": "{count} reviews",
+    "minuteShort": "min",
+    "routeFailed": "Could not load exact route"
   },
   "home": {
     "welcome": "Welcome",

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -31,6 +32,10 @@ class _MapScreenState extends State<MapScreen>
   bool _loading = true;
   bool _locating = false;
   LatLng? _userPosition;
+  List<LatLng>? _routePoints;
+  bool _routing = false;
+  String _selectedFilter = 'all';
+  BranchModel? _selectedBranch;
   bool _showList = false;
   bool _listPanelVisible = false;
 
@@ -62,6 +67,7 @@ class _MapScreenState extends State<MapScreen>
       reverseCurve: Curves.easeInCubic,
     ));
     _getBranches();
+    _fetchUserLocationSilently();
   }
 
   @override
@@ -91,6 +97,29 @@ class _MapScreenState extends State<MapScreen>
       if (!mounted) return;
       _mapController.move(latLng, 15.0);
     });
+  }
+
+  Future<void> _fetchUserLocationSilently() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+      );
+      if (mounted) {
+        setState(() => _userPosition = LatLng(pos.latitude, pos.longitude));
+      }
+    } catch (_) {
+      // Joylashuvni jimgina aniqlab bo'lmadi — masofa hisoblash ixtiyoriy.
+    }
   }
 
   Future<void> _goToMyLocation() async {
@@ -185,11 +214,53 @@ class _MapScreenState extends State<MapScreen>
   double get _mapZoom => _userPosition != null ? 13.5 : 11.0;
   LatLng get _mapCenter => _userPosition ?? _defaultCenter;
 
+  // ── Distance / time ────────────────────────────────────────────
+  double _distanceKm(LatLng a, LatLng b) =>
+      const Distance().as(LengthUnit.Kilometer, a, b);
+
+  int _estimateMinutes(double km) {
+    const avgSpeedKmh = 32.0; // shahar ichi o'rtacha tezlik
+    return (km / avgSpeedKmh * 60).round().clamp(1, 999);
+  }
+
+  String _distanceText(LatLng a, LatLng b) {
+    final km = _distanceKm(a, b);
+    if (km < 1) return '${(km * 1000).round()} m';
+    return '${km.toStringAsFixed(1)} km';
+  }
+
+  // ── Filters ────────────────────────────────────────────────────
+  List<BranchModel> get _filteredBranches {
+    switch (_selectedFilter) {
+      case 'premium':
+        return _branches.where((b) => b.services.any((s) =>
+            s.name.toLowerCase().contains('premium') ||
+            s.icon.contains('💎') ||
+            s.icon.contains('👑'))).toList();
+      case '24_7':
+        return _branches.where((b) => b.is24_7).toList();
+      case 'carwash':
+        return _branches.where((b) => b.services.any((s) {
+          final n = s.name.toLowerCase();
+          return n.contains('yuvish') ||
+              n.contains('avtomoyka') ||
+              n.contains('moyka') ||
+              n.contains('wash') ||
+              s.icon.contains('🚗') ||
+              s.icon.contains('🧽') ||
+              s.icon.contains('💧');
+        })).toList();
+      default:
+        return _branches;
+    }
+  }
+
   // ── Simple grid-based clustering ────────────────────────────────
   List<_Cluster> _buildClusters() {
-    if (_branches.isEmpty) return [];
+    final branches = _filteredBranches;
+    if (branches.isEmpty) return [];
 
-    final withCoords = _branches
+    final withCoords = branches
         .where((b) => b.latitude != null && b.longitude != null)
         .toList();
     if (withCoords.isEmpty) return [];
@@ -231,10 +302,16 @@ class _MapScreenState extends State<MapScreen>
               initialZoom: _mapZoom,
               minZoom: 5,
               maxZoom: 22,
-              onTap: (_, real) => _showList ? _setListVisible(false) : null,
+              onTap: (_, real) {
+                if (_showList) {
+                  _setListVisible(false);
+                } else if (_selectedBranch != null) {
+                  setState(() => _selectedBranch = null);
+                }
+              },
             ),
             children: [
-              // MapTiler Streets — och (light) fon
+              // MapTiler Bright — och (light) fon, Google Maps'ga o'xshash
               TileLayer(
                 urlTemplate: MapConstants.mapTilerStreetsUrl,
                 userAgentPackageName: 'com.washclub.app',
@@ -243,20 +320,33 @@ class _MapScreenState extends State<MapScreen>
                 maxZoom: 22,
                 tileProvider: _RetryingNetworkTileProvider(),
               ),
-              // Branch markers (teardrop style)
+              // Marshrut chizig'i (OSRM polyline)
+              if (_routePoints != null && _routePoints!.length >= 2)
+                PolylineLayer(
+                  polylines: [
+                    Polyline(
+                      points: _routePoints!,
+                      strokeWidth: 5,
+                      color: colors.info,
+                    ),
+                  ],
+                ),
+              // Branch markers (teardrop style, tanlanganda label chiqadi)
               MarkerLayer(
                 markers: clusters.map((cluster) {
                   final isCluster = cluster.branches.length > 1;
                   final b = cluster.branches.first;
+                  final selected = !isCluster && _selectedBranch?.id == b.id;
                   return Marker(
                     point: cluster.center,
-                    width: isCluster ? 48 : 140,
-                    height: isCluster ? 48 : 70,
+                    width: isCluster ? 48 : (selected ? 160 : 36),
+                    height: isCluster ? 48 : (selected ? 90 : 42),
+                    alignment: isCluster ? Alignment.center : Alignment.bottomCenter,
                     child: GestureDetector(
                       onTap: () => _onClusterTap(cluster, colors),
                       child: isCluster
                           ? _buildClusterWidget(cluster.branches.length, colors)
-                          : _buildBranchMarker(b, colors),
+                          : _buildBranchMarker(b, colors, selected: selected),
                     ),
                   );
                 }).toList(),
@@ -279,23 +369,40 @@ class _MapScreenState extends State<MapScreen>
             ],
           ),
 
-          // Header: back + title
+          // Header: back + title + filter chips
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: Row(
+              child: Column(
                 children: [
-                  GestureDetector(
-                    onTap: () => context.pop(),
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: _btnDecoration(colors),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => context.pop(),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: _btnDecoration(colors),
+                          child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(t.map.title, style: TextStyle(color: colors.onBackground, fontSize: 18, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 40,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        _buildFilterChip('all', t.map.filterAll, colors),
+                        _buildFilterChip('premium', t.map.filterPremium, colors),
+                        _buildFilterChip('24_7', t.map.filter247, colors),
+                        _buildFilterChip('carwash', t.map.filterCarWash, colors),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Text(t.map.title, style: TextStyle(color: colors.onBackground, fontSize: 18, fontWeight: FontWeight.w700)),
                 ],
               ),
             ),
@@ -349,8 +456,32 @@ class _MapScreenState extends State<MapScreen>
           // Branch list panel
           if (_listPanelVisible) _buildBranchListPanel(colors, _listSlideAnim),
 
+          // Selected branch panel (animated)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 260),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                return SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 0.2),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: FadeTransition(opacity: animation, child: child),
+                );
+              },
+              child: _selectedBranch != null
+                  ? _buildSelectedBranchPanel(_selectedBranch!, colors)
+                  : const SizedBox.shrink(),
+            ),
+          ),
+
           // Loading
-          if (_loading || _locating)
+          if (_loading || _locating || _routing)
             Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -373,50 +504,143 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
-  // ── Cluster tap → zoom in ──────────────────────────────────────
+  // ── Cluster tap → tanlash yoki zoom ─────────────────────────────
   void _onClusterTap(_Cluster cluster, ApparenceKitColors colors) {
     if (cluster.branches.length == 1) {
-      final b = cluster.branches.first;
-      _showBranchInfo(b, colors);
+      _selectBranch(cluster.branches.first);
     } else {
       // Zoom into cluster
+      setState(() => _selectedBranch = null);
       final bounds = LatLngBounds.fromPoints(cluster.branches.map((b) => LatLng(b.latitude!, b.longitude!)).toList());
       _mapController.fitCamera(CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(60)));
     }
   }
 
+  void _selectBranch(BranchModel b) {
+    setState(() => _selectedBranch = b);
+  }
+
+  // ── Route (OSRM) ───────────────────────────────────────────────
+  // OSRM bepul demo serveri production yuklama uchun mo'ljallanmagan
+  // (rate limit bor). Hozircha MVP/test uchun ishlatiladi; kelajakda
+  // o'z OSRM serveri yoki boshqa provayderga o'tish kerak.
+  Future<void> _fetchRoute(BranchModel branch) async {
+    final user = _userPosition;
+    final bLat = branch.latitude;
+    final bLng = branch.longitude;
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.t.map.locationError)),
+      );
+      return;
+    }
+    if (bLat == null || bLng == null) return;
+
+    setState(() => _routing = true);
+
+    try {
+      final url = 'https://router.project-osrm.org/route/v1/driving/'
+          '${user.longitude},${user.latitude};$bLng,$bLat'
+          '?overview=full&geometries=geojson';
+      final resp = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 10));
+      if (resp.statusCode == 200) {
+        final data = jsonDecode(resp.body) as Map<String, dynamic>;
+        final routes = data['routes'] as List<dynamic>?;
+        final route = routes?.firstOrNull;
+        final geometry = route is Map<String, dynamic> ? route['geometry'] : null;
+        final coords = geometry is Map<String, dynamic>
+            ? geometry['coordinates'] as List<dynamic>?
+            : null;
+        if (coords != null && coords.length >= 2) {
+          final points = coords
+              .map((c) => LatLng(c[1] as double, c[0] as double))
+              .toList();
+          if (mounted) {
+            setState(() => _routePoints = points);
+            _fitRouteBounds(points);
+          }
+          return;
+        }
+      }
+      _fallbackStraightLine(user, LatLng(bLat, bLng));
+    } catch (_) {
+      _fallbackStraightLine(user, LatLng(bLat, bLng));
+    } finally {
+      if (mounted) setState(() => _routing = false);
+    }
+  }
+
+  void _fallbackStraightLine(LatLng user, LatLng branch) {
+    setState(() => _routePoints = [user, branch]);
+    _fitRouteBounds([user, branch]);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(context.t.map.routeFailed)),
+      );
+    }
+  }
+
+  void _fitRouteBounds(List<LatLng> points) {
+    final bounds = LatLngBounds.fromPoints(points);
+    _mapController.fitCamera(
+      CameraFit.bounds(bounds: bounds, padding: const EdgeInsets.all(60)),
+    );
+  }
+
   // ── Markers ─────────────────────────────────────────────────────
-  Widget _buildBranchMarker(BranchModel b, ApparenceKitColors colors) {
+  Widget _buildBranchMarker(BranchModel b, ApparenceKitColors colors, {bool selected = false}) {
+    if (selected) return _buildSelectedBranchMarker(b, colors);
+    return _buildTeardropMarker(colors);
+  }
+
+  Widget _buildSelectedBranchMarker(BranchModel b, ApparenceKitColors colors) {
+    final user = _userPosition;
+    String? distanceText;
+    if (user != null && b.latitude != null && b.longitude != null) {
+      distanceText = _distanceText(user, LatLng(b.latitude!, b.longitude!));
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildTeardropMarker(colors),
-        const SizedBox(height: 3),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.72),
-            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.25), blurRadius: 6)],
           ),
-          child: Text(
-            b.name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 10,
-              fontWeight: FontWeight.w600,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                b.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+              if (b.rating != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  '★ ${b.rating!.toStringAsFixed(1)}${distanceText != null ? ' · $distanceText' : ''}',
+                  style: const TextStyle(color: Colors.black54, fontSize: 10, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ],
           ),
         ),
+        const SizedBox(height: 4),
+        _buildTeardropMarker(colors, color: colors.info, scale: 1.25),
       ],
     );
   }
 
-  Widget _buildTeardropMarker(ApparenceKitColors colors) {
+  Widget _buildTeardropMarker(ApparenceKitColors colors, {Color? color, double scale = 1.0}) {
     return CustomPaint(
-      painter: _TeardropPainter(colors.info),
-      size: const Size(36, 42),
+      painter: _TeardropPainter(color ?? colors.info),
+      size: Size(36 * scale, 42 * scale),
     );
   }
 
@@ -488,10 +712,49 @@ class _MapScreenState extends State<MapScreen>
     );
   }
 
+  Widget _buildFilterChip(String key, String label, ApparenceKitColors colors) {
+    final selected = _selectedFilter == key;
+    final icon = switch (key) {
+      'premium' => Icons.workspace_premium,
+      '24_7' => Icons.schedule,
+      'carwash' => Icons.directions_car_outlined,
+      _ => Icons.pin_drop_outlined,
+    };
+    return GestureDetector(
+      onTap: () => setState(() => _selectedFilter = key),
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+        decoration: BoxDecoration(
+          color: selected ? colors.info : colors.mapBadge,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? colors.info : colors.grey2.withValues(alpha: 0.3),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: Colors.white),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // ── Branch list panel ───────────────────────────────────────────
   Widget _buildBranchListPanel(
       ApparenceKitColors colors, Animation<Offset> slide) {
-    final withCoords = _branches.where((b) => b.latitude != null && b.longitude != null).toList();
+    final withCoords = _filteredBranches.where((b) => b.latitude != null && b.longitude != null).toList();
     return Positioned(
       left: 0,
       right: 0,
@@ -588,75 +851,221 @@ class _MapScreenState extends State<MapScreen>
   );
 }
 
-  // ── Branch info bottom sheet ────────────────────────────────────
-  void _showBranchInfo(BranchModel branch, ApparenceKitColors colors) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: colors.mapBackground,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(width: 36, height: 4, decoration: BoxDecoration(color: colors.grey2, borderRadius: BorderRadius.circular(2))),
+  // ── Tanlangan filial paneli (non-modal) ─────────────────────────
+  Widget _buildSelectedBranchPanel(BranchModel branch, ApparenceKitColors colors) {
+    final t = context.t;
+    final user = _userPosition;
+    final hasPos = branch.latitude != null && branch.longitude != null;
+
+    String? distanceTimeText;
+    if (user != null && hasPos) {
+      final branchLatLng = LatLng(branch.latitude!, branch.longitude!);
+      final km = _distanceKm(user, branchLatLng);
+      final min = _estimateMinutes(km);
+      distanceTimeText =
+          '${_distanceText(user, branchLatLng)} • $min ${t.map.minuteShort}';
+    }
+
+    return SafeArea(
+      child: Container(
+          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colors.mapBackground,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 20)],
+          ),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.65,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() => _selectedBranch = null),
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(color: colors.mapSurface, shape: BoxShape.circle),
+                      child: Icon(Icons.close, color: colors.grey2, size: 18),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(branch.name, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700)),
-              const SizedBox(height: 6),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Filial surati
+                  Container(
+                    width: 56,
+                    height: 56,
+                    clipBehavior: Clip.antiAlias,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      color: colors.info.withValues(alpha: 0.15),
+                    ),
+                    child: branch.imageUrl != null && branch.imageUrl!.isNotEmpty
+                        ? Image.network(branch.imageUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => _branchImagePlaceholder(colors))
+                        : _branchImagePlaceholder(colors),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(branch.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.verified, color: colors.info, size: 16),
+                          ],
+                        ),
+                        if (branch.rating != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              const Icon(Icons.star, color: Colors.amber, size: 15),
+                              const SizedBox(width: 3),
+                              Text(
+                                branch.rating!.toStringAsFixed(1),
+                                style: TextStyle(color: colors.onBackground, fontSize: 13, fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              if (distanceTimeText != null) ...[
+                Row(
+                  children: [
+                    Icon(Icons.location_on_outlined, color: colors.info, size: 16),
+                    const SizedBox(width: 6),
+                    Text(distanceTimeText, style: TextStyle(color: colors.onBackground, fontSize: 13, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+                const SizedBox(height: 6),
+              ],
+              Row(
+                children: [
+                  Icon(Icons.place_outlined, color: colors.grey2, size: 16),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text(branch.address, style: TextStyle(color: colors.grey2, fontSize: 13))),
+                ],
+              ),
+              const SizedBox(height: 12),
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: branch.isOpenNow ? colors.success.withValues(alpha: 0.2) : colors.error.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(
-                      branch.isOpenNow ? 'Ochiq' : 'Yopiq',
-                      style: TextStyle(
-                        color: branch.isOpenNow ? colors.success : colors.error,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(width: 6, height: 6, decoration: BoxDecoration(color: branch.isOpenNow ? colors.success : colors.error, shape: BoxShape.circle)),
+                        const SizedBox(width: 5),
+                        Text(
+                          branch.isOpenNow ? t.map.openNow : t.map.closedNow,
+                          style: TextStyle(color: branch.isOpenNow ? colors.success : colors.error, fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 10),
-                  Text(
-                    branch.hoursLabel,
-                    style: TextStyle(color: colors.grey2, fontSize: 13),
+                  Text(branch.hoursLabel, style: TextStyle(color: colors.grey2, fontSize: 13)),
+                ],
+              ),
+              if (branch.services.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 32,
+                  child: ListView(
+                    scrollDirection: Axis.horizontal,
+                    children: branch.services.take(6).map((s) {
+                      return Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: colors.mapSurface,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(s.icon, style: const TextStyle(fontSize: 13)),
+                            const SizedBox(width: 5),
+                            Text(s.name, style: TextStyle(color: colors.grey2, fontSize: 12)),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() => _selectedBranch = null);
+                        _fetchRoute(branch);
+                      },
+                      icon: const Icon(Icons.directions_outlined, size: 18),
+                      label: Text(t.map.route),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: BorderSide(color: colors.grey2.withValues(alpha: 0.4)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() => _selectedBranch = null);
+                        context.go('${UserRoutePath.booking}?branchId=${branch.id}');
+                      },
+                      icon: const Icon(Icons.calendar_today_outlined, size: 18),
+                      label: Text(t.map.bookButton),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colors.info,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        elevation: 0,
+                      ),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text(branch.address, style: TextStyle(color: colors.grey2, fontSize: 13)),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    context.go('${UserRoutePath.booking}?branchId=${branch.id}');
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colors.info,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    elevation: 0,
-                  ),
-                  child: Text(context.t.home.bookButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-                ),
+                ],
               ),
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
-        );
-      },
+        ),
     );
+  }
+
+  Widget _branchImagePlaceholder(ApparenceKitColors colors) {
+    return Icon(Icons.local_car_wash_rounded, color: colors.info, size: 28);
   }
 }
 

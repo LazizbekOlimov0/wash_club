@@ -130,6 +130,16 @@ class TranslationsMapRu extends TranslationsMapUz {
 	@override String get locationError => 'Не удалось определить местоположение';
 	@override String get locationServiceOff => 'Служба геолокации отключена';
 	@override String get locationServiceOffDesc => 'Пожалуйста, включите службу геолокации в настройках устройства.';
+	@override String get filterAll => 'Все';
+	@override String get filterPremium => 'Премиум';
+	@override String get filter247 => '24/7';
+	@override String get filterCarWash => 'Автомойка';
+	@override String get route => 'Маршрут';
+	@override String get openNow => 'Открыто сейчас';
+	@override String get closedNow => 'Закрыто';
+	@override String get reviews => '{count} отзывов';
+	@override String get minuteShort => 'мин';
+	@override String get routeFailed => 'Точный маршрут не загрузился';
 }
 
 // Path: home

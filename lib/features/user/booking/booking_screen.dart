@@ -1415,7 +1415,7 @@ class _ServiceCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isSelected
               ? colors.primary.withValues(alpha: isLight ? 0.08 : 0.15)
@@ -1434,8 +1434,8 @@ class _ServiceCard extends StatelessWidget {
               children: [
                 // Icon container
                 Container(
-                  width: 44,
-                  height: 44,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
                     color: _iconBg(context),
                     borderRadius: BorderRadius.circular(14),
@@ -1443,11 +1443,11 @@ class _ServiceCard extends StatelessWidget {
                   child: Center(
                     child: Text(
                       service.icon,
-                      style: const TextStyle(fontSize: 26),
+                      style: const TextStyle(fontSize: 24),
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 // Service name
                 Text(
                   service.name,
@@ -1497,12 +1497,12 @@ class _ServiceCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: 2),
                   Text(
                     context.t.booking.savedAmount.replaceAll('{amount}', _formatPrice(discountAmount)),
                     style: TextStyle(
                       color: colors.accent,
-                      fontSize: 11,
+                      fontSize: 10,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
