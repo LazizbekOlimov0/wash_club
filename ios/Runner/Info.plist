@@ -16,6 +16,8 @@
 	<string>6.0</string>
 	<key>CFBundleName</key>
 	<string>wash_club</string>
+	<key>GoogleMapsApiKey</key>
+	<string>$(GOOGLE_MAPS_API_KEY)</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -43,6 +45,8 @@
 	<string>Filiallar ro&apos;yxatini joylashuvingizga qarab saralash uchun</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Eng yaqin filialni topish va xaritada joylashuvingizni ko&apos;rsatish uchun</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Filiallar ro&apos;yxatini joylashuvingizga qarab saralash va xaritada ko&apos;rsatish uchun</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Profil rasmingizni tanlash uchun rasm kutubxonasiga kirish kerak</string>
 	<key>UIApplicationSceneManifest</key>

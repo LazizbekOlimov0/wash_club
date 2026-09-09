@@ -608,6 +608,16 @@ class SupabaseService {
         .inFilter('status', ['pending_payment', 'queued']);
   }
 
+  /// Mijoz o'zi eski (vaqti o'tgan) buyurtmani butunlay o'chiradi.
+  /// Faqat klient ilovasi orqali yaratilgan orderlar uchun (RLS).
+  Future<void> deleteMyOrder(String orderId) async {
+    await _client
+        .from('orders')
+        .delete()
+        .eq('id', orderId)
+        .eq('source', AppConstants.orderSourceClientApp);
+  }
+
   // ─────────────────────────────────────────────────────────
   // GATE OPEN (QR scan — darvoza ochish)
   // ─────────────────────────────────────────────────────────
@@ -750,6 +760,7 @@ class BranchModel {
   final bool isTemporarilyClosed;
   final double? rating;
   final int? availableBoxes;
+  final String? phone;
 
   const BranchModel({
     required this.id,
@@ -766,6 +777,7 @@ class BranchModel {
     this.imageUrl,
     this.rating,
     this.availableBoxes,
+    this.phone,
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> j) {
@@ -789,6 +801,7 @@ class BranchModel {
       imageUrl:     j['image_url'] as String?,
       rating:       (j['rating'] as num?)?.toDouble(),
       availableBoxes: j['available_boxes'] as int?,
+      phone:        j['phone'] as String?,
     );
   }
   /// Hozir ochiqmi?
@@ -819,6 +832,12 @@ class BranchModel {
     if (is24_7) return '24/7';
     return '${openTime.substring(0, 5)} – ${closeTime.substring(0, 5)}';
   }
+
+  /// Premium filialmi (premium xizmat yoki 💎/👑 ikonka mavjudligi).
+  bool get isPremium => services.any((s) =>
+      s.name.toLowerCase().contains('premium') ||
+      s.icon.contains('💎') ||
+      s.icon.contains('👑'));
 }
 
 class ServiceModel {
@@ -972,6 +991,7 @@ class OrderModel {
   bool get isCancelled  => status == AppConstants.statusCancelled;
   bool get isActive     => isPending || isQueued || isConfirmed || isWashing || isDrying || isReady;
   bool get canCancel    => status == AppConstants.statusPendingPayment || status == AppConstants.statusQueued;
+  bool get isExpired    => (scheduledAt ?? createdAt).isBefore(DateTime.now());
 
   String get statusLabel {
     switch (status) {

@@ -128,7 +128,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ── Profil kartasi ──────────────────────────────────────────────
   Widget _buildProfileCard(
       ApparenceKitColors colors, String name, String phone) {
-    final t = context.t;
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
       child: Row(
@@ -215,23 +214,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const SizedBox(height: 4),
                 Text(phone,
                     style: TextStyle(color: colors.grey2, fontSize: 14)),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: colors.grey1.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    t.profile.customerLevel,
-                    style: TextStyle(
-                      color: colors.grey3,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
               ],
             ),
           ),

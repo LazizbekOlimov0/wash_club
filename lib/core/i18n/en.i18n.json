@@ -62,7 +62,10 @@
     "closedNow": "Closed",
     "reviews": "{count} reviews",
     "minuteShort": "min",
-    "routeFailed": "Could not load exact route"
+    "routeFailed": "Could not load exact route",
+    "distanceUnknown": "Determining distance...",
+    "noPhone": "Phone number not available",
+    "call": "Call"
   },
   "home": {
     "welcome": "Welcome",
@@ -235,7 +238,11 @@
     "qrCode": "Show QR code",
     "cancelOrder": "Cancel order",
     "cancelNo": "No",
-    "cancelYes": "Yes"
+    "cancelYes": "Yes",
+    "deleteTitle": "Delete",
+    "deleteConfirm": "Delete this order?",
+    "deleteError": "Delete error",
+    "deleteOrder": "Delete order"
   },
   "addCar": {
     "title": "Add your car",
@@ -315,7 +322,7 @@
     "featureAllBranches": "All branches",
     "featureNoQueue": "No-queue entry",
     "featureFreeWax": "Free wax",
-    "activateVip": "Activate VIP Pass ({months} mo)",
+    "activateVip": "Subscribe ({months} mo)",
     "comingSoon": "Coming soon"
   },
   "settings": {

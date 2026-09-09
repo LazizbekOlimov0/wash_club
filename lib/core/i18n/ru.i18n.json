@@ -62,7 +62,10 @@
     "closedNow": "Закрыто",
     "reviews": "{count} отзывов",
     "minuteShort": "мин",
-    "routeFailed": "Точный маршрут не загрузился"
+    "routeFailed": "Точный маршрут не загрузился",
+    "distanceUnknown": "Расстояние определяется...",
+    "noPhone": "Номер телефона отсутствует",
+    "call": "Позвонить"
   },
   "home": {
     "welcome": "Добро пожаловать",
@@ -235,7 +238,11 @@
     "qrCode": "Показать QR код",
     "cancelOrder": "Отменить заказ",
     "cancelNo": "Нет",
-    "cancelYes": "Да"
+    "cancelYes": "Да",
+    "deleteTitle": "Удаление",
+    "deleteConfirm": "Удалить этот заказ?",
+    "deleteError": "Ошибка удаления",
+    "deleteOrder": "Удалить заказ"
   },
   "addCar": {
     "title": "Добавьте машину",
@@ -315,7 +322,7 @@
     "featureAllBranches": "Во всех филиалах",
     "featureNoQueue": "Без очереди",
     "featureFreeWax": "Бесплатный воск",
-    "activateVip": "Активировать VIP Pass ({months} мес)",
+    "activateVip": "Оформить подписку ({months} мес)",
     "comingSoon": "Скоро"
   },
   "settings": {

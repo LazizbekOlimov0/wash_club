@@ -13,7 +13,7 @@ import '../../features/user/orders/orders_screen.dart';
 import '../../features/user/profile/settings_screen.dart';
 import '../../features/user/profile/edit_profile_screen.dart';
 import '../../features/user/profile/user_profile_screen.dart';
-import '../../features/user/map/map_screen.dart';
+import '../../features/user/map/google_map_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -72,7 +72,7 @@ final GoRouter generateRouter = GoRouter(
       path: UserRoutePath.map,
       builder: (context, state) {
         final branchId = state.uri.queryParameters['branchId'];
-        return MapScreen(focusBranchId: branchId);
+        return GoogleMapScreen(focusBranchId: branchId);
       },
     ),
     StatefulShellRoute.indexedStack(

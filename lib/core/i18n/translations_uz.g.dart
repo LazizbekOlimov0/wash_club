@@ -329,6 +329,15 @@ class TranslationsMapUz {
 
 	/// uz: 'Aniq marshrut yuklab bo'lmadi'
 	String get routeFailed => 'Aniq marshrut yuklab bo\'lmadi';
+
+	/// uz: 'Masofa aniqlanmoqda...'
+	String get distanceUnknown => 'Masofa aniqlanmoqda...';
+
+	/// uz: 'Telefon raqami mavjud emas'
+	String get noPhone => 'Telefon raqami mavjud emas';
+
+	/// uz: 'Qo'ng'iroq'
+	String get call => 'Qo\'ng\'iroq';
 }
 
 // Path: home
@@ -860,6 +869,18 @@ class TranslationsOrdersUz {
 
 	/// uz: 'Ha'
 	String get cancelYes => 'Ha';
+
+	/// uz: 'O'chirish'
+	String get deleteTitle => 'O\'chirish';
+
+	/// uz: 'Buyurtmani o'chirmoqchimisiz?'
+	String get deleteConfirm => 'Buyurtmani o\'chirmoqchimisiz?';
+
+	/// uz: 'O'chirishda xatolik'
+	String get deleteError => 'O\'chirishda xatolik';
+
+	/// uz: 'Buyurtmani o'chirish'
+	String get deleteOrder => 'Buyurtmani o\'chirish';
 }
 
 // Path: addCar
@@ -1107,8 +1128,8 @@ class TranslationsProfileUz {
 	/// uz: 'Bepul vaks'
 	String get featureFreeWax => 'Bepul vaks';
 
-	/// uz: 'VIP Passni faollashtirish ({months} Oy)'
-	String get activateVip => 'VIP Passni faollashtirish ({months} Oy)';
+	/// uz: 'Obuna olish ({months} Oy)'
+	String get activateVip => 'Obuna olish ({months} Oy)';
 
 	/// uz: 'Tez orada'
 	String get comingSoon => 'Tez orada';

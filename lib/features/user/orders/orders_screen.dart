@@ -23,6 +23,7 @@ class _OrdersScreenState extends State<OrdersScreen>
   List<OrderModel> _all = [];
   bool _loading = true;
   bool _cancelling = false;
+  bool _deleting = false;
   String? _error;
 
   @override
@@ -95,6 +96,7 @@ class _OrdersScreenState extends State<OrdersScreen>
                               _buildList(_history,
                                   emptyLabel: t.orders.emptyHistory,
                                   showBookButton: true,
+                                  isHistory: true,
                                   colors: colors),
                             ],
                           ),
@@ -336,6 +338,7 @@ class _OrdersScreenState extends State<OrdersScreen>
     List<OrderModel> orders, {
     required String emptyLabel,
     bool showBookButton = false,
+    bool isHistory = false,
     required ApparenceKitColors colors,
   }) {
     if (orders.isEmpty) {
@@ -358,17 +361,24 @@ class _OrdersScreenState extends State<OrdersScreen>
     return ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
       itemCount: orders.length,
-      itemBuilder: (context, i) => _OrderCard(
-        order: orders[i],
-        colors: colors,
-        isDark: _isDark,
-        onCancel: orders[i].canCancel
-            ? () => _confirmCancel(orders[i])
-            : null,
-        onQrScan: orders[i].isActive
-            ? () => _openQrScanner(orders[i])
-            : null,
-      ),
+      itemBuilder: (context, i) {
+        final order = orders[i];
+        final expired = order.isExpired;
+        return _OrderCard(
+          order: order,
+          colors: colors,
+          isDark: _isDark,
+          onCancel: !isHistory && !expired && order.canCancel
+              ? () => _confirmCancel(order)
+              : null,
+          onDelete: isHistory || expired
+              ? () => _confirmDelete(order)
+              : null,
+          onQrScan: !isHistory && order.isActive && !expired
+              ? () => _openQrScanner(order)
+              : null,
+        );
+      },
     );
   }
 
@@ -490,6 +500,58 @@ class _OrdersScreenState extends State<OrdersScreen>
       ),
     );
   }
+
+  void _confirmDelete(OrderModel order) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _c.onPrimaryContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(context.t.orders.deleteTitle,
+            style: TextStyle(color: _c.onBackground)),
+        content: Text(context.t.orders.deleteConfirm,
+            style: TextStyle(color: _c.grey2)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(context.t.orders.cancelNo, style: TextStyle(color: _c.info)),
+          ),
+          TextButton(
+            onPressed: _deleting
+                ? null
+                : () async {
+                    Navigator.pop(ctx);
+                    setState(() => _deleting = true);
+                    try {
+                      await _repo.deleteOrder(order.id);
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${context.t.orders.deleteError}: $e'),
+                            backgroundColor: _c.error,
+                          ),
+                        );
+                      }
+                    } finally {
+                      if (mounted) setState(() => _deleting = false);
+                    }
+                  },
+            child: _deleting
+                ? SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(_c.error),
+                    ),
+                  )
+                : Text(context.t.orders.cancelYes, style: TextStyle(color: _c.error)),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ── Order Card ─────────────────────────────────────────────────────
@@ -499,6 +561,7 @@ class _OrderCard extends StatelessWidget {
     required this.colors,
     required this.isDark,
     this.onCancel,
+    this.onDelete,
     this.onQrScan,
   });
 
@@ -506,6 +569,7 @@ class _OrderCard extends StatelessWidget {
   final ApparenceKitColors colors;
   final bool isDark;
   final VoidCallback? onCancel;
+  final VoidCallback? onDelete;
   final VoidCallback? onQrScan;
 
   Color get _cardBg =>
@@ -597,7 +661,7 @@ class _OrderCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                if (onCancel != null)
+                if (onCancel != null || onDelete != null)
                   IconButton(
                     onPressed: () => _showMenu(context),
                     icon: Icon(Icons.more_horiz,
@@ -785,6 +849,16 @@ class _OrderCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
+            if (onDelete != null)
+              _menuItem(ctx,
+                icon: Icons.delete_outline,
+                label: context.t.orders.deleteOrder,
+                color: colors.error,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  onDelete?.call();
+                },
+              ),
             if (onCancel != null)
               _menuItem(ctx,
                 icon: Icons.close,

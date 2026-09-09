@@ -6,6 +6,10 @@
         android:label="wash_club"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Google Maps API kaliti .env faylidan build vaqtida kiritiladi -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${googleMapsApiKey}"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"

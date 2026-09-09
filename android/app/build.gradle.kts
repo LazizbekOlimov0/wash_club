@@ -11,6 +11,14 @@ val keyPropertiesFile = rootProject.file("key.properties")
 val keyProperties = Properties()
 keyProperties.load(FileInputStream(keyPropertiesFile))
 
+// Google Maps API kaliti .env faylidan o'qiladi (gitignored)
+val envFile = rootProject.file("../.env")
+val envProperties = Properties()
+if (envFile.exists()) {
+    envFile.inputStream().use { envProperties.load(it) }
+}
+val googleMapsApiKey = envProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: ""
+
 android {
     namespace = "com.washclub.app"
     compileSdk = flutter.compileSdkVersion
@@ -31,6 +39,7 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        manifestPlaceholders["googleMapsApiKey"] = googleMapsApiKey
     }
 
     signingConfigs {

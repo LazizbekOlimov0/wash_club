@@ -15,4 +15,14 @@ class MapConstants {
   /// displeylarda yuqori aniqlikdagi tile'larni so'raydi.
   static const String mapTilerStreetsUrl =
       'https://api.maptiler.com/maps/bright-v2/{z}/{x}/{y}{r}.png?key=$mapTilerApiKey';
+
+  /// Google Maps API kaliti uchun placeholder.
+  ///
+  /// Google Maps Flutter plagin'i kalitni Dart tomonda EMAS, balki native
+  /// tomonda o'qiydi. Haqiqiy kalit gitignored fayllarda saqlanadi:
+  ///   - `.env` (Android build.gradle.kts o'qiydi)
+  ///   - `ios/Flutter/GoogleMapsKeys.xcconfig` (iOS xcconfig include qiladi)
+  ///
+  /// Bu konstanta faqat hujjat/referens uchun saqlanadi.
+  static const String googleMapsApiKeyPlaceholder = 'GOOGLE_MAPS_API_KEY_PLACEHOLDER';
 }

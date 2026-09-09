@@ -140,6 +140,9 @@ class TranslationsMapEn extends TranslationsMapUz {
 	@override String get reviews => '{count} reviews';
 	@override String get minuteShort => 'min';
 	@override String get routeFailed => 'Could not load exact route';
+	@override String get distanceUnknown => 'Determining distance...';
+	@override String get noPhone => 'Phone number not available';
+	@override String get call => 'Call';
 }
 
 // Path: home
@@ -341,6 +344,10 @@ class TranslationsOrdersEn extends TranslationsOrdersUz {
 	@override String get cancelOrder => 'Cancel order';
 	@override String get cancelNo => 'No';
 	@override String get cancelYes => 'Yes';
+	@override String get deleteTitle => 'Delete';
+	@override String get deleteConfirm => 'Delete this order?';
+	@override String get deleteError => 'Delete error';
+	@override String get deleteOrder => 'Delete order';
 }
 
 // Path: addCar
@@ -441,7 +448,7 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	@override String get featureAllBranches => 'All branches';
 	@override String get featureNoQueue => 'No-queue entry';
 	@override String get featureFreeWax => 'Free wax';
-	@override String get activateVip => 'Activate VIP Pass ({months} mo)';
+	@override String get activateVip => 'Subscribe ({months} mo)';
 	@override String get comingSoon => 'Coming soon';
 }
 

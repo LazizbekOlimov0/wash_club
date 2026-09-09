@@ -127,9 +127,9 @@ class ApparenceKitColors extends ThemeExtension<ApparenceKitColors> {
     premiumGradientEnd: Color(0xFF7B5EEA),
     branchGradientStart: Color(0xFF1A3A6B),
     branchGradientEnd: Color(0xFF2D5AA0),
-    mapBackground: Color(0xFF1C1C1E),
-    mapSurface: Color(0xFF2C2C2E),
-    mapBadge: Color(0xFF1E293B),
+    mapBackground: Color(0xFFFFFFFF),
+    mapSurface: Color(0xFFF2F4F7),
+    mapBadge: Color(0xFFFFFFFF),
   );
 
   // ── Helpers ───────────────────────────────────────────────────────

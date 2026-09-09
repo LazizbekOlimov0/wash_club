@@ -140,6 +140,9 @@ class TranslationsMapRu extends TranslationsMapUz {
 	@override String get reviews => '{count} отзывов';
 	@override String get minuteShort => 'мин';
 	@override String get routeFailed => 'Точный маршрут не загрузился';
+	@override String get distanceUnknown => 'Расстояние определяется...';
+	@override String get noPhone => 'Номер телефона отсутствует';
+	@override String get call => 'Позвонить';
 }
 
 // Path: home
@@ -341,6 +344,10 @@ class TranslationsOrdersRu extends TranslationsOrdersUz {
 	@override String get cancelOrder => 'Отменить заказ';
 	@override String get cancelNo => 'Нет';
 	@override String get cancelYes => 'Да';
+	@override String get deleteTitle => 'Удаление';
+	@override String get deleteConfirm => 'Удалить этот заказ?';
+	@override String get deleteError => 'Ошибка удаления';
+	@override String get deleteOrder => 'Удалить заказ';
 }
 
 // Path: addCar
@@ -441,7 +448,7 @@ class TranslationsProfileRu extends TranslationsProfileUz {
 	@override String get featureAllBranches => 'Во всех филиалах';
 	@override String get featureNoQueue => 'Без очереди';
 	@override String get featureFreeWax => 'Бесплатный воск';
-	@override String get activateVip => 'Активировать VIP Pass ({months} мес)';
+	@override String get activateVip => 'Оформить подписку ({months} мес)';
 	@override String get comingSoon => 'Скоро';
 }
 

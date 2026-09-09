@@ -184,6 +184,13 @@ class OrdersRepository {
     await loadOrders();
   }
 
+  // ── Delete order (client-side, eski order uchun) ──────────
+  Future<void> deleteOrder(String orderId) async {
+    await _api.deleteMyOrder(orderId);
+    _unsubscribeFromOrder(orderId);
+    await loadOrders();
+  }
+
   // ── Realtime ──────────────────────────────────────────────
   void _subscribeToOrder(String orderId) {
     if (_channels.containsKey(orderId)) return;

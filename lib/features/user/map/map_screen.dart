@@ -14,6 +14,7 @@ import '../../../../core/constants/map_constants.dart';
 import '../../../../shared/services/branches_repository.dart';
 import '../../../../shared/services/supabase_service.dart';
 import '../../../../config/router/router.dart';
+import 'widgets/branch_info_card.dart';
 
 class MapScreen extends StatefulWidget {
   final String? focusBranchId;
@@ -217,11 +218,6 @@ class _MapScreenState extends State<MapScreen>
   // ── Distance / time ────────────────────────────────────────────
   double _distanceKm(LatLng a, LatLng b) =>
       const Distance().as(LengthUnit.Kilometer, a, b);
-
-  int _estimateMinutes(double km) {
-    const avgSpeedKmh = 32.0; // shahar ichi o'rtacha tezlik
-    return (km / avgSpeedKmh * 60).round().clamp(1, 999);
-  }
 
   String _distanceText(LatLng a, LatLng b) {
     final km = _distanceKm(a, b);
@@ -475,7 +471,22 @@ class _MapScreenState extends State<MapScreen>
                 );
               },
               child: _selectedBranch != null
-                  ? _buildSelectedBranchPanel(_selectedBranch!, colors)
+                  ? BranchInfoCard(
+                      branch: _selectedBranch!,
+                      userLat: _userPosition?.latitude,
+                      userLng: _userPosition?.longitude,
+                      onClose: () => setState(() => _selectedBranch = null),
+                      onRoute: () {
+                        final b = _selectedBranch!;
+                        setState(() => _selectedBranch = null);
+                        _fetchRoute(b);
+                      },
+                      onBook: () {
+                        final b = _selectedBranch!;
+                        setState(() => _selectedBranch = null);
+                        context.go('${UserRoutePath.booking}?branchId=${b.id}');
+                      },
+                    )
                   : const SizedBox.shrink(),
             ),
           ),
@@ -851,222 +862,6 @@ class _MapScreenState extends State<MapScreen>
   );
 }
 
-  // ── Tanlangan filial paneli (non-modal) ─────────────────────────
-  Widget _buildSelectedBranchPanel(BranchModel branch, ApparenceKitColors colors) {
-    final t = context.t;
-    final user = _userPosition;
-    final hasPos = branch.latitude != null && branch.longitude != null;
-
-    String? distanceTimeText;
-    if (user != null && hasPos) {
-      final branchLatLng = LatLng(branch.latitude!, branch.longitude!);
-      final km = _distanceKm(user, branchLatLng);
-      final min = _estimateMinutes(km);
-      distanceTimeText =
-          '${_distanceText(user, branchLatLng)} • $min ${t.map.minuteShort}';
-    }
-
-    return SafeArea(
-      child: Container(
-          margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colors.mapBackground,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 20)],
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.65,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () => setState(() => _selectedBranch = null),
-                    child: Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(color: colors.mapSurface, shape: BoxShape.circle),
-                      child: Icon(Icons.close, color: colors.grey2, size: 18),
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Filial surati
-                  Container(
-                    width: 56,
-                    height: 56,
-                    clipBehavior: Clip.antiAlias,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      color: colors.info.withValues(alpha: 0.15),
-                    ),
-                    child: branch.imageUrl != null && branch.imageUrl!.isNotEmpty
-                        ? Image.network(branch.imageUrl!, fit: BoxFit.cover, errorBuilder: (_, _, _) => _branchImagePlaceholder(colors))
-                        : _branchImagePlaceholder(colors),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(branch.name, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700)),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(Icons.verified, color: colors.info, size: 16),
-                          ],
-                        ),
-                        if (branch.rating != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.star, color: Colors.amber, size: 15),
-                              const SizedBox(width: 3),
-                              Text(
-                                branch.rating!.toStringAsFixed(1),
-                                style: TextStyle(color: colors.onBackground, fontSize: 13, fontWeight: FontWeight.w600),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              if (distanceTimeText != null) ...[
-                Row(
-                  children: [
-                    Icon(Icons.location_on_outlined, color: colors.info, size: 16),
-                    const SizedBox(width: 6),
-                    Text(distanceTimeText, style: TextStyle(color: colors.onBackground, fontSize: 13, fontWeight: FontWeight.w600)),
-                  ],
-                ),
-                const SizedBox(height: 6),
-              ],
-              Row(
-                children: [
-                  Icon(Icons.place_outlined, color: colors.grey2, size: 16),
-                  const SizedBox(width: 6),
-                  Expanded(child: Text(branch.address, style: TextStyle(color: colors.grey2, fontSize: 13))),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: branch.isOpenNow ? colors.success.withValues(alpha: 0.2) : colors.error.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(width: 6, height: 6, decoration: BoxDecoration(color: branch.isOpenNow ? colors.success : colors.error, shape: BoxShape.circle)),
-                        const SizedBox(width: 5),
-                        Text(
-                          branch.isOpenNow ? t.map.openNow : t.map.closedNow,
-                          style: TextStyle(color: branch.isOpenNow ? colors.success : colors.error, fontSize: 12, fontWeight: FontWeight.w600),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(branch.hoursLabel, style: TextStyle(color: colors.grey2, fontSize: 13)),
-                ],
-              ),
-              if (branch.services.isNotEmpty) ...[
-                const SizedBox(height: 14),
-                SizedBox(
-                  height: 32,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: branch.services.take(6).map((s) {
-                      return Container(
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        decoration: BoxDecoration(
-                          color: colors.mapSurface,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(s.icon, style: const TextStyle(fontSize: 13)),
-                            const SizedBox(width: 5),
-                            Text(s.name, style: TextStyle(color: colors.grey2, fontSize: 12)),
-                          ],
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 18),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        setState(() => _selectedBranch = null);
-                        _fetchRoute(branch);
-                      },
-                      icon: const Icon(Icons.directions_outlined, size: 18),
-                      label: Text(t.map.route),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        side: BorderSide(color: colors.grey2.withValues(alpha: 0.4)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() => _selectedBranch = null);
-                        context.go('${UserRoutePath.booking}?branchId=${branch.id}');
-                      },
-                      icon: const Icon(Icons.calendar_today_outlined, size: 18),
-                      label: Text(t.map.bookButton),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: colors.info,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        elevation: 0,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-                ],
-              ),
-            ),
-          ),
-        ),
-    );
-  }
-
-  Widget _branchImagePlaceholder(ApparenceKitColors colors) {
-    return Icon(Icons.local_car_wash_rounded, color: colors.info, size: 28);
-  }
 }
 
 /// Retries tile downloads on transient network errors (e.g. dropped

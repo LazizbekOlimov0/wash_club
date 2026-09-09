@@ -85,7 +85,10 @@
     "closedNow": "Yopiq",
     "reviews": "{count} sharh",
     "minuteShort": "daq",
-    "routeFailed": "Aniq marshrut yuklab bo'lmadi"
+    "routeFailed": "Aniq marshrut yuklab bo'lmadi",
+    "distanceUnknown": "Masofa aniqlanmoqda...",
+    "noPhone": "Telefon raqami mavjud emas",
+    "call": "Qo'ng'iroq"
   },
   "home": {
     "welcome": "Xush kelibsiz",
@@ -258,7 +261,11 @@
     "qrCode": "QR kodni ko'rsatish",
     "cancelOrder": "Buyurtmani bekor qilish",
     "cancelNo": "Yo'q",
-    "cancelYes": "Ha"
+    "cancelYes": "Ha",
+    "deleteTitle": "O'chirish",
+    "deleteConfirm": "Buyurtmani o'chirmoqchimisiz?",
+    "deleteError": "O'chirishda xatolik",
+    "deleteOrder": "Buyurtmani o'chirish"
   },
   "addCar": {
     "title": "Mashinangizni qo'shing",
@@ -338,7 +345,7 @@
     "featureAllBranches": "Barcha filiallarda",
     "featureNoQueue": "Navbatsiz kirish",
     "featureFreeWax": "Bepul vaks",
-    "activateVip": "VIP Passni faollashtirish ({months} Oy)",
+    "activateVip": "Obuna olish ({months} Oy)",
     "comingSoon": "Tez orada"
   },
   "settings": {
