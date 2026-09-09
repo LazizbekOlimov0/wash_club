@@ -448,6 +448,7 @@ class TranslationsProfileRu extends TranslationsProfileUz {
 	@override String get featureAllBranches => 'Во всех филиалах';
 	@override String get featureNoQueue => 'Без очереди';
 	@override String get featureFreeWax => 'Бесплатный воск';
+	@override String get washCountLabel => '{count} моек';
 	@override String get activateVip => 'Оформить подписку ({months} мес)';
 	@override String get comingSoon => 'Скоро';
 }

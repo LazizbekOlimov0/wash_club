@@ -1128,6 +1128,9 @@ class TranslationsProfileUz {
 	/// uz: 'Bepul vaks'
 	String get featureFreeWax => 'Bepul vaks';
 
+	/// uz: '{count} marta moyka'
+	String get washCountLabel => '{count} marta moyka';
+
 	/// uz: 'Obuna olish ({months} Oy)'
 	String get activateVip => 'Obuna olish ({months} Oy)';
 

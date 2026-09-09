@@ -20,11 +20,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _ordersRepo = OrdersRepository.instance;
 
   int _selectedPlanIndex = 1; // "3 Oy" default tanlangan
+  final PageController _planPageController = PageController(initialPage: 1);
 
   static const List<_VipPlan> _plans = [
-    _VipPlan(months: 6, perMonthK: 599, isBest: true),
-    _VipPlan(months: 3, perMonthK: 839),
-    _VipPlan(months: 1, perMonthK: _VipPlan.baseMonthlyPriceK),
+    _VipPlan(
+        name: 'Premium',
+        months: 6,
+        perMonthK: 599,
+        washCount: 180,
+        isBest: true),
+    _VipPlan(name: 'Pro', months: 3, perMonthK: 839, washCount: 90),
+    _VipPlan(
+        name: 'Standart',
+        months: 1,
+        perMonthK: _VipPlan.baseMonthlyPriceK,
+        washCount: 30),
   ];
 
   ApparenceKitColors get _c =>
@@ -34,6 +44,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _refresh();
+  }
+
+  @override
+  void dispose() {
+    _planPageController.dispose();
+    super.dispose();
   }
 
   Future<void> _refresh() async {
@@ -246,124 +262,138 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ── VIP Pass obunasi bo'limi ────────────────────────────────────
   Widget _buildVipPassSection(ApparenceKitColors colors) {
     final t = context.t;
-    final selected = _plans[_selectedPlanIndex];
     final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Alohida tab bar (6/3/1 oy)
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isLight ? colors.surface : colors.onPrimaryContainer,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: colors.divider, width: 1),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  clipBehavior: Clip.none,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: colors.grey1.withValues(alpha: 0.55),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: colors.grey1.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        children: [
-                          for (int i = 0; i < _plans.length; i++) ...[
-                            if (i > 0) const SizedBox(width: 4),
-                            Expanded(child: _buildPlanOption(colors, i)),
-                          ],
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      top: -9,
-                      left: 0,
-                      right: 0,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: colors.warning,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  t.profile.bestBadge,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const Expanded(child: SizedBox()),
-                          const Expanded(child: SizedBox()),
-                        ],
-                      ),
-                    ),
+                    for (int i = 0; i < _plans.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 4),
+                      Expanded(child: _buildPlanOption(colors, i)),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 16),
-                Divider(color: colors.divider, height: 1),
-                const SizedBox(height: 16),
-                _buildPlanDetailsContent(colors, selected),
-                const SizedBox(height: 12),
-                Divider(color: colors.divider, height: 1),
-                const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(t.profile.comingSoon),
-                        backgroundColor: colors.grey3,
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [colors.warning, colors.accent],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.bolt, color: Colors.white, size: 20),
-                        const SizedBox(width: 6),
-                        Text(
-                          t.profile.activateVip.replaceAll(
-                              '{months}', '${selected.months}'),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+              ),
+              Positioned(
+                top: -9,
+                left: 0,
+                right: 0,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: colors.warning,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            t.profile.bestBadge,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.4,
+                            ),
                           ),
                         ),
-                      ],
+                      ),
                     ),
+                    const Expanded(child: SizedBox()),
+                    const Expanded(child: SizedBox()),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        // Obuna card (horizontal PageView)
+        SizedBox(
+          height: 190,
+          child: PageView.builder(
+            controller: _planPageController,
+            itemCount: _plans.length,
+            onPageChanged: (i) => setState(() => _selectedPlanIndex = i),
+            itemBuilder: (context, i) {
+              final plan = _plans[i];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isLight ? colors.surface : colors.onPrimaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: colors.divider, width: 1),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildPlanDetailsContent(colors, plan),
+                      const SizedBox(height: 12),
+                      Divider(color: colors.divider, height: 1),
+                      const SizedBox(height: 12),
+                      GestureDetector(
+                        onTap: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(t.profile.comingSoon),
+                              backgroundColor: colors.grey3,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: 54,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [colors.warning, colors.accent],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.bolt,
+                                  color: Colors.white, size: 20),
+                              const SizedBox(width: 6),
+                              Text(
+                                t.profile.activateVip.replaceAll(
+                                    '{months}', '${plan.months}'),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ],
@@ -376,7 +406,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isSelected = index == _selectedPlanIndex;
 
     return GestureDetector(
-      onTap: () => setState(() => _selectedPlanIndex = index),
+      onTap: () {
+        setState(() => _selectedPlanIndex = index);
+        _planPageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        );
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
@@ -415,72 +452,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildPlanDetailsContent(ApparenceKitColors colors, _VipPlan plan) {
     final t = context.t;
-    final savingsText = plan.savings > 0
-        ? '+${_formatPrice(plan.savings)} UZS'
-        : '—';
+    final accent = _planAccent(colors, plan);
 
-    return Column(
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        // Chap: tarif nomi + moyka soni
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                plan.name,
+                style: TextStyle(
+                  color: accent,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
                 children: [
-                  Text(
-                    t.profile.monthlyPriceLabel,
-                    style: TextStyle(color: colors.grey2, fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
+                  Icon(Icons.water_drop_outlined,
+                      color: colors.info, size: 24),
+                  const SizedBox(width: 6),
+                  Flexible(
                     child: Text(
-                      '${_formatPrice(plan.perMonthK * 1000)} UZS',
+                      t.profile.washCountLabel
+                          .replaceAll('{count}', '${plan.washCount}'),
                       style: TextStyle(
                         color: colors.onBackground,
-                        fontSize: 22,
+                        fontSize: 20,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
                 ],
               ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 12),
+        // O'ng: oylik narx
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              t.profile.monthlyPriceLabel,
+              style: TextStyle(color: colors.grey2, fontSize: 11),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    t.profile.savingLabel,
-                    style: TextStyle(color: colors.grey2, fontSize: 12),
-                  ),
-                  const SizedBox(height: 4),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      savingsText,
-                      style: TextStyle(
-                        color: plan.savings > 0
-                            ? colors.success
-                            : colors.grey2,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                ],
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                '${_formatPrice(plan.perMonthK * 1000)} UZS',
+                style: TextStyle(
+                  color: colors.onBackground,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],
         ),
       ],
     );
+  }
+
+  Color _planAccent(ApparenceKitColors colors, _VipPlan plan) {
+    switch (plan.months) {
+      case 6:
+        return colors.warning;
+      case 3:
+        return colors.info;
+      default:
+        return colors.onBackground;
+    }
   }
 
   Widget _buildSectionLabel(String label, ApparenceKitColors colors) {
@@ -646,13 +694,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class _VipPlan {
   static const int baseMonthlyPriceK = 1190; // 1 oylik narx (ming so'mda)
 
+  final String name;
   final int months;
   final int perMonthK; // ming so'mda (599 → 599k)
+  final int washCount; // paketdagi bepul moyka soni
   final bool isBest;
 
   const _VipPlan({
+    required this.name,
     required this.months,
     required this.perMonthK,
+    required this.washCount,
     this.isBest = false,
   });
 

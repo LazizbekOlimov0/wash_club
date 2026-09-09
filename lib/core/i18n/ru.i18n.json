@@ -322,6 +322,7 @@
     "featureAllBranches": "Во всех филиалах",
     "featureNoQueue": "Без очереди",
     "featureFreeWax": "Бесплатный воск",
+    "washCountLabel": "{count} моек",
     "activateVip": "Оформить подписку ({months} мес)",
     "comingSoon": "Скоро"
   },

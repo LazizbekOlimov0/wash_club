@@ -345,6 +345,7 @@
     "featureAllBranches": "Barcha filiallarda",
     "featureNoQueue": "Navbatsiz kirish",
     "featureFreeWax": "Bepul vaks",
+    "washCountLabel": "{count} marta moyka",
     "activateVip": "Obuna olish ({months} Oy)",
     "comingSoon": "Tez orada"
   },

@@ -448,6 +448,7 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	@override String get featureAllBranches => 'All branches';
 	@override String get featureNoQueue => 'No-queue entry';
 	@override String get featureFreeWax => 'Free wax';
+	@override String get washCountLabel => '{count} washes';
 	@override String get activateVip => 'Subscribe ({months} mo)';
 	@override String get comingSoon => 'Coming soon';
 }

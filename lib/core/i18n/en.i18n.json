@@ -322,6 +322,7 @@
     "featureAllBranches": "All branches",
     "featureNoQueue": "No-queue entry",
     "featureFreeWax": "Free wax",
+    "washCountLabel": "{count} washes",
     "activateVip": "Subscribe ({months} mo)",
     "comingSoon": "Coming soon"
   },
