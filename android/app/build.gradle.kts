@@ -11,13 +11,15 @@ val keyPropertiesFile = rootProject.file("key.properties")
 val keyProperties = Properties()
 keyProperties.load(FileInputStream(keyPropertiesFile))
 
-// Google Maps API kaliti .env faylidan o'qiladi (gitignored)
+// Google Maps API kaliti: CI env var yoki mahalliy .env (gitignored)
 val envFile = rootProject.file("../.env")
 val envProperties = Properties()
 if (envFile.exists()) {
     envFile.inputStream().use { envProperties.load(it) }
 }
-val googleMapsApiKey = envProperties.getProperty("GOOGLE_MAPS_API_KEY") ?: ""
+val googleMapsApiKey = System.getenv("GOOGLE_MAPS_API_KEY")
+    ?: envProperties.getProperty("GOOGLE_MAPS_API_KEY")
+    ?: ""
 
 android {
     namespace = "com.washclub.app"

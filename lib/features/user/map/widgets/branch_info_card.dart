@@ -237,7 +237,8 @@ class BranchInfoCard extends StatelessWidget {
       );
       return;
     }
-    final uri = Uri.parse('tel:$phone');
+    final clean = phone.replaceAll(RegExp(r'[^\d+]'), '');
+    final uri = Uri.parse('tel:$clean');
     try {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } catch (_) {
@@ -247,6 +248,7 @@ class BranchInfoCard extends StatelessWidget {
 
   Widget _buildAmenities(BuildContext context) {
     final colors = context.colors;
+    final premium = branch.isPremium || branch.hasPremiumService;
     return SizedBox(
       height: 36,
       child: ListView(
@@ -255,11 +257,21 @@ class BranchInfoCard extends StatelessWidget {
           _buildAmenityCard(
             Icons.star,
             'Premium',
-            branch.isPremium ? Colors.amber : colors.grey3,
+            premium ? Colors.amber : colors.grey3,
             colors,
           ),
-          _buildAmenityCard(Icons.wifi, 'Wi-Fi', colors.grey3, colors),
-          _buildAmenityCard(Icons.coffee, 'Coffee', colors.grey3, colors),
+          _buildAmenityCard(
+            Icons.wifi,
+            'Wi-Fi',
+            branch.hasWifi ? colors.info : colors.grey3,
+            colors,
+          ),
+          _buildAmenityCard(
+            Icons.coffee,
+            'Coffee',
+            branch.hasCoffee ? Colors.brown : colors.grey3,
+            colors,
+          ),
         ],
       ),
     );
@@ -415,7 +427,7 @@ class BranchInfoCard extends StatelessWidget {
       children: [
         Expanded(
           child: OutlinedButton.icon(
-            onPressed: () {},
+            onPressed: onRoute,
             icon: const Icon(Icons.directions_outlined, size: 18),
             label: Text(t.map.route),
             style: OutlinedButton.styleFrom(
@@ -431,7 +443,7 @@ class BranchInfoCard extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(
           child: ElevatedButton.icon(
-            onPressed: () {},
+            onPressed: onBook,
             icon: const Icon(Icons.calendar_today_outlined, size: 18),
             label: Text(t.map.bookButton),
             style: ElevatedButton.styleFrom(

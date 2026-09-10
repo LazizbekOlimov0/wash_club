@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/supabase_service.dart';
 import '../services/client_session.dart';
@@ -46,6 +47,10 @@ class OrdersRepository {
 
   List<OrderModel> _orders = [];
 
+  /// Mijoz o'z qurilmasida yashirgan orderlar (soft delete).
+  static const String _hiddenOrdersKey = 'wash.hiddenOrders.v1';
+  List<String> _hiddenOrderIds = [];
+
   // Active realtime channels keyed by orderId
   final Map<String, RealtimeChannel> _channels = {};
 
@@ -75,10 +80,13 @@ class OrdersRepository {
       return _orders;
     }
 
-    _orders = await _api.getMyOrders(
+    final prefs = await SharedPreferences.getInstance();
+    _hiddenOrderIds = prefs.getStringList(_hiddenOrdersKey) ?? [];
+    final all = await _api.getMyOrders(
       phone:      _session.phone ?? '',
       carNumbers: cars,
     );
+    _orders = all.where((o) => !_hiddenOrderIds.contains(o.id)).toList();
     _controller.add(_orders);
 
     // Active orderlar uchun realtime subscription
@@ -184,11 +192,16 @@ class OrdersRepository {
     await loadOrders();
   }
 
-  // ── Delete order (client-side, eski order uchun) ──────────
+  // ── Delete order (soft delete — mijoz ko'rinishida yashiriladi) ─
   Future<void> deleteOrder(String orderId) async {
-    await _api.deleteMyOrder(orderId);
+    if (!_hiddenOrderIds.contains(orderId)) {
+      _hiddenOrderIds.add(orderId);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList(_hiddenOrdersKey, _hiddenOrderIds);
+    }
     _unsubscribeFromOrder(orderId);
-    await loadOrders();
+    _orders.removeWhere((o) => o.id == orderId);
+    _controller.add(_orders);
   }
 
   // ── Realtime ──────────────────────────────────────────────

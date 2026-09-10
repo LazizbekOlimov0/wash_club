@@ -8,6 +8,30 @@ project 'Runner', {
   'Release' => :release,
 }
 
+# Google Maps API kaliti: CI env var yoki mahalliy .env (gitignored) dan
+# GoogleMapsKeys.xcconfig faylini yaratadi (bu fayl git'ga kirmaydi).
+google_maps_api_key = ENV['GOOGLE_MAPS_API_KEY'] || ''
+if google_maps_api_key.empty?
+  env_file = File.join(File.dirname(__FILE__), '..', '.env')
+  if File.exist?(env_file)
+    File.foreach(env_file) do |line|
+      if line =~ /^\s*GOOGLE_MAPS_API_KEY=(.*)$/
+        google_maps_api_key = $1.strip
+        break
+      end
+    end
+  end
+end
+
+unless google_maps_api_key.empty?
+  xcconfig_dir = File.join(File.dirname(__FILE__), 'Flutter')
+  Dir.mkdir(xcconfig_dir) unless Dir.exist?(xcconfig_dir)
+  File.write(
+    File.join(xcconfig_dir, 'GoogleMapsKeys.xcconfig'),
+    "GOOGLE_MAPS_API_KEY = #{google_maps_api_key}\n"
+  )
+end
+
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)

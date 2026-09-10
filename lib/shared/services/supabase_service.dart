@@ -21,7 +21,7 @@ class SupabaseService {
   Future<List<BranchModel>> getBranches() async {
     final response = await _client
         .from('branches')
-        .select('id,name,address,is_active,latitude,longitude,image_url,open_time,close_time,is_24_7,is_temporarily_closed,services(id,name,description,is_active,is_addon,icon,sort_order,duration_minutes,service_prices(vehicle_category,price))')
+        .select('id,name,address,is_active,latitude,longitude,image_url,open_time,close_time,is_24_7,is_temporarily_closed,phone,has_wifi,has_coffee,is_premium,services(id,name,description,is_active,is_addon,icon,sort_order,duration_minutes,service_prices(vehicle_category,price))')
         .eq('is_active', true)
         .order('name');
 
@@ -35,7 +35,7 @@ class SupabaseService {
     final response = await _client
         .from('branches')
         .select('''
-          id, name, address, is_active,
+          id, name, address, is_active, phone, has_wifi, has_coffee, is_premium,
           services (
             id, name, description, is_active, is_addon, icon, sort_order, duration_minutes,
             service_prices ( vehicle_category, price )
@@ -761,6 +761,9 @@ class BranchModel {
   final double? rating;
   final int? availableBoxes;
   final String? phone;
+  final bool hasWifi;
+  final bool hasCoffee;
+  final bool isPremium;
 
   const BranchModel({
     required this.id,
@@ -778,6 +781,9 @@ class BranchModel {
     this.rating,
     this.availableBoxes,
     this.phone,
+    this.hasWifi = false,
+    this.hasCoffee = false,
+    this.isPremium = false,
   });
 
   factory BranchModel.fromJson(Map<String, dynamic> j) {
@@ -802,6 +808,9 @@ class BranchModel {
       rating:       (j['rating'] as num?)?.toDouble(),
       availableBoxes: j['available_boxes'] as int?,
       phone:        j['phone'] as String?,
+      hasWifi:      j['has_wifi'] as bool? ?? false,
+      hasCoffee:    j['has_coffee'] as bool? ?? false,
+      isPremium:    j['is_premium'] as bool? ?? false,
     );
   }
   /// Hozir ochiqmi?
@@ -833,11 +842,12 @@ class BranchModel {
     return '${openTime.substring(0, 5)} – ${closeTime.substring(0, 5)}';
   }
 
-  /// Premium filialmi (premium xizmat yoki 💎/👑 ikonka mavjudligi).
-  bool get isPremium => services.any((s) =>
+  /// Premium xizmat/ikonka mavjudligi (💎/👑/✨ yoki 'premium' nomi).
+  bool get hasPremiumService => services.any((s) =>
       s.name.toLowerCase().contains('premium') ||
       s.icon.contains('💎') ||
-      s.icon.contains('👑'));
+      s.icon.contains('👑') ||
+      s.icon.contains('✨'));
 }
 
 class ServiceModel {
