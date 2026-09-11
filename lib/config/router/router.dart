@@ -13,6 +13,9 @@ import '../../features/user/orders/orders_screen.dart';
 import '../../features/user/profile/settings_screen.dart';
 import '../../features/user/profile/edit_profile_screen.dart';
 import '../../features/user/profile/user_profile_screen.dart';
+import '../../features/user/profile/subscriptions_screen.dart';
+import '../../features/user/profile/buy_subscription_screen.dart';
+import '../../features/user/profile/vip_plan.dart';
 import '../../features/user/map/google_map_screen.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -67,6 +70,21 @@ final GoRouter generateRouter = GoRouter(
     GoRoute(
       path: UserRoutePath.editProfile,
       builder: (context, state) => const EditProfileScreen(),
+    ),
+    GoRoute(
+      path: UserRoutePath.subscriptions,
+      builder: (context, state) => const SubscriptionsScreen(),
+    ),
+    GoRoute(
+      path: UserRoutePath.payment,
+      builder: (context, state) {
+        final months = state.extra as int?;
+        final plan = vipPlans.firstWhere(
+          (p) => p.months == months,
+          orElse: () => vipPlans.first,
+        );
+        return BuySubscriptionScreen(plan: plan);
+      },
     ),
     GoRoute(
       path: UserRoutePath.map,
@@ -135,4 +153,6 @@ class UserRoutePath {
   static const settings = '/settings';
   static const editProfile = '/edit-profile';
   static const map = '/map';
+  static const subscriptions = '/subscriptions';
+  static const payment = '/payment';
 }

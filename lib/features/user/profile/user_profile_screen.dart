@@ -7,6 +7,7 @@ import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../core/theme/colors.dart';
 import '../../../../shared/services/client_session.dart';
 import '../../../../shared/services/orders_repository.dart';
+import 'vip_plan.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -19,24 +20,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final _session = ClientSession.instance;
   final _ordersRepo = OrdersRepository.instance;
 
-  int _selectedPlanIndex = 1; // "3 Oy" default tanlangan
-  final PageController _planPageController = PageController(initialPage: 1);
-
-  static const List<_VipPlan> _plans = [
-    _VipPlan(
-        name: 'Premium',
-        months: 6,
-        perMonthK: 599,
-        washCount: 180,
-        isBest: true),
-    _VipPlan(name: 'Pro', months: 3, perMonthK: 839, washCount: 90),
-    _VipPlan(
-        name: 'Standart',
-        months: 1,
-        perMonthK: _VipPlan.baseMonthlyPriceK,
-        washCount: 30),
-  ];
-
   ApparenceKitColors get _c =>
       Theme.of(context).extension<ApparenceKitColors>()!;
 
@@ -44,12 +27,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void initState() {
     super.initState();
     _refresh();
-  }
-
-  @override
-  void dispose() {
-    _planPageController.dispose();
-    super.dispose();
   }
 
   Future<void> _refresh() async {
@@ -259,276 +236,169 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  // ── VIP Pass obunasi bo'limi ────────────────────────────────────
+  // ── VIP Pass obunasi bo'limi (teaser karta) ─────────────────────
   Widget _buildVipPassSection(ApparenceKitColors colors) {
     final t = context.t;
-    final isLight = Theme.of(context).brightness == Brightness.light;
+    final cheapest = vipPlans.reduce(
+      (a, b) => a.perMonthK < b.perMonthK ? a : b,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Alohida tab bar (6/3/1 oy)
+        // Sarlavha qatori: bo'lim nomi + "Barcha obunalar >"
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Stack(
-            clipBehavior: Clip.none,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: colors.grey1.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    for (int i = 0; i < _plans.length; i++) ...[
-                      if (i > 0) const SizedBox(width: 4),
-                      Expanded(child: _buildPlanOption(colors, i)),
-                    ],
-                  ],
+              Text(
+                t.subscriptions.title,
+                style: TextStyle(
+                  color: colors.grey2,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.8,
                 ),
               ),
-              Positioned(
-                top: -9,
-                left: 0,
-                right: 0,
+              GestureDetector(
+                onTap: () => context.push(UserRoutePath.subscriptions),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: Center(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: colors.warning,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            t.profile.bestBadge,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 9,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.4,
-                            ),
-                          ),
-                        ),
+                    Text(
+                      t.subscriptions.all,
+                      style: TextStyle(
+                        color: colors.info,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const Expanded(child: SizedBox()),
-                    const Expanded(child: SizedBox()),
+                    Icon(Icons.chevron_right, color: colors.info, size: 18),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        // Obuna card (horizontal PageView)
-        SizedBox(
-          height: 190,
-          child: PageView.builder(
-            controller: _planPageController,
-            itemCount: _plans.length,
-            onPageChanged: (i) => setState(() => _selectedPlanIndex = i),
-            itemBuilder: (context, i) {
-              final plan = _plans[i];
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isLight ? colors.surface : colors.onPrimaryContainer,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: colors.divider, width: 1),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 12),
+        // Teaser karta
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: GestureDetector(
+            onTap: () => context.push(UserRoutePath.subscriptions),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    colors.premiumGradientStart,
+                    colors.premiumGradientEnd,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      _buildPlanDetailsContent(colors, plan),
-                      const SizedBox(height: 12),
-                      Divider(color: colors.divider, height: 1),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(t.profile.comingSoon),
-                              backgroundColor: colors.grey3,
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          height: 54,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [colors.warning, colors.accent],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.bolt,
-                                  color: Colors.white, size: 20),
-                              const SizedBox(width: 6),
-                              Text(
-                                t.profile.activateVip.replaceAll(
-                                    '{months}', '${plan.months}'),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.18),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.workspace_premium,
+                            color: Colors.white, size: 22),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          t.profile.vipPassTitle,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
                           ),
                         ),
                       ),
                     ],
                   ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPlanOption(ApparenceKitColors colors, int index) {
-    final t = context.t;
-    final plan = _plans[index];
-    final isSelected = index == _selectedPlanIndex;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() => _selectedPlanIndex = index);
-        _planPageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-        );
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-        decoration: BoxDecoration(
-          color: isSelected ? colors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              t.profile.monthShort
-                  .replaceAll('{months}', '${plan.months}'),
-              style: TextStyle(
-                color: isSelected ? colors.onPrimary : colors.onBackground,
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${plan.perMonthK}k / ${t.profile.perMonth}',
-              style: TextStyle(
-                color: isSelected
-                    ? colors.onPrimary.withValues(alpha: 0.85)
-                    : colors.grey2,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlanDetailsContent(ApparenceKitColors colors, _VipPlan plan) {
-    final t = context.t;
-    final accent = _planAccent(colors, plan);
-
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Chap: tarif nomi + moyka soni
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                plan.name,
-                style: TextStyle(
-                  color: accent,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.water_drop_outlined,
-                      color: colors.info, size: 24),
-                  const SizedBox(width: 6),
-                  Flexible(
+                  const SizedBox(height: 16),
+                  Text(
+                    t.subscriptions.fromPrice.replaceAll(
+                        '{price}', formatPrice(cheapest.monthlyPrice)),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _benefitDot(),
+                      const SizedBox(width: 8),
+                      Text(
+                        t.profile.featureUnlimited,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      _benefitDot(),
+                      const SizedBox(width: 8),
+                      Text(
+                        t.profile.featureAllBranches,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    alignment: Alignment.center,
                     child: Text(
-                      t.profile.washCountLabel
-                          .replaceAll('{count}', '${plan.washCount}'),
+                      t.subscriptions.view,
                       style: TextStyle(
-                        color: colors.onBackground,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
+                        color: colors.premiumGradientEnd,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        // O'ng: oylik narx
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              t.profile.monthlyPriceLabel,
-              style: TextStyle(color: colors.grey2, fontSize: 11),
-            ),
-            const SizedBox(height: 4),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerRight,
-              child: Text(
-                '${_formatPrice(plan.perMonthK * 1000)} UZS',
-                style: TextStyle(
-                  color: colors.onBackground,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
         ),
       ],
     );
   }
 
-  Color _planAccent(ApparenceKitColors colors, _VipPlan plan) {
-    switch (plan.months) {
-      case 6:
-        return colors.warning;
-      case 3:
-        return colors.info;
-      default:
-        return colors.onBackground;
-    }
+  Widget _benefitDot() {
+    return Container(
+      width: 6,
+      height: 6,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        shape: BoxShape.circle,
+      ),
+    );
   }
 
   Widget _buildSectionLabel(String label, ApparenceKitColors colors) {
@@ -544,16 +414,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
-  }
-
-  String _formatPrice(int sum) {
-    final s = sum.toString();
-    final buf = StringBuffer();
-    for (int i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) buf.write(' ');
-      buf.write(s[i]);
-    }
-    return buf.toString();
   }
 
   Widget _buildMyCars(BuildContext context, ApparenceKitColors colors) {
@@ -689,25 +549,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-}
-
-class _VipPlan {
-  static const int baseMonthlyPriceK = 1190; // 1 oylik narx (ming so'mda)
-
-  final String name;
-  final int months;
-  final int perMonthK; // ming so'mda (599 → 599k)
-  final int washCount; // paketdagi bepul moyka soni
-  final bool isBest;
-
-  const _VipPlan({
-    required this.name,
-    required this.months,
-    required this.perMonthK,
-    required this.washCount,
-    this.isBest = false,
-  });
-
-  int get totalPrice => perMonthK * 1000 * months;
-  int get savings => (baseMonthlyPriceK - perMonthK) * 1000 * months;
 }

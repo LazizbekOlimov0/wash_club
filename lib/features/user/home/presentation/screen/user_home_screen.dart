@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:wash_club/config/router/router.dart';
 import 'package:wash_club/core/i18n/extensions/i18n_extension.dart';
 import '../../../../../core/theme/colors.dart';
+import '../../../../../core/widgets/top_banner.dart';
 import '../../../../../shared/services/client_session.dart';
 import '../../../../../shared/services/branches_repository.dart';
 import '../../../../../shared/services/orders_repository.dart';
@@ -22,11 +23,11 @@ class UserHomeScreen extends StatefulWidget {
 class _UserHomeScreenState extends State<UserHomeScreen> {
   final _branchRepo = BranchesRepository.instance;
   final _ordersRepo = OrdersRepository.instance;
-  final _session    = ClientSession.instance;
-  final _api        = SupabaseService.instance;
+  final _session = ClientSession.instance;
+  final _api = SupabaseService.instance;
 
   List<BranchModel> _branches = [];
-  List<OrderModel>  _activeOrders = [];
+  List<OrderModel> _activeOrders = [];
   bool _loading = true;
   bool _scanningGate = false;
   String? _error;
@@ -43,8 +44,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     _ordersRepo.ordersStream.listen((orders) {
       if (mounted) {
         setState(() {
-          _activeOrders      = orders.where((o) => o.isActive).toList();
-          _unreadNotifCount  = _ordersRepo.unreadCount;
+          _activeOrders = orders.where((o) => o.isActive).toList();
+          _unreadNotifCount = _ordersRepo.unreadCount;
         });
       }
     });
@@ -53,10 +54,32 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     _ordersRepo.notificationStream.listen((_) {
       if (mounted) setState(() => _unreadNotifCount = _ordersRepo.unreadCount);
     });
+
+    // Sotib olish bildirishnomasi — Home screen'da yuqoridan banner
+    TopBannerBus.notifier.addListener(_onPurchaseBanner);
+  }
+
+  void _onPurchaseBanner() {
+    final message = TopBannerBus.current;
+    if (message == null || !mounted) return;
+    TopBannerBus.clear();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      showTopBanner(context, message: message);
+    });
+  }
+
+  @override
+  void dispose() {
+    TopBannerBus.notifier.removeListener(_onPurchaseBanner);
+    super.dispose();
   }
 
   Future<void> _load() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final results = await Future.wait([
         _branchRepo.getBranches(),
@@ -64,14 +87,18 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
       ]);
       if (mounted) {
         setState(() {
-          _branches          = results[0] as List<BranchModel>;
-          _activeOrders      = (_ordersRepo.activeOrders);
-          _unreadNotifCount  = _ordersRepo.unreadCount;
-          _loading           = false;
+          _branches = results[0] as List<BranchModel>;
+          _activeOrders = (_ordersRepo.activeOrders);
+          _unreadNotifCount = _ordersRepo.unreadCount;
+          _loading = false;
         });
       }
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _error = e.toString(); });
+      if (mounted)
+        setState(() {
+          _loading = false;
+          _error = e.toString();
+        });
     }
   }
 
@@ -88,7 +115,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.low),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+        ),
       );
       if (mounted) {
         setState(() => _userPosition = LatLng(pos.latitude, pos.longitude));
@@ -110,33 +139,37 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   List<BoxShadow> _cardShadow(ApparenceKitColors colors) => _isLight
       ? [
-    BoxShadow(
-      color: colors.shadow.withValues(alpha: 0.07),
-      blurRadius: 16,
-      offset: const Offset(0, 4),
-    ),
-  ]
+          BoxShadow(
+            color: colors.shadow.withValues(alpha: 0.07),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ]
       : [];
 
   Border? _cardBorder(ApparenceKitColors colors) =>
       _isLight ? Border.all(color: colors.divider, width: 1) : null;
 
   Widget _branchPlaceholder(ApparenceKitColors colors) => Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [colors.branchGradientStart, colors.branchGradientEnd],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+    width: double.infinity,
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [colors.branchGradientStart, colors.branchGradientEnd],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+    ),
+    child: Center(
+      child: Opacity(
+        opacity: 0.7,
+        child: Icon(
+          Icons.local_car_wash_rounded,
+          color: Colors.white,
+          size: 40,
         ),
-        child: Center(
-          child: Opacity(
-            opacity: 0.7,
-            child: Icon(Icons.local_car_wash_rounded, color: Colors.white, size: 40),
-          ),
-        ),
-      );
+      ),
+    ),
+  );
 
   String _greeting(BuildContext context) {
     final t = context.t;
@@ -159,23 +192,27 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             : _error != null
             ? _buildError(colors)
             : ListView(
-          padding: const EdgeInsets.only(bottom: 100),
-          physics: const ClampingScrollPhysics(),
-          children: [
-            _buildHeader(context, colors),
-            if (_activeOrders.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _buildActiveBookingCard(context, colors, _activeOrders.first),
-            ],
-            const SizedBox(height: 16),
-            _buildMembershipCard(context, colors),
-            const SizedBox(height: 24),
-            _buildBranches(context, colors),
-            const SizedBox(height: 24),
-            _buildMyCars(context, colors),
-            const SizedBox(height: 32),
-          ],
-        ),
+                padding: const EdgeInsets.only(bottom: 100),
+                physics: const ClampingScrollPhysics(),
+                children: [
+                  _buildHeader(context, colors),
+                  if (_activeOrders.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    _buildActiveBookingCard(
+                      context,
+                      colors,
+                      _activeOrders.first,
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  _buildMembershipCard(context, colors),
+                  const SizedBox(height: 24),
+                  _buildBranches(context, colors),
+                  const SizedBox(height: 24),
+                  _buildMyCars(context, colors),
+                  const SizedBox(height: 32),
+                ],
+              ),
       ),
     );
   }
@@ -229,8 +266,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
               child: Stack(
                 children: [
                   Center(
-                    child: Icon(Icons.notifications_outlined,
-                        color: colors.onBackground, size: 16),
+                    child: Icon(
+                      Icons.notifications_outlined,
+                      color: colors.onBackground,
+                      size: 16,
+                    ),
                   ),
                   if (_unreadNotifCount > 0)
                     Positioned(
@@ -245,17 +285,17 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         ),
                         child: _unreadNotifCount > 1
                             ? Center(
-                          child: Text(
-                            _unreadNotifCount > 9
-                                ? '9+'
-                                : '$_unreadNotifCount',
-                            style: TextStyle(
-                              color: colors.onPrimary,
-                              fontSize: 7,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        )
+                                child: Text(
+                                  _unreadNotifCount > 9
+                                      ? '9+'
+                                      : '$_unreadNotifCount',
+                                  style: TextStyle(
+                                    color: colors.onPrimary,
+                                    fontSize: 7,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              )
                             : null,
                       ),
                     ),
@@ -270,12 +310,16 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
 
   // ── Faol bron kartasi ─────────────────────────────────────────
   Widget _buildActiveBookingCard(
-      BuildContext context, ApparenceKitColors colors, OrderModel order) {
+    BuildContext context,
+    ApparenceKitColors colors,
+    OrderModel order,
+  ) {
     final t = context.t;
     final time = order.scheduledAt ?? order.createdAt;
     final timeLabel =
         '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
-    final isToday = order.scheduledAt != null &&
+    final isToday =
+        order.scheduledAt != null &&
         _isSameDay(order.scheduledAt!, DateTime.now());
     final dayLabel = isToday
         ? t.booking.today
@@ -316,11 +360,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 ),
                 const Spacer(),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: _statusColor(order.status, colors)
-                        .withValues(alpha: 0.15),
+                    color: _statusColor(
+                      order.status,
+                      colors,
+                    ).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -372,8 +420,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     behavior: HitTestBehavior.opaque,
                     child: Row(
                       children: [
-                        Icon(Icons.location_on_outlined,
-                            color: colors.grey2, size: 18),
+                        Icon(
+                          Icons.location_on_outlined,
+                          color: colors.grey2,
+                          size: 18,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Column(
@@ -397,14 +448,19 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                      color: colors.grey2, fontSize: 12),
+                                    color: colors.grey2,
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ],
                           ),
                         ),
-                        Icon(Icons.chevron_right,
-                            color: colors.grey2, size: 18),
+                        Icon(
+                          Icons.chevron_right,
+                          color: colors.grey2,
+                          size: 18,
+                        ),
                       ],
                     ),
                   ),
@@ -422,8 +478,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.qr_code_scanner,
-                            color: colors.onPrimary, size: 24),
+                        Icon(
+                          Icons.qr_code_scanner,
+                          color: colors.onPrimary,
+                          size: 24,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           t.home.qrScan,
@@ -443,8 +502,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             Row(
               children: [
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.grey1.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(6),
@@ -476,7 +537,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   width: 3,
                   height: 3,
                   decoration: BoxDecoration(
-                      color: colors.grey2, shape: BoxShape.circle),
+                    color: colors.grey2,
+                    shape: BoxShape.circle,
+                  ),
                 ),
                 const SizedBox(width: 4),
                 Flexible(
@@ -549,7 +612,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         return AlertDialog(
           backgroundColor: colors.onPrimaryContainer,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)),
+            borderRadius: BorderRadius.circular(20),
+          ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -593,7 +657,8 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
         return AlertDialog(
           backgroundColor: colors.onPrimaryContainer,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20)),
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: Text(
             t.qrScan.error,
             style: TextStyle(
@@ -630,29 +695,47 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   String _translateStatus(String status) {
     final t = context.t;
     switch (status) {
-      case AppConstants.statusPending:        return t.orderStatus.pending;
-      case AppConstants.statusPendingPayment: return t.orderStatus.pendingPayment;
-      case AppConstants.statusQueued:         return t.orderStatus.queued;
-      case AppConstants.statusConfirmed:      return t.orderStatus.confirmed;
-      case AppConstants.statusWashing:        return t.orderStatus.washing;
-      case AppConstants.statusDrying:         return t.orderStatus.drying;
-      case AppConstants.statusReady:          return t.orderStatus.ready;
-      case AppConstants.statusCompleted:      return t.orderStatus.completed;
-      case AppConstants.statusCancelled:      return t.orderStatus.cancelled;
-      default:                                return status;
+      case AppConstants.statusPending:
+        return t.orderStatus.pending;
+      case AppConstants.statusPendingPayment:
+        return t.orderStatus.pendingPayment;
+      case AppConstants.statusQueued:
+        return t.orderStatus.queued;
+      case AppConstants.statusConfirmed:
+        return t.orderStatus.confirmed;
+      case AppConstants.statusWashing:
+        return t.orderStatus.washing;
+      case AppConstants.statusDrying:
+        return t.orderStatus.drying;
+      case AppConstants.statusReady:
+        return t.orderStatus.ready;
+      case AppConstants.statusCompleted:
+        return t.orderStatus.completed;
+      case AppConstants.statusCancelled:
+        return t.orderStatus.cancelled;
+      default:
+        return status;
     }
   }
 
   Color _statusColor(String status, ApparenceKitColors colors) {
     switch (status) {
-      case 'pending':   return colors.warning;
-      case 'queued':    return colors.success;
-      case 'confirmed': return colors.success;
-      case 'washing':   return colors.info;
-      case 'drying':    return colors.info;
-      case 'ready':     return colors.success;
-      case 'completed': return colors.success;
-      default:          return colors.error;
+      case 'pending':
+        return colors.warning;
+      case 'queued':
+        return colors.success;
+      case 'confirmed':
+        return colors.success;
+      case 'washing':
+        return colors.info;
+      case 'drying':
+        return colors.info;
+      case 'ready':
+        return colors.success;
+      case 'completed':
+        return colors.success;
+      default:
+        return colors.error;
     }
   }
 
@@ -702,8 +785,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           height: 192,
           child: _branches.isEmpty
               ? Center(
-                  child: Text('Filiallar topilmadi',
-                      style: TextStyle(color: colors.grey2)))
+                  child: Text(
+                    'Filiallar topilmadi',
+                    style: TextStyle(color: colors.grey2),
+                  ),
+                )
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -717,14 +803,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
   }
 
   Widget _buildBranchCard(
-      BuildContext context, ApparenceKitColors colors, BranchModel b) {
+    BuildContext context,
+    ApparenceKitColors colors,
+    BranchModel b,
+  ) {
     final t = context.t;
     final width = MediaQuery.of(context).size.width * 0.78;
 
     return GestureDetector(
-      onTap: () => context.go(
-        '${UserRoutePath.booking}?branchId=${b.id}',
-      ),
+      onTap: () => context.go('${UserRoutePath.booking}?branchId=${b.id}'),
       child: Container(
         width: width,
         margin: const EdgeInsets.only(right: 12),
@@ -747,8 +834,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       ? Image.network(
                           b.imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, _, _) =>
-                              _branchPlaceholder(colors),
+                          errorBuilder: (_, _, _) => _branchPlaceholder(colors),
                         )
                       : _branchPlaceholder(colors),
                 ),
@@ -771,11 +857,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   left: 10,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: b.isOpenNow
-                          ? colors.success
-                          : colors.grey3,
+                      color: b.isOpenNow ? colors.success : colors.grey3,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -807,7 +893,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   right: 10,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(20),
@@ -815,8 +903,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.star,
-                            color: colors.warning, size: 13),
+                        Icon(Icons.star, color: colors.warning, size: 13),
                         const SizedBox(width: 4),
                         Text(
                           b.rating?.toStringAsFixed(1) ?? '4.9',
@@ -850,8 +937,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Icon(Icons.location_on_outlined,
-                              color: Colors.white70, size: 12),
+                          const Icon(
+                            Icons.location_on_outlined,
+                            color: Colors.white70,
+                            size: 12,
+                          ),
                           const SizedBox(width: 2),
                           Expanded(
                             child: Text(
@@ -873,13 +963,15 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
             ),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               child: Row(
                 children: [
                   if (_distanceLabel(b).isNotEmpty) ...[
-                    Icon(Icons.location_on_outlined,
-                        color: colors.grey2, size: 14),
+                    Icon(
+                      Icons.location_on_outlined,
+                      color: colors.grey2,
+                      size: 14,
+                    ),
                     const SizedBox(width: 3),
                     Text(
                       _distanceLabel(b),
@@ -893,7 +985,9 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                   ],
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: colors.info.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(20),
@@ -927,8 +1021,7 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 2),
-                      Icon(Icons.chevron_right,
-                          color: colors.info, size: 16),
+                      Icon(Icons.chevron_right, color: colors.info, size: 16),
                     ],
                   ),
                 ],
@@ -957,126 +1050,135 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     final t = context.t;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [colors.accent, colors.warning],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+      child: GestureDetector(
+        onTap: () => context.push(UserRoutePath.subscriptions),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [colors.accent, colors.warning],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(20),
           ),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: Stack(
-          children: [
-            // Maxsus narx banneri — yuqori o'ng
-            Positioned(
-              top: 0,
-              right: 0,
-              child: Transform.rotate(
-                angle: 0.785,
-                child: Container(
-                  width: 90,
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  color: colors.error,
-                  child: Text(
-                    t.home.membershipSpecialPrice,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 9,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+          clipBehavior: Clip.hardEdge,
+          child: Stack(
+            children: [
+              // Maxsus narx banneri — yuqori o'ng
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Transform.rotate(
+                  angle: 0.785,
+                  child: Container(
+                    width: 90,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    color: colors.error,
+                    child: Text(
+                      t.home.membershipSpecialPrice,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.workspace_premium, color: Colors.white, size: 14),
-                      SizedBox(width: 6),
-                      Text(
-                        'WASHCLUB MEMBERSHIP',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  t.home.membershipPrice,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  t.home.membershipOffer,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: TextButton(
-                    onPressed: () {
-                      if (!ClientSession.instance.isOnboarded) {
-                        context.push(UserRoutePath.otpLogin);
-                        return;
-                      }
-                      context.go(UserRoutePath.profile);
-                    },
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
+                        Icon(
+                          Icons.workspace_premium,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        SizedBox(width: 6),
                         Text(
-                          t.home.membershipSubscribe,
+                          'WASHCLUB MEMBERSHIP',
                           style: TextStyle(
-                            color: colors.accent,
-                            fontSize: 16,
+                            color: Colors.white,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
+                            letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        Icon(Icons.chevron_right, color: colors.accent, size: 20),
                       ],
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                  const SizedBox(height: 14),
+                  Text(
+                    t.home.membershipPrice,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    t.home.membershipOffer,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: TextButton(
+                      onPressed: () =>
+                          context.push(UserRoutePath.subscriptions),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            t.home.membershipSubscribe,
+                            style: TextStyle(
+                              color: colors.accent,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Icon(
+                            Icons.chevron_right,
+                            color: colors.accent,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1121,10 +1223,10 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 onPressed: () => _goToAddCar(context),
                 icon: Icon(Icons.add, color: colors.info, size: 18),
                 label: Text(
-                    t.home.manage,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(color: colors.info),
-                  ),
+                  t.home.manage,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: colors.info),
+                ),
               ),
             ],
           ),
@@ -1149,61 +1251,68 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.add_circle_outline,
-                        color: colors.info, size: 20),
+                    Icon(
+                      Icons.add_circle_outline,
+                      color: colors.info,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Text(
                       t.home.addCar,
                       style: TextStyle(
-                          color: colors.info,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600),
+                        color: colors.info,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
               ),
             )
           else
-            ...cars.map((car) => Container(
-              margin: const EdgeInsets.only(bottom: 10),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 14),
-              decoration: BoxDecoration(
-                color: _cardBg(colors),
-                borderRadius: BorderRadius.circular(14),
-                border: _cardBorder(colors),
-                boxShadow: _cardShadow(colors),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          car.displayName,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
+            ...cars.map(
+              (car) => Container(
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
+                  color: _cardBg(colors),
+                  borderRadius: BorderRadius.circular(14),
+                  border: _cardBorder(colors),
+                  boxShadow: _cardShadow(colors),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            car.displayName,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
                               color: colors.onBackground,
                               fontSize: 15,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          car.color.isNotEmpty
-                              ? '${car.plate} · ${car.color}'
-                              : car.plate,
-                          style: TextStyle(
-                              color: colors.grey2, fontSize: 13),
-                        ),
-                      ],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            car.color.isNotEmpty
+                                ? '${car.plate} · ${car.color}'
+                                : car.plate,
+                            style: TextStyle(color: colors.grey2, fontSize: 13),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Icon(Icons.chevron_right,
-                      color: colors.grey2, size: 20),
-                ],
+                    Icon(Icons.chevron_right, color: colors.grey2, size: 20),
+                  ],
+                ),
               ),
-            )),
+            ),
         ],
       ),
     );
@@ -1226,8 +1335,11 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
     );
   }
 
-  Widget _shimmer(ApparenceKitColors colors,
-      {required double height, required double radius}) {
+  Widget _shimmer(
+    ApparenceKitColors colors, {
+    required double height,
+    required double radius,
+  }) {
     return Container(
       height: height,
       margin: const EdgeInsets.only(bottom: 4),
@@ -1247,15 +1359,20 @@ class _UserHomeScreenState extends State<UserHomeScreen> {
           children: [
             Icon(Icons.wifi_off_rounded, color: colors.grey2, size: 48),
             const SizedBox(height: 16),
-            Text('Ulanishda xatolik',
-                style: TextStyle(
-                    color: colors.onBackground,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold)),
+            Text(
+              'Ulanishda xatolik',
+              style: TextStyle(
+                color: colors.onBackground,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(_error ?? '',
-                style: TextStyle(color: colors.grey2, fontSize: 12),
-                textAlign: TextAlign.center),
+            Text(
+              _error ?? '',
+              style: TextStyle(color: colors.grey2, fontSize: 12),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _load,

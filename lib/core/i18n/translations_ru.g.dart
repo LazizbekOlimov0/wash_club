@@ -44,6 +44,8 @@ class TranslationsRu extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsAddCarRu addCar = TranslationsAddCarRu._(_root);
 	@override late final TranslationsNotificationRu notification = TranslationsNotificationRu._(_root);
 	@override late final TranslationsProfileRu profile = TranslationsProfileRu._(_root);
+	@override late final TranslationsSubscriptionsRu subscriptions = TranslationsSubscriptionsRu._(_root);
+	@override late final TranslationsBuySubscriptionRu buySubscription = TranslationsBuySubscriptionRu._(_root);
 	@override late final TranslationsSettingsRu settings = TranslationsSettingsRu._(_root);
 	@override late final TranslationsOrderStatusRu orderStatus = TranslationsOrderStatusRu._(_root);
 	@override late final TranslationsTimeRu time = TranslationsTimeRu._(_root);
@@ -198,7 +200,7 @@ class TranslationsHomeRu extends TranslationsHomeUz {
 	@override String get myOrders => 'Мои заказы';
 	@override String get qrSentToTelegram => 'QR также отправлен в Telegram';
 	@override String get membershipSpecialPrice => 'СПЕЦ. ЦЕНА';
-	@override String get membershipPrice => '499 000 сум / мес';
+	@override String get membershipPrice => '599 000 сум / мес';
 	@override String get membershipOffer => '🔥  Спецпредложение — мойка каждый день по Ташкенту';
 	@override String get membershipSubscribe => 'Подписаться';
 	@override String get bookingPromoTitle => 'Сделайте первую бронь';
@@ -436,7 +438,7 @@ class TranslationsProfileRu extends TranslationsProfileUz {
 	@override String get languageRu => 'Русский';
 	@override String get languageEn => 'Английский';
 	@override String get customerLevel => 'Обычный клиент';
-	@override String get vipPassTitle => 'ПОДПИСКА VIP PASS';
+	@override String get vipPassTitle => 'Активировать подписку';
 	@override String get vipPassSave => 'Экономия до 70%';
 	@override String get bestBadge => 'ЛУЧШИЙ';
 	@override String get monthShort => '{months} мес';
@@ -444,13 +446,62 @@ class TranslationsProfileRu extends TranslationsProfileUz {
 	@override String get totalPriceLabel => 'Полная цена за {months} мес:';
 	@override String get monthlyPriceLabel => 'Ежемесячный платёж:';
 	@override String get savingLabel => 'ЭКОНОМИЯ:';
-	@override String get featureUnlimited => 'Безлимитная мойка';
+	@override String get featureUnlimited => 'Мойка каждый день';
 	@override String get featureAllBranches => 'Во всех филиалах';
 	@override String get featureNoQueue => 'Без очереди';
 	@override String get featureFreeWax => 'Бесплатный воск';
 	@override String get washCountLabel => '{count} моек';
 	@override String get activateVip => 'Оформить подписку ({months} мес)';
 	@override String get comingSoon => 'Скоро';
+}
+
+// Path: subscriptions
+class TranslationsSubscriptionsRu extends TranslationsSubscriptionsUz {
+	TranslationsSubscriptionsRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Подписки';
+	@override String get all => 'Все подписки';
+	@override String get view => 'Смотреть подписки';
+	@override String get monthDuration => '{months} мес.';
+	@override String get perMonths => 'x {months} мес';
+	@override String get fromPrice => 'От {price} сум в месяц';
+	@override String get buy => 'Купить';
+	@override String get benefitDailyWash => 'Мойка каждый день';
+	@override String get benefitCountrywide => 'По всему Узбекистану';
+	@override String get benefitPremium => 'Премиум-сервис';
+}
+
+// Path: buySubscription
+class TranslationsBuySubscriptionRu extends TranslationsBuySubscriptionUz {
+	TranslationsBuySubscriptionRu._(TranslationsRu root) : this._root = root, super.internal(root);
+
+	final TranslationsRu _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Купить подписку';
+	@override String get planName => 'Подписка на {months} мес.';
+	@override String get daysWashes => '{days} дней · {count} моек';
+	@override String get unlimitedChip => 'Безлимитная мойка';
+	@override String get activationDate => 'Дата активации подписки';
+	@override String get promoCode => 'Есть промокод?';
+	@override String get paymentMethod => 'Способ оплаты';
+	@override String get payme => 'Payme';
+	@override String get click => 'Click';
+	@override String get card => 'Картой';
+	@override String get price => 'Цена';
+	@override String get subscriptionPrice => 'Цена подписки';
+	@override String get promo => 'Промокод';
+	@override String get totalPayment => 'Итого к оплате';
+	@override String get payButton => 'Оплатить';
+	@override String get confirmTitle => 'Подтверждение подписки';
+	@override String get confirmMessage => 'Купить эту подписку?';
+	@override String get confirmYes => 'Да';
+	@override String get confirmNo => 'Отмена';
+	@override String get purchasedTitle => 'Подписка на {months} мес. куплена';
+	@override String get purchasedSubtitle => 'Теперь вам доступно {count} бесплатных моек';
 }
 
 // Path: settings

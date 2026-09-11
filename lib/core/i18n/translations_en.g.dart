@@ -44,6 +44,8 @@ class TranslationsEn extends Translations with BaseTranslations<AppLocale, Trans
 	@override late final TranslationsAddCarEn addCar = TranslationsAddCarEn._(_root);
 	@override late final TranslationsNotificationEn notification = TranslationsNotificationEn._(_root);
 	@override late final TranslationsProfileEn profile = TranslationsProfileEn._(_root);
+	@override late final TranslationsSubscriptionsEn subscriptions = TranslationsSubscriptionsEn._(_root);
+	@override late final TranslationsBuySubscriptionEn buySubscription = TranslationsBuySubscriptionEn._(_root);
 	@override late final TranslationsSettingsEn settings = TranslationsSettingsEn._(_root);
 	@override late final TranslationsOrderStatusEn orderStatus = TranslationsOrderStatusEn._(_root);
 	@override late final TranslationsTimeEn time = TranslationsTimeEn._(_root);
@@ -198,7 +200,7 @@ class TranslationsHomeEn extends TranslationsHomeUz {
 	@override String get myOrders => 'My orders';
 	@override String get qrSentToTelegram => 'QR also sent to Telegram';
 	@override String get membershipSpecialPrice => 'SPECIAL PRICE';
-	@override String get membershipPrice => '499,000 UZS / month';
+	@override String get membershipPrice => '599,000 UZS / month';
 	@override String get membershipOffer => '🔥  Special offer — car wash every day in Tashkent';
 	@override String get membershipSubscribe => 'Subscribe';
 	@override String get bookingPromoTitle => 'Make your first booking';
@@ -436,7 +438,7 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	@override String get languageRu => 'Russian';
 	@override String get languageEn => 'English';
 	@override String get customerLevel => 'Regular customer';
-	@override String get vipPassTitle => 'VIP PASS SUBSCRIPTION';
+	@override String get vipPassTitle => 'Activate subscription';
 	@override String get vipPassSave => 'Save up to 70%';
 	@override String get bestBadge => 'BEST';
 	@override String get monthShort => '{months} mo';
@@ -444,13 +446,62 @@ class TranslationsProfileEn extends TranslationsProfileUz {
 	@override String get totalPriceLabel => 'Total price for {months} mo:';
 	@override String get monthlyPriceLabel => 'Monthly payment:';
 	@override String get savingLabel => 'SAVINGS:';
-	@override String get featureUnlimited => 'Unlimited washes';
+	@override String get featureUnlimited => 'Daily wash';
 	@override String get featureAllBranches => 'All branches';
 	@override String get featureNoQueue => 'No-queue entry';
 	@override String get featureFreeWax => 'Free wax';
 	@override String get washCountLabel => '{count} washes';
 	@override String get activateVip => 'Subscribe ({months} mo)';
 	@override String get comingSoon => 'Coming soon';
+}
+
+// Path: subscriptions
+class TranslationsSubscriptionsEn extends TranslationsSubscriptionsUz {
+	TranslationsSubscriptionsEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Subscriptions';
+	@override String get all => 'All subscriptions';
+	@override String get view => 'View subscriptions';
+	@override String get monthDuration => '{months} months';
+	@override String get perMonths => 'x {months} mo';
+	@override String get fromPrice => 'From {price} UZS per month';
+	@override String get buy => 'Buy';
+	@override String get benefitDailyWash => 'Daily wash';
+	@override String get benefitCountrywide => 'Across Uzbekistan';
+	@override String get benefitPremium => 'Premium service';
+}
+
+// Path: buySubscription
+class TranslationsBuySubscriptionEn extends TranslationsBuySubscriptionUz {
+	TranslationsBuySubscriptionEn._(TranslationsEn root) : this._root = root, super.internal(root);
+
+	final TranslationsEn _root; // ignore: unused_field
+
+	// Translations
+	@override String get title => 'Buy subscription';
+	@override String get planName => '{months}-month subscription';
+	@override String get daysWashes => '{days} days · {count} washes';
+	@override String get unlimitedChip => 'Unlimited washes';
+	@override String get activationDate => 'Activation date';
+	@override String get promoCode => 'Have a promo code?';
+	@override String get paymentMethod => 'Payment method';
+	@override String get payme => 'Payme';
+	@override String get click => 'Click';
+	@override String get card => 'By card';
+	@override String get price => 'Price';
+	@override String get subscriptionPrice => 'Subscription price';
+	@override String get promo => 'Promo code';
+	@override String get totalPayment => 'Total payment';
+	@override String get payButton => 'Pay';
+	@override String get confirmTitle => 'Confirm subscription';
+	@override String get confirmMessage => 'Do you want to buy this subscription?';
+	@override String get confirmYes => 'Yes';
+	@override String get confirmNo => 'Cancel';
+	@override String get purchasedTitle => '{months}-month subscription purchased';
+	@override String get purchasedSubtitle => 'You can now enjoy {count} free washes';
 }
 
 // Path: settings

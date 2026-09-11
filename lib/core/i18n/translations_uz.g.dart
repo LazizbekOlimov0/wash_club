@@ -47,6 +47,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final TranslationsAddCarUz addCar = TranslationsAddCarUz.internal(_root);
 	late final TranslationsNotificationUz notification = TranslationsNotificationUz.internal(_root);
 	late final TranslationsProfileUz profile = TranslationsProfileUz.internal(_root);
+	late final TranslationsSubscriptionsUz subscriptions = TranslationsSubscriptionsUz.internal(_root);
+	late final TranslationsBuySubscriptionUz buySubscription = TranslationsBuySubscriptionUz.internal(_root);
 	late final TranslationsSettingsUz settings = TranslationsSettingsUz.internal(_root);
 	late final TranslationsOrderStatusUz orderStatus = TranslationsOrderStatusUz.internal(_root);
 	late final TranslationsTimeUz time = TranslationsTimeUz.internal(_root);
@@ -486,8 +488,8 @@ class TranslationsHomeUz {
 	/// uz: 'SPETS. NARX'
 	String get membershipSpecialPrice => 'SPETS. NARX';
 
-	/// uz: '499 000 so'm / oy'
-	String get membershipPrice => '499 000 so\'m / oy';
+	/// uz: '599 000 so'm / oy'
+	String get membershipPrice => '599 000 so\'m / oy';
 
 	/// uz: '🔥 Har kuni Toshkent bo'ylab bepul moyka'
 	String get membershipOffer => '🔥  Har kuni Toshkent bo\'ylab bepul moyka';
@@ -1092,8 +1094,8 @@ class TranslationsProfileUz {
 	/// uz: 'Oddiy mijoz'
 	String get customerLevel => 'Oddiy mijoz';
 
-	/// uz: 'VIP PASS OBUNASI'
-	String get vipPassTitle => 'VIP PASS OBUNASI';
+	/// uz: 'Obunani aktivlashtirish'
+	String get vipPassTitle => 'Obunani aktivlashtirish';
 
 	/// uz: '70% gacha tejamkorlik'
 	String get vipPassSave => '70% gacha tejamkorlik';
@@ -1116,8 +1118,8 @@ class TranslationsProfileUz {
 	/// uz: 'TEJASH:'
 	String get savingLabel => 'TEJASH:';
 
-	/// uz: 'Cheksiz yuvish'
-	String get featureUnlimited => 'Cheksiz yuvish';
+	/// uz: 'Har kuni moyka'
+	String get featureUnlimited => 'Har kuni moyka';
 
 	/// uz: 'Barcha filiallarda'
 	String get featureAllBranches => 'Barcha filiallarda';
@@ -1136,6 +1138,117 @@ class TranslationsProfileUz {
 
 	/// uz: 'Tez orada'
 	String get comingSoon => 'Tez orada';
+}
+
+// Path: subscriptions
+class TranslationsSubscriptionsUz {
+	TranslationsSubscriptionsUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Obunalar'
+	String get title => 'Obunalar';
+
+	/// uz: 'Barcha obunalar'
+	String get all => 'Barcha obunalar';
+
+	/// uz: 'Obunalarni ko'rish'
+	String get view => 'Obunalarni ko\'rish';
+
+	/// uz: '{months} oylik'
+	String get monthDuration => '{months} oylik';
+
+	/// uz: 'x {months} oy'
+	String get perMonths => 'x {months} oy';
+
+	/// uz: 'Oyiga {price} so'mdan boshlab'
+	String get fromPrice => 'Oyiga {price} so\'mdan boshlab';
+
+	/// uz: 'Sotib olish'
+	String get buy => 'Sotib olish';
+
+	/// uz: 'Har kuni moyka'
+	String get benefitDailyWash => 'Har kuni moyka';
+
+	/// uz: 'O'zbekiston bo'ylab'
+	String get benefitCountrywide => 'O\'zbekiston bo\'ylab';
+
+	/// uz: 'Premium xizmat'
+	String get benefitPremium => 'Premium xizmat';
+}
+
+// Path: buySubscription
+class TranslationsBuySubscriptionUz {
+	TranslationsBuySubscriptionUz.internal(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// uz: 'Obunani sotib olish'
+	String get title => 'Obunani sotib olish';
+
+	/// uz: '{months} oylik obuna'
+	String get planName => '{months} oylik obuna';
+
+	/// uz: '{days} kun · {count} marta moyka'
+	String get daysWashes => '{days} kun · {count} marta moyka';
+
+	/// uz: 'Cheksiz moyka'
+	String get unlimitedChip => 'Cheksiz moyka';
+
+	/// uz: 'Obunani faollashtirish sanasi'
+	String get activationDate => 'Obunani faollashtirish sanasi';
+
+	/// uz: 'Promokod bormi?'
+	String get promoCode => 'Promokod bormi?';
+
+	/// uz: 'To'lov usuli'
+	String get paymentMethod => 'To\'lov usuli';
+
+	/// uz: 'Payme'
+	String get payme => 'Payme';
+
+	/// uz: 'Click'
+	String get click => 'Click';
+
+	/// uz: 'Karta orqali'
+	String get card => 'Karta orqali';
+
+	/// uz: 'Narx'
+	String get price => 'Narx';
+
+	/// uz: 'Obuna narxi'
+	String get subscriptionPrice => 'Obuna narxi';
+
+	/// uz: 'Promokod'
+	String get promo => 'Promokod';
+
+	/// uz: 'To'liq to'lov'
+	String get totalPayment => 'To\'liq to\'lov';
+
+	/// uz: 'To'lov qilish'
+	String get payButton => 'To\'lov qilish';
+
+	/// uz: 'Obunani tasdiqlash'
+	String get confirmTitle => 'Obunani tasdiqlash';
+
+	/// uz: 'Ushbu obunani sotib olmoqchimisiz?'
+	String get confirmMessage => 'Ushbu obunani sotib olmoqchimisiz?';
+
+	/// uz: 'Ha'
+	String get confirmYes => 'Ha';
+
+	/// uz: 'Bekor'
+	String get confirmNo => 'Bekor';
+
+	/// uz: '{months} oylik obuna sotib olindi'
+	String get purchasedTitle => '{months} oylik obuna sotib olindi';
+
+	/// uz: 'Endi {count} marta bepul moyka qila olasiz'
+	String get purchasedSubtitle => 'Endi {count} marta bepul moyka qila olasiz';
 }
 
 // Path: settings
